@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- REFINED ACCENT BASE (Slightly more presence) -->
+    <!-- Opacity balanced at 40% for better visibility -->
+    <path
+        android:pathData="M30,76 a24,8 0,1,0 48,0 a24,8 0,1,0 -48,0"
+        android:strokeWidth="2.0"
+        android:strokeColor="#40FFD600"> <!-- Alpha increased to 40% -->
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="76"
+                android:gradientRadius="24"
+                android:type="radial">
+                <item android:color="#25FFAB00" android:offset="0" />
+                <item android:color="#00000000" android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- ENHANCED PARTICLES (50% Presence) -->
+    <!-- Crisp center dots combined with soft outer particles -->
+    <path android:pathData="M42,75 m-0.7,0 a0.7,0.7 0,1,1 1.4,0 a0.7,0.7 0,1,1 -1.4,0" android:fillColor="#60FFFFFF" /> <!-- White highlight -->
+    <path android:pathData="M66,75 m-0.7,0 a0.7,0.7 0,1,1 1.4,0 a0.7,0.7 0,1,1 -1.4,0" android:fillColor="#60FFFFFF" /> <!-- White highlight -->
+    <path android:pathData="M54,73 m-0.8,0 a0.8,0.8 0,1,1 1.6,0 a0.8,0.8 0,1,1 -1.6,0" android:fillColor="#50B388FF" />
+    <path android:pathData="M50,76 m-0.5,0 a0.5,0.5 0,1,1 1.0,0 a0.5,0.5 0,1,1 -1.0,0" android:fillColor="#50FFEA00" />
+    <path android:pathData="M58,76 m-0.5,0 a0.5,0.5 0,1,1 1.0,0 a0.5,0.5 0,1,1 -1.0,0" android:fillColor="#50FFEA00" />
+    <path android:pathData="M35,78 m-0.5,0 a0.5,0.5 0,1,1 1.0,0 a0.5,0.5 0,1,1 -1.0,0" android:fillColor="#40D1C4E9" />
+    <path android:pathData="M73,78 m-0.5,0 a0.5,0.5 0,1,1 1.0,0 a0.5,0.5 0,1,1 -1.0,0" android:fillColor="#40D1C4E9" />
+    <path android:pathData="M54,78 m-1.0,0 a1.0,1.0 0,1,1 2.0,0 a1.0,1.0 0,1,1 -2.0,0" android:fillColor="#70FFFFFF" /> <!-- Bright Core Dot -->
+
+    <!-- THE STANDOUT PURPLE 'P' LOGO -->
+    <group
+        android:translateX="38"
+        android:translateY="34.5">
+        <path
+            android:pathData="M0,0 v39"
+            android:strokeWidth="11"
+            android:strokeLineCap="round">
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:startX="0"
+                    android:startY="0"
+                    android:endX="0"
+                    android:endY="39"
+                    android:type="linear">
+                    <item android:color="#D1C4E9" android:offset="0" />
+                    <item android:color="#6200EA" android:offset="1" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path
+            android:pathData="M0,0 h18 c9,0 14,4 14,12 v0 c0,8 -5,12 -14,12 h-18"
+            android:strokeWidth="11"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round">
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:startX="0"
+                    android:startY="0"
+                    android:endX="32"
+                    android:endY="24"
+                    android:type="linear">
+                    <item android:color="#D1C4E9" android:offset="0" />
+                    <item android:color="#311B92" android:offset="1" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+
+</vector>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Module is active</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+    <string name="interface_mods">System UI Settings</string>
+
+    <!-- 1. CallNotes -->
+    <string name="disable_call_notes">Disable Call Notes Announcement</string>
+    <string name="log_call_notes">PXTK_CallNotes</string>
+
+    <!-- 2. CallRec -->
+    <string name="dialer_mods">Google Dialer</string>
+    <string name="enable_call_recording">Call Recording</string>
+    <string name="call_rec_warning">" (Resets on Clear All)"</string>
+    <string name="disable_voice_announcement">Disable Voice Announcement</string>
+    <string name="log_call_rec">PXTK_CallRec</string>
+
+    <!-- 3. ClearAll -->
+    <string name="clear_all_button">Clear All button</string>
+    <string name="log_clear_all">PXTK_ClearAll</string>
+
+    <!-- 4. DT2S -->
+    <string name="interaction_mods">Double Tap To Sleep</string>
+    <string name="dt_launcher">Launcher Workspace</string>
+    <string name="dt_lockscreen">Lockscreen Area</string>
+    <string name="dt_statusbar">Status Bar</string>
+    <string name="log_dt2s">PXTK_DT2S</string>
+
+    <!-- 5. EasyUnlock -->
+    <string name="enable_easy_unlock">Easy Unlock</string>
+    <string name="bypass_reboot_restriction">Bypass Reboot Restriction</string>
+    <string name="less_secure_warning">" (Less Secure)"</string>
+    <string name="log_easy_unlock">PXTK_EasyUnlock</string>
+
+    <!-- 6. QuickSettings -->
+    <string name="system_mods">Quick Settings</string>
+    <string name="qs_wifi_fix">WiFi Force Off</string>
+    <string name="qs_data_fix">Mobile Data Direct Toggle</string>
+    <string name="log_qs">PXTK_QuickSettings</string>
+
+    <!-- 7. Screenshot -->
+    <string name="unrestricted_screenshots">Unrestricted Screenshots</string>
+    <string name="log_screenshot">PXTK_Screenshot</string>
+
+    <!-- 8. Security -->
+    <string name="security_mods">Security Settings</string>
+    <string name="allow_downgrade">Allow App Downgrade</string>
+    <string name="bypass_signature">Bypass Signature Verification</string>
+    <string name="log_security">PXTK_Security</string>
+
+    <!-- 9. Traffic -->
+    <string name="network_traffic">Network Traffic Indicator</string>
+    <string name="traffic_interval">Interval: %1$s</string>
+    <string name="traffic_font_size">Font Size: %1$s</string>
+    <string name="traffic_threshold">Threshold: %1$s</string>
+    <string name="traffic_interval_format">%1$ds</string>
+    <string name="traffic_font_format">%1$dsp</string>
+    <string name="traffic_threshold_always">Always Show</string>
+    <string name="traffic_threshold_mb">1MB/s</string>
+    <string name="traffic_threshold_kb">%1$d KB/s</string>
+    <string name="log_traffic">PXTK_Traffic</string>
+
+    <!-- Debug & Logs -->
+    <string name="debug_logs_title">Debug &amp; Logs</string>
+    <string name="enable_master_log">Enable Master Logging</string>
+</resources>

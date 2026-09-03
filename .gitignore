@@ -1,0 +1,54 @@
+# Gradle and Build artifacts
+.gradle/
+build/
+app/build/
+captured_screenshots/
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+.navigation/
+captions.xml
+modules.xml
+workspace.xml
+
+# Project-specific locals
+local.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and Caches
+*.log
+.artifacts/
+capture/
+memory_dumps/
+
+# NDK
+.cxx/
+.externalNativeBuild/
+
+# Keystores and sensitive files
+*.jks
+*.keystore
+*.pk8
+*.pem
+!debug.keystore
+
+# Temporary files
+tmp/
+temp/
+
+# Compiled files
+*.class
+*.apk
+*.ap_
+*.dex
+*.flat
+
+# Custom build scripts
+Build_APKs.bat
+Create_Test_Signature.bat
