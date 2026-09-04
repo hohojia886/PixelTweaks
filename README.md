@@ -7,10 +7,23 @@ A professional, high-performance Xposed module tailored specifically for Google 
 
 ## 📸 Preview
 
-<a href="art/screenshot.png" target="_blank">
-  <img src="art/screenshot.png" alt="PixelTweaks Settings Preview" width="220" style="max-height: 400px; object-fit: contain;" />
-</a>
-*(Click thumbnail to view full size)*
+<p align="center">
+  <table style="border: none; width: 100%;">
+    <tr>
+      <td align="center" style="border: none; width: 50%;">
+        <a href="art/screenshot.png" target="_blank">
+          <img src="art/screenshot.png" alt="Top Half" style="width: 100%; max-height: 380px; object-fit: cover; object-position: top;" />
+        </a>
+      </td>
+      <td align="center" style="border: none; width: 50%;">
+        <a href="art/screenshot.png" target="_blank">
+          <img src="art/screenshot.png" alt="Bottom Half" style="width: 100%; max-height: 380px; object-fit: cover; object-position: bottom;" />
+        </a>
+      </td>
+    </tr>
+  </table>
+</p>
+*(Click any image to view full size)*
 
 ## ✨ Features (v1.0.0)
 
