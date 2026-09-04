@@ -10,9 +10,11 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ## 📸 Preview
 
 <p align="center">
-  <a href="art/screenshot1.png" target="_blank"><img src="art/screenshot1.png" alt="Screenshot Part 1" width="220" /></a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="art/screenshot2.png" target="_blank"><img src="art/screenshot2.png" alt="Screenshot Part 2" width="220" /></a>
+  <a href="art/screenshot1.png" target="_blank"><img src="art/screenshot1.png" alt="Screenshot Part 1" width="200" /></a>
+  &nbsp;&nbsp;
+  <a href="art/screenshot2.png" target="_blank"><img src="art/screenshot2.png" alt="Screenshot Part 2" width="200" /></a>
+  &nbsp;&nbsp;
+  <a href="art/screenshot3.png" target="_blank"><img src="art/screenshot3.png" alt="Screenshot Part 3" width="200" /></a>
 </p>
 <p align="center">
   <em>(Click any image to view full size)</em>
