@@ -10,22 +10,13 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ## 📸 Preview
 
 <p align="center">
-  <table style="border: none; width: 100%;">
-    <tr>
-      <td align="center" style="border: none; width: 50%; vertical-align: top;">
-        <a href="art/screenshot1.png" target="_blank">
-          <img src="art/screenshot1.png" alt="Screenshot Part 1" width="240" />
-        </a>
-      </td>
-      <td align="center" style="border: none; width: 50%; vertical-align: top;">
-        <a href="art/screenshot2.png" target="_blank">
-          <img src="art/screenshot2.png" alt="Screenshot Part 2" width="240" />
-        </a>
-      </td>
-    </tr>
-  </table>
+  <a href="art/screenshot1.png" target="_blank"><img src="art/screenshot1.png" alt="Screenshot Part 1" width="220" /></a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="art/screenshot2.png" target="_blank"><img src="art/screenshot2.png" alt="Screenshot Part 2" width="220" /></a>
 </p>
-*(Click any image to view full size)*
+<p align="center">
+  <em>(Click any image to view full size)</em>
+</p>
 
 ## ✨ Features (v1.0.0)
 
