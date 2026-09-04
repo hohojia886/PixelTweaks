@@ -67,7 +67,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 
 - **Root + LSPosed** (or any manager supporting `libxposed` API 102).
 - **Android 16 (API 36)** or newer.
-- **Static Scope Enforcement**: Automatically applies to `system`, SystemUI, Launcher, and Dialer.
+- **Static Scope Enforcement**: System Framework, Phone, Pixel Launcher, System UI.
 
 ### Install
 1. Build or download `pixel-tweaks-<flavor>-v1.0.0-<buildType>.apk`.
