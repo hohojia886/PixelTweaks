@@ -5,44 +5,54 @@
 
 A professional, high-performance Xposed module tailored specifically for Google Pixel devices. This version consolidates all previous development optimizations into a stable v1.0.0 baseline.
 
+## 📸 Preview
+
+<a href="art/screenshot.png" target="_blank">
+  <img src="art/screenshot.png" alt="PixelTweaks Settings Preview" width="300"/>
+</a>
+*(Click thumbnail to view full size)*
+
 ## ✨ Features (v1.0.0)
 
-### 🎨 UI & UX Excellence
-- **Adaptive Visuals**: Precision controls for UI elements.
-- **Edge-to-Edge**: Full immersive layout where the background flows behind system bars.
-- **Material 3 Design**: Redesigned settings interface with Dynamic Color (Material You) support.
+### 🎨 Double Tap To Sleep
+- **Launcher Workspace**: Integrated support for double-tap gestures on the launcher workspace to sleep.
+- **Lockscreen Area**: Integrated support for double-tap gestures on the lockscreen area to sleep.
+- **Status Bar**: Integrated support for double-tap gestures on the status bar to sleep.
 
-### 🛡️ Security & Unlock Mods
-- **Allow App Downgrade**: Install older APKs over newer ones without data loss.
-- **Bypass Signature**: Install modified APKs with different signatures.
+### 📞 Google Dialer
+- **Enable Call Recording**: Unlocks native recording in Google Dialer via background DexKit scanning.
+- **Disable Voice Announcement**: Blocks the voice warning at the start of call recording.
+- **Disable Call Notes Announcement**: Silences AI recording and transcription announcements.
+
+### ⚙️ Quick Settings
+- **Mobile Data Direct Toggle**: Removes the confirmation dialog when switching to mobile data.
+- **WiFi Force Off**: Bypasses the "Pause WiFi" behavior, forcing a complete shutdown when toggled.
+
+### 🛡️ Security Settings
+- **Allow App Downgrade**: Install older APKs over newer ones without data loss (auto-resets after 3 minutes).
+- **Bypass Signature Verification**: Install modified APKs with different signatures (auto-resets after 3 minutes).
 - **Easy Unlock**: Automatically dismisses the keyguard when the entered PIN/Password length matches the learned pattern.
-  - **Bypass Reboot Restriction**: Optional setting to allow auto-unlock immediately after system boot.
-- **Safety Auto-Reset**: High-risk security bypasses automatically disable after 3 minutes for protection.
+- **Bypass Restriction**: Optional setting to allow auto-unlock immediately after system boot.
 - **Unrestricted Screenshots**: Force-enable screenshots and recordings in restricted apps (Banking, Incognito).
 
-### ⚙️ System & Interaction
-- **Clear All Button**: Adds a native-style "Clear all" button to the Pixel Launcher recents screen.
-- **Double Tap to Sleep**: Integrated support for double-tap gestures on Launcher Workspace, Lockscreen, and Status Bar.
-- **Mobile Data Direct Toggle**: Removes the "Turn off WiFi" confirmation dialog when switching to mobile data (**Android 17**).
-- **WiFi Force-Off**: Bypasses the "Pause WiFi" behavior, forcing a complete shutdown when toggled (**Android 17**).
-
-### 🚀 Performance & Utility
-- **Call Recording (Full Edition)**: Unlocks native recording in Google Dialer via background DexKit scanning and silences voice announcements.
-- **Call Notes Muter (Full Edition)**: Silences AI recording and transcription announcements (Fermat/SODA/Call Notes) by intercepting media and audio track streams (**Android 14+**).
+### 📱 System UI Settings
+- **Clear All button**: Adds a native-style "Clear all" button to the Pixel Launcher recents screen.
 - **Network Traffic Indicator**: Real-time speed monitor in status bar with intensity-aware color syncing.
-- **Professional Debugging**: Standardized, low-overhead logging system with per-module toggles (**Debug build only**).
+
+### 🐞 Debug & Logs
+- **Enable Master Logging**: Standardized, low-overhead logging system with per-module toggles (**Debug build only**).
 
 ## 📦 Editions
 
 | Feature | `lite` | `full` |
 |---|:---:|:---:|
 | Material 3 & Edge-to-Edge | ✅ | ✅ |
-| Clear All & Traffic Indicator | ✅ | ✅ |
-| Security & Easy Unlock | ✅ | ✅ |
-| Double Tap to Sleep | ✅ | ✅ |
-| Call Recording Unlock | - | ✅ |
-| Voice Announcement Mute | - | ✅ |
-| Call Notes Muter | - | ✅ |
+| Clear All button & Network Traffic Indicator | ✅ | ✅ |
+| Security Settings & Easy Unlock | ✅ | ✅ |
+| Double Tap To Sleep | ✅ | ✅ |
+| Enable Call Recording | - | ✅ |
+| Disable Voice Announcement | - | ✅ |
+| Disable Call Notes Announcement | - | ✅ |
 | Dependency Size | Minimum | Standard (DexKit) |
 
 ## 🛠️ Requirements & Installation
