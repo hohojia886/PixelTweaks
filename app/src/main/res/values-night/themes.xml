@@ -9,8 +9,8 @@
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
 
-        <!-- Dark Mode: Background uses Surface, cards use SurfaceContainerHigh -->
+        <!-- Dark Mode: Background uses Surface, cards use SurfaceContainerHighest -->
         <item name="android:windowBackground">?attr/colorSurface</item>
-        <item name="settingsCardBackground">?attr/colorSurfaceContainerHigh</item>
+        <item name="settingsCardBackground">?attr/colorSurfaceContainerHighest</item>
     </style>
 </resources>

@@ -68,10 +68,6 @@ class SettingsActivity : AppCompatActivity() {
         
         val cardEasyUnlockReboot = findViewById<View>(R.id.card_easy_unlock_reboot)
         val switchEasyUnlockReboot = findViewById<MaterialSwitch>(R.id.switch_easy_unlock_reboot)
-        switchEasyUnlockReboot.text = buildWarningSpannable(
-            getString(R.string.bypass_reboot_restriction),
-            getString(R.string.less_secure_warning)
-        )
 
         setupM3Switch(cePrefs, dePrefs, R.id.switch_easy_unlock, PreferenceKeys.ENABLE_EASY_UNLOCK, true) { isChecked ->
             cardEasyUnlockReboot.visibility = if (isChecked) View.VISIBLE else View.GONE
@@ -112,10 +108,6 @@ class SettingsActivity : AppCompatActivity() {
 
         if (BuildConfig.ENABLE_CALL_RECORDING) {
             layoutCallRecordingSection.visibility = View.VISIBLE
-            switchCallRecording.text = buildWarningSpannable(
-                getString(R.string.enable_call_recording),
-                getString(R.string.call_rec_warning)
-            )
             setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_announcement, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true)
             setupM3Switch(cePrefs, dePrefs, R.id.switch_call_recording, PreferenceKeys.ENABLE_CALL_RECORDING, true) { isChecked ->
                 cardDisableAnnouncement.visibility = if (isChecked) View.VISIBLE else View.GONE
@@ -280,6 +272,8 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupSecurityBypasses(dePrefs: SharedPreferences, cePrefs: SharedPreferences) {
         val switchDG = findViewById<MaterialSwitch>(R.id.switch_allow_downgrade)
         val switchSig = findViewById<MaterialSwitch>(R.id.switch_bypass_signature)
+        val titleDG = findViewById<TextView>(R.id.title_allow_downgrade)
+        val titleSig = findViewById<TextView>(R.id.title_bypass_signature)
 
         fun updateUI() {
             val now = System.currentTimeMillis()
@@ -291,15 +285,15 @@ class SettingsActivity : AppCompatActivity() {
                     saveDoublePref(PreferenceKeys.ALLOW_DOWNGRADE, false, cePrefs, dePrefs)
                     IpcManager.sendUpdateBroadcast(this, PreferenceKeys.ALLOW_DOWNGRADE, false)
                     switchDG.isChecked = false
-                    switchDG.text = getString(R.string.allow_downgrade)
+                    titleDG.text = getString(R.string.allow_downgrade)
                 } else {
-                    switchDG.text = buildWarningSpannable(
+                    titleDG.text = buildWarningSpannable(
                         getString(R.string.allow_downgrade),
                         " (${remaining / 1000}s)"
                     )
                 }
             } else {
-                switchDG.text = getString(R.string.allow_downgrade)
+                titleDG.text = getString(R.string.allow_downgrade)
             }
 
             val sigTime = dePrefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
@@ -310,20 +304,21 @@ class SettingsActivity : AppCompatActivity() {
                     saveDoublePref(PreferenceKeys.BYPASS_SIGNATURE, false, cePrefs, dePrefs)
                     IpcManager.sendUpdateBroadcast(this, PreferenceKeys.BYPASS_SIGNATURE, false)
                     switchSig.isChecked = false
-                    switchSig.text = getString(R.string.bypass_signature)
+                    titleSig.text = getString(R.string.bypass_signature)
                 } else {
-                    switchSig.text = buildWarningSpannable(
+                    titleSig.text = buildWarningSpannable(
                         getString(R.string.bypass_signature),
                         " (${remaining / 1000}s)"
                     )
                 }
             } else {
-                switchSig.text = getString(R.string.bypass_signature)
+                titleSig.text = getString(R.string.bypass_signature)
             }
         }
 
         switchDG.isChecked = dePrefs.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
         switchSig.isChecked = dePrefs.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
+        updateUI()
 
         switchDG.setOnCheckedChangeListener { _, isChecked ->
             saveDoublePref(PreferenceKeys.ALLOW_DOWNGRADE, isChecked, cePrefs, dePrefs)

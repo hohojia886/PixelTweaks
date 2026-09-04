@@ -57,7 +57,7 @@
                 <!-- Top -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -67,23 +67,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Top">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_dt_launcher"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/dt_launcher"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_dt_launcher"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/dt_launcher"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_dt_launcher"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_dt_launcher"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Middle -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -93,23 +126,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_dt_lockscreen"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/dt_lockscreen"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_dt_lockscreen"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/dt_lockscreen"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_dt_lockscreen"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_dt_lockscreen"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Bottom -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp"
@@ -118,17 +184,50 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Bottom">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_dt_statusbar"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/dt_statusbar"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_dt_statusbar"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/dt_statusbar"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_dt_statusbar"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_dt_statusbar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
@@ -157,7 +256,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_call_recording"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -167,24 +266,57 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Top">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_call_recording"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/enable_call_recording"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_call_recording"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/enable_call_recording"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_call_recording"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_call_recording"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Middle -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_disable_announcement"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -195,24 +327,57 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_disable_announcement"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/disable_voice_announcement"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_disable_announcement"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/disable_voice_announcement"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_disable_announcement"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_disable_announcement"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Bottom -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_disable_call_notes"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp"
@@ -221,17 +386,50 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Bottom">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_disable_call_notes"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/disable_call_notes"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_disable_call_notes"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/disable_call_notes"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_disable_call_notes"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_disable_call_notes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
@@ -256,7 +454,7 @@
                 <!-- Top -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -266,23 +464,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Top">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_qs_data_fix"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/qs_data_fix"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_qs_data_fix"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/qs_data_fix"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_qs_data_fix"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_qs_data_fix"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Bottom -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp"
@@ -291,17 +522,50 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Bottom">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_qs_wifi_fix"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/qs_wifi_fix"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_qs_wifi_fix"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/qs_wifi_fix"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_qs_wifi_fix"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_qs_wifi_fix"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
@@ -326,7 +590,7 @@
                 <!-- Top -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -336,23 +600,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Top">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_allow_downgrade"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/allow_downgrade"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_allow_downgrade"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/allow_downgrade"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_allow_downgrade"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_allow_downgrade"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Middle 1 -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -362,24 +659,57 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_bypass_signature"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/bypass_signature"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_bypass_signature"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/bypass_signature"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_bypass_signature"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_bypass_signature"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Middle 2 -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_easy_unlock"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -389,24 +719,57 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_easy_unlock"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/enable_easy_unlock"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_easy_unlock"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/enable_easy_unlock"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_easy_unlock"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_easy_unlock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Middle 3 -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_easy_unlock_reboot"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -417,23 +780,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_easy_unlock_reboot"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/bypass_reboot_restriction"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_easy_unlock_reboot"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/bypass_reboot_restriction"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_easy_unlock_reboot"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_easy_unlock_reboot"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Bottom -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp"
@@ -442,17 +838,50 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Bottom">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_unrestricted_screenshots"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/unrestricted_screenshots"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_unrestricted_screenshots"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/unrestricted_screenshots"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_unrestricted_screenshots"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_unrestricted_screenshots"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
@@ -477,7 +906,7 @@
                 <!-- Top -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -487,24 +916,57 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Top">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_clear_all"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/clear_all_button"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_clear_all"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/clear_all_button"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_clear_all"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_clear_all"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Middle -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_network_traffic"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -514,17 +976,50 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_network_traffic"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/network_traffic"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_network_traffic"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/network_traffic"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_network_traffic"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_network_traffic"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Middle -->
@@ -563,6 +1058,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:layout_marginStart="-12dp"
+                            android:layout_marginEnd="-12dp"
                             android:padding="0dp"
                             android:stepSize="1.0"
                             android:valueFrom="0.0"
@@ -606,6 +1103,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:layout_marginStart="-12dp"
+                            android:layout_marginEnd="-12dp"
                             android:padding="0dp"
                             android:stepSize="1.0"
                             android:valueFrom="0.0"
@@ -648,6 +1147,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:layout_marginStart="-12dp"
+                            android:layout_marginEnd="-12dp"
                             android:padding="0dp"
                             android:stepSize="1.0"
                             android:valueFrom="0.0"
@@ -680,7 +1181,7 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_master_log"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
@@ -690,24 +1191,57 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Top">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_master_log"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/enable_master_log"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_master_log"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/enable_master_log"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_enable_master_log"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_master_log"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Sub Logs (Middle) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_call_notes"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -718,23 +1252,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_call_notes"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_call_notes"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_call_notes"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_call_notes"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_call_notes"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_call_notes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_call_recording"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -745,23 +1312,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_call_recording"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_call_rec"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_call_recording"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_call_rec"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_call_recording"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_call_recording"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_clear_all"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -772,23 +1372,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_clear_all"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_clear_all"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_clear_all"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_clear_all"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_clear_all"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_clear_all"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_dt2s"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -799,23 +1432,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_dt2s"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_dt2s"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_dt2s"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_dt2s"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_dt2s"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_dt2s"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_easy_unlock"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -826,23 +1492,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_easy_unlock"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_easy_unlock"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_easy_unlock"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_easy_unlock"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_easy_unlock"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_easy_unlock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_quick_settings"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -853,23 +1552,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_quick_settings"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_qs"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_quick_settings"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_qs"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_quick_settings"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_quick_settings"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_unrestricted_screenshots"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -880,23 +1612,56 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_unrestricted_screenshots"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_screenshot"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_unrestricted_screenshots"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_screenshot"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_unrestricted_screenshots"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_unrestricted_screenshots"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_security_bypasses"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
                     android:visibility="gone"
                     app:contentPadding="0dp"
@@ -907,24 +1672,57 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Middle">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_security_bypasses"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_security"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_security_bypasses"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_security"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_security_bypasses"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_security_bypasses"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Bottom -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/card_log_network_traffic"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="wrap_content"
                     app:contentPadding="0dp"
                     app:cardElevation="0dp"
                     app:strokeWidth="0dp"
@@ -933,17 +1731,50 @@
                     app:cardBackgroundColor="?attr/settingsCardBackground"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Settings.Card.Bottom">
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switch_log_network_traffic"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="@null"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:text="@string/log_traffic"
-                        app:thumbIcon="@drawable/ic_switch_check" />
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="16dp"
+                            android:importantForAccessibility="no">
+
+                            <TextView
+                                android:id="@+id/title_log_network_traffic"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/log_traffic"
+                                android:textAppearance="?attr/textAppearanceBodyLarge"
+                                android:textStyle="bold"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/desc_log_network_traffic"
+                                android:textAppearance="?attr/textAppearanceBodyMedium"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:maxLines="1"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
+                            android:id="@+id/switch_log_network_traffic"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            app:thumbIcon="@drawable/ic_switch_check" />
+                    </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 

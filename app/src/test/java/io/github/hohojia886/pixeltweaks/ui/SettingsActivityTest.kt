@@ -1,6 +1,9 @@
 package io.github.hohojia886.pixeltweaks.ui
 
 import android.content.Context
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -77,12 +80,14 @@ class SettingsActivityTest {
     fun testWarningSpannableTexts() {
         ActivityScenario.launch(SettingsActivity::class.java).use { scenario ->
             scenario.onActivity { activity ->
-                val switchEasyUnlockReboot = activity.findViewById<MaterialSwitch>(R.id.switch_easy_unlock_reboot)
-                val text = switchEasyUnlockReboot.text
-                assertTrue(text is android.text.Spanned)
-                val spans = text.getSpans(0, text.length, android.text.style.ForegroundColorSpan::class.java)
+                val allowDowngradeSwitch = activity.findViewById<MaterialSwitch>(R.id.switch_allow_downgrade)
+                allowDowngradeSwitch.isChecked = true
+                val titleAllowDowngrade = activity.findViewById<TextView>(R.id.title_allow_downgrade)
+                val text = titleAllowDowngrade.text
+                assertTrue(text is Spanned)
+                val spans = text.getSpans(0, text.length, ForegroundColorSpan::class.java)
                 assertTrue(spans.isNotEmpty())
-                assertTrue(text.toString().contains("(Less Secure)"))
+                assertTrue(text.toString().contains("s)"))
             }
         }
     }

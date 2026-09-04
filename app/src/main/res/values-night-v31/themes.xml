@@ -10,6 +10,6 @@
         <item name="android:windowLightNavigationBar">false</item>
 
         <item name="android:windowBackground">?attr/colorSurface</item>
-        <item name="settingsCardBackground">?attr/colorSurfaceContainerHigh</item>
+        <item name="settingsCardBackground">?attr/colorSurfaceContainerHighest</item>
     </style>
 </resources>
