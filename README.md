@@ -11,18 +11,19 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <table style="border: none; width: 100%;">
     <tr>
       <td align="center" style="border: none; width: 50%;">
-        <a href="art/screenshot.png" target="_blank">
-          <img src="art/screenshot.png" alt="Top Half" style="width: 100%; max-height: 380px; object-fit: cover; object-position: top;" />
+        <a href="art/screenshot1.png" target="_blank">
+          <img src="art/screenshot1.png" alt="Screenshot Part 1" style="width: 100%; max-height: 450px; object-fit: contain;" />
         </a>
       </td>
       <td align="center" style="border: none; width: 50%;">
-        <a href="art/screenshot.png" target="_blank">
-          <img src="art/screenshot.png" alt="Bottom Half" style="width: 100%; max-height: 380px; object-fit: cover; object-position: bottom;" />
+        <a href="art/screenshot2.png" target="_blank">
+          <img src="art/screenshot2.png" alt="Screenshot Part 2" style="width: 100%; max-height: 450px; object-fit: contain;" />
         </a>
       </td>
     </tr>
   </table>
 </p>
+*(Click any image to view full size)*
 *(Click any image to view full size)*
 
 ## ✨ Features (v1.0.0)
