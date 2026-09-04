@@ -65,6 +65,9 @@
     <!-- 9. Traffic -->
     <string name="network_traffic">Network Traffic Indicator</string>
     <string name="desc_network_traffic">Change settings below</string>
+    <string name="traffic_interval_title">Traffic Interval</string>
+    <string name="traffic_font_title">Traffic Font Size</string>
+    <string name="traffic_threshold_title">Traffic Threshold</string>
     <string name="traffic_interval">Interval: %1$s</string>
     <string name="traffic_font_size">Font Size: %1$s</string>
     <string name="traffic_threshold">Threshold: %1$s</string>

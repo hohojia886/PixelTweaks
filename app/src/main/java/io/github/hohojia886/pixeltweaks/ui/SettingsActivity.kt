@@ -182,9 +182,9 @@ class SettingsActivity : AppCompatActivity() {
         val textInterval = findViewById<TextView>(R.id.text_traffic_interval)
         val currentInterval = dePrefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
         sliderInterval.value = intervalValues.indexOf(currentInterval).coerceAtLeast(0).toFloat()
-        textInterval.text = getString(R.string.traffic_interval, getString(R.string.traffic_interval_format, currentInterval))
+        textInterval.text = getString(R.string.traffic_interval_format, currentInterval)
         sliderInterval.setLabelFormatter { value -> getString(R.string.traffic_interval_format, intervalValues[value.toInt()]) }
-        sliderInterval.addOnChangeListener { _, value, _ -> textInterval.text = getString(R.string.traffic_interval, getString(R.string.traffic_interval_format, intervalValues[value.toInt()])) }
+        sliderInterval.addOnChangeListener { _, value, _ -> textInterval.text = getString(R.string.traffic_interval_format, intervalValues[value.toInt()]) }
         sliderInterval.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
             override fun onStartTrackingTouch(slider: Slider) {}
             override fun onStopTrackingTouch(slider: Slider) {
@@ -199,9 +199,9 @@ class SettingsActivity : AppCompatActivity() {
         val textFont = findViewById<TextView>(R.id.text_traffic_font)
         val currentFont = dePrefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
         sliderFont.value = fontValues.indexOf(currentFont).coerceAtLeast(0).toFloat()
-        textFont.text = getString(R.string.traffic_font_size, getString(R.string.traffic_font_format, currentFont.toInt()))
+        textFont.text = getString(R.string.traffic_font_format, currentFont.toInt())
         sliderFont.setLabelFormatter { value -> getString(R.string.traffic_font_format, fontValues[value.toInt()].toInt()) }
-        sliderFont.addOnChangeListener { _, value, _ -> textFont.text = getString(R.string.traffic_font_size, getString(R.string.traffic_font_format, fontValues[value.toInt()].toInt())) }
+        sliderFont.addOnChangeListener { _, value, _ -> textFont.text = getString(R.string.traffic_font_format, fontValues[value.toInt()].toInt()) }
         sliderFont.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
             override fun onStartTrackingTouch(slider: Slider) {}
             override fun onStopTrackingTouch(slider: Slider) {
@@ -216,9 +216,9 @@ class SettingsActivity : AppCompatActivity() {
         val textThreshold = findViewById<TextView>(R.id.text_traffic_threshold)
         val currentThreshold = dePrefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
         sliderThreshold.value = thresholdValues.indexOf(currentThreshold).coerceAtLeast(0).toFloat()
-        textThreshold.text = getString(R.string.traffic_threshold, formatThreshold(currentThreshold))
+        textThreshold.text = formatThreshold(currentThreshold)
         sliderThreshold.setLabelFormatter { value -> formatThreshold(thresholdValues[value.toInt()]) }
-        sliderThreshold.addOnChangeListener { _, value, _ -> textThreshold.text = getString(R.string.traffic_threshold, formatThreshold(thresholdValues[value.toInt()])) }
+        sliderThreshold.addOnChangeListener { _, value, _ -> textThreshold.text = formatThreshold(thresholdValues[value.toInt()]) }
         sliderThreshold.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
             override fun onStartTrackingTouch(slider: Slider) {}
             override fun onStopTrackingTouch(slider: Slider) {
