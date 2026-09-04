@@ -8,7 +8,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ## 📸 Preview
 
 <a href="art/screenshot.png" target="_blank">
-  <img src="art/screenshot.png" alt="PixelTweaks Settings Preview" width="300"/>
+  <img src="art/screenshot.png" alt="PixelTweaks Settings Preview" width="220" style="max-height: 400px; object-fit: contain;" />
 </a>
 *(Click thumbnail to view full size)*
 
