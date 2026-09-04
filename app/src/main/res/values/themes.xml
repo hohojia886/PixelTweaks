@@ -15,9 +15,9 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
 
-        <!-- Light Mode: Background uses SurfaceContainer, cards use Surface -->
-        <item name="android:windowBackground">?attr/colorSurfaceContainer</item>
-        <item name="settingsCardBackground">?attr/colorSurface</item>
+        <!-- Light Mode: Aligned with Dark Theme (Background uses Surface, cards use SurfaceContainerHighest) -->
+        <item name="android:windowBackground">?attr/colorSurface</item>
+        <item name="settingsCardBackground">?attr/colorSurfaceContainerHighest</item>
     </style>
 
     <!-- Card Corner Radius Controls -->

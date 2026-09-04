@@ -9,7 +9,7 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
 
-        <item name="android:windowBackground">?attr/colorSurfaceContainer</item>
-        <item name="settingsCardBackground">?attr/colorSurface</item>
+        <item name="android:windowBackground">?attr/colorSurface</item>
+        <item name="settingsCardBackground">?attr/colorSurfaceContainerHighest</item>
     </style>
 </resources>
