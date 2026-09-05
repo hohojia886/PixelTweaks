@@ -1,5 +1,6 @@
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -8,6 +9,16 @@ plugins {
 val appVersionName = "1.0.0"
 val appVersionCode = 1
 
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use { load(it) }
+    }
+}
+
+val releaseKeystoreFile = rootProject.file("app/keystore/release.jks")
+val hasReleaseKeystore = releaseKeystoreFile.exists()
+
 configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "io.github.hohojia886.pixeltweaks"
     compileSdk = 37
@@ -15,7 +26,7 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
     defaultConfig {
         applicationId = "io.github.hohojia886.pixeltweaks"
         minSdk = 34
-        targetSdk = 34
+        targetSdk = 35
         versionCode = appVersionCode
         versionName = appVersionName
 
@@ -33,11 +44,13 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
     }
 
     signingConfigs {
-        create("alt") {
-            storeFile = file("../tmp/debug_alt.jks")
-            storePassword = "password"
-            keyAlias = "debug_alt"
-            keyPassword = "password"
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = releaseKeystoreFile
+                storePassword = localProperties.getProperty("keystore.storePassword") ?: System.getenv("KEYSTORE_STORE_PASSWORD") ?: ""
+                keyAlias = localProperties.getProperty("keystore.keyAlias") ?: System.getenv("KEYSTORE_KEY_ALIAS") ?: ""
+                keyPassword = localProperties.getProperty("keystore.keyPassword") ?: System.getenv("KEYSTORE_KEY_PASSWORD") ?: ""
+            }
         }
     }
 
@@ -57,16 +70,13 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
         getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = if (hasReleaseKeystore) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         getByName("debug") {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-        create("debugAlt") {
-            initWith(getByName("debug"))
-            signingConfig = signingConfigs.getByName("alt")
         }
     }
 
@@ -110,22 +120,23 @@ dependencies {
     // DexKit only for full version
     "fullImplementation"("org.luckypray:dexkit:2.2.0")
 
-    // Unit tests (plain JVM - no emulator/Robolectric required)
+    // Unit tests
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:5.14.2")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.robolectric:robolectric:4.14.1")
-    testImplementation("androidx.test:core:1.6.1")
-    testImplementation("androidx.test.ext:junit:1.2.1")
+    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:6.3.0")
+    testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation("androidx.test:core:1.7.0")
+    testImplementation("androidx.test.ext:junit:1.3.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
     // Instrumentation tests (Emulator required)
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }
 
-// --- 自動備份任務 ---
+// --- Automated backup task ---
 tasks.register<Zip>("backupProject") {
+    description = "Creates a zip backup of project source code"
+    group = "backup"
     val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     archiveFileName.set("PixelTweaks2_$timestamp.zip")
     destinationDirectory.set(file("C:/Users/Administrator/Documents/GitHub/Backups"))
@@ -142,7 +153,7 @@ tasks.register<Zip>("backupProject") {
     }
 }
 
-// 讓所有以 Debug 結尾的 assemble 任務在完成後自動執行備份
+// Automatically trigger backup after any Debug assemble task completes
 tasks.matching { it.name.startsWith("assemble") && it.name.contains("Debug") }.configureEach {
     finalizedBy("backupProject")
 }

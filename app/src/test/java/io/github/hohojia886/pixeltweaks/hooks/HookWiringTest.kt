@@ -2,8 +2,6 @@ package io.github.hohojia886.pixeltweaks.hooks
 
 import io.github.hohojia886.pixeltweaks.hooks.interaction.EasyUnlockHook
 import io.github.hohojia886.pixeltweaks.hooks.system.PackageManagerHook
-import io.github.hohojia886.pixeltweaks.hooks.interaction.DoubleTapToSleepHook
-import io.github.hohojia886.pixeltweaks.hooks.system.QuickSettingsHook
 import io.github.libxposed.api.XposedModule
 import org.junit.Test
 import org.mockito.Mockito.mock
@@ -13,7 +11,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
-import android.os.IBinder
 
 class HookWiringTest {
 
