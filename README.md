@@ -1,7 +1,7 @@
 # PixelTweaks
 
 **Version:** 1.0.0 (Master Release)
-**Target:** Android 16 / 17 (Pixel), `libxposed` API 102 (LSPosed)
+**Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 A professional, high-performance Xposed module tailored specifically for Google Pixel devices. This version consolidates all previous development optimizations into a stable v1.0.0 baseline.
 
@@ -66,7 +66,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ## 🛠️ Requirements & Installation
 
 - **Root + LSPosed** (or any manager supporting `libxposed` API 102).
-- **Android 16 (API 36)** or newer.
+- **Android 17 (API 37).
 - **Static Scope Enforcement**: System Framework, Phone, Pixel Launcher, System UI.
 
 ### Install
