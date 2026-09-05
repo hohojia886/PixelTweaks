@@ -31,8 +31,8 @@ object CallNotesHook {
     private val mutedInstances = Collections.newSetFromMap(WeakHashMap<Any, Boolean>())
 
     // Identifies if the current playback call originates from AI components
-    private fun isFermatCaller(instance: Any, context: String): Boolean {
-        if (mutedInstances.contains(instance)) return true
+    private fun isFermatCaller(context: String, instance: Any? = null): Boolean {
+        if (instance != null && mutedInstances.contains(instance)) return true
 
         val stack = Thread.currentThread().stackTrace
         val isFermat = stack.any {
@@ -50,7 +50,7 @@ object CallNotesHook {
         }
 
         if (isFermat) {
-            mutedInstances.add(instance)
+            if (instance != null) mutedInstances.add(instance)
             Logger.e(TAG, "Active", "Identified AI Announcer via [$context] in $currentPkg")
         }
         
@@ -112,7 +112,7 @@ object CallNotesHook {
             runCatching {
                 module.hookBefore(m) { chain ->
                     val instance = chain.thisObject ?: return@hookBefore
-                    if (isSilenceEnabled && isFermatCaller(instance, "MediaPlayer.${m.name}")) {
+                    if (isSilenceEnabled && isFermatCaller("MediaPlayer.${m.name}", instance)) {
                         (instance as? MediaPlayer)?.runCatching { setVolume(0f, 0f) }
                     }
                 }
@@ -126,19 +126,19 @@ object CallNotesHook {
             AudioTrack::class.java.declaredConstructors.forEach { ctor ->
                 module.hookAfter(ctor) { chain, _ ->
                     val instance = chain.thisObject ?: return@hookAfter
-                    if (isSilenceEnabled && isFermatCaller(instance, "AudioTrackCtor")) {
+                    if (isSilenceEnabled && isFermatCaller("AudioTrackCtor", instance)) {
                         (instance as? AudioTrack)?.runCatching { setVolume(0f) }
                     }
                 }
             }
         }
         
-        // Zeroes out actual PCM buffers for instances in the muted list
+        // Zeroes out actual PCM buffers for AI recording audio tracks
         AudioTrack::class.java.declaredMethods.filter { it.name == "write" }.forEach { m ->
             runCatching {
                 module.hookBefore(m) { chain ->
                     val instance = chain.thisObject ?: return@hookBefore
-                    if (isSilenceEnabled && mutedInstances.contains(instance)) {
+                    if (isSilenceEnabled && isFermatCaller("AudioTrack.write", instance)) {
                         when (val buf = chain.args[0]) {
                             is ByteArray -> Arrays.fill(buf, 0.toByte())
                             is ShortArray -> Arrays.fill(buf, 0.toShort())
@@ -160,14 +160,14 @@ object CallNotesHook {
             val m = ToneGenerator::class.java.getDeclaredMethod("startTone", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
             module.hookBefore(m) { chain ->
                 val instance = chain.thisObject ?: return@hookBefore
-                if (isSilenceEnabled && isFermatCaller(instance, "ToneGenerator")) { /* Blocked */ } 
+                if (isSilenceEnabled && isFermatCaller("ToneGenerator", instance)) { /* Blocked */ } 
             }
         }
         runCatching {
             val m = Ringtone::class.java.getDeclaredMethod("play")
             module.hookBefore(m) { chain ->
                 val instance = chain.thisObject ?: return@hookBefore
-                if (isSilenceEnabled && isFermatCaller(instance, "Ringtone")) { /* Blocked */ } 
+                if (isSilenceEnabled && isFermatCaller("Ringtone", instance)) { /* Blocked */ } 
             }
         }
     }

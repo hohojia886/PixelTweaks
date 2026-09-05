@@ -29,11 +29,11 @@ private val DIALER_PKGS = setOf("com.google.android.dialer", "com.android.dialer
  * and dispatching specific hook modules to their target packages.
  */
 
-// 1. CallNotes: AI silence logic in Dialer and system_server
+// 1. CallNotes: AI silence logic in Dialer, SystemUI, and system_server
 private object CallNotesEntry : PixelHook {
     override val name = "CallNotes"
     override fun matches(packageName: String, isRootSystemServer: Boolean) =
-        isRootSystemServer || packageName in DIALER_PKGS
+        isRootSystemServer || packageName == SYSTEMUI_PKG || packageName in DIALER_PKGS
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         CallNotesHook.hook(module, classLoader, param.packageName)
     }
