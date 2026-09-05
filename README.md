@@ -7,8 +7,6 @@ A professional, high-performance Xposed module tailored specifically for Google 
 
 ## 📸 Preview
 
-## 📸 Preview
-
 <p align="center">
   <a href="art/screenshot1.png" target="_blank"><img src="art/screenshot1.png" alt="Screenshot Part 1" width="200" /></a>
   &nbsp;&nbsp;
