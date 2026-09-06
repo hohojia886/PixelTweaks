@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Process
 import java.lang.ref.WeakReference
 
@@ -87,9 +88,16 @@ object IpcManager {
             putExtra(PreferenceKeys.LOG_DT2S, prefs.getBoolean(PreferenceKeys.LOG_DT2S, true))
 
             // 5. EasyUnlock
+            val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
+                if (inMemoryLen > 0) inMemoryLen else runCatching {
+                    val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+                    val bundle = context.contentResolver.call(uri, "get", null, null)
+                    bundle?.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1) ?: -1
+                }.getOrDefault(-1)
+            }
             putExtra(PreferenceKeys.ENABLE_EASY_UNLOCK, prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true))
             putExtra(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false))
-            putExtra(PreferenceKeys.EXPECTED_PASS_LEN, prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1))
+            putExtra(PreferenceKeys.EXPECTED_PASS_LEN, expectedPassLen)
             putExtra(PreferenceKeys.IS_FIRST_UNLOCK_DONE, prefs.getBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false))
             putExtra(PreferenceKeys.LOG_EASY_UNLOCK, prefs.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true))
 

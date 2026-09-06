@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.os.Bundle
+import android.os.Process
+import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.telephony.TelephonyManager
@@ -15,46 +17,49 @@ import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModule
 import java.io.File
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.Locale
 import org.luckypray.dexkit.DexKitBridge
 
 /**
- * CallRecordingHook: Enables native call recording in Google Dialer.
- * Bypasses geographical restrictions via Telephony ISO spoofing and 
- * dynamic DexKit method hijacking, while silencing the TTS announcements.
+ * CallRecordingHook: Unlocks native call recording in Google Dialer and silences announcements.
+ * Bypasses regional geo-fencing via Telephony ISO spoofing and dynamic DexKit method hijacking.
+ * Mutes voice announcements using language-agnostic resource ID and time-window TTS interception.
  */
 @SuppressLint("DiscouragedApi", "SoonBlockedPrivateApi")
 object CallRecordingHook {
 
     private const val TAG = "CallRec"
-    private const val CACHE_FILE = "call_rec_v1.cache" // Scan results cache
+    private const val CACHE_FILE = "call_rec_v1.cache" // Persistent cache for DexKit method locations
     private const val VERSION = "1.0.0"
 
-    // Keywords used to locate internal Dialer methods via DexKit string analysis
+    // String keywords used by DexKit to locate internal boolean flag methods
     private val DEX_KEYWORDS = listOf(
         "canRecordCall", "Crosby", "GeoFence", "isCallRecordingCountry"
     )
 
-    @Volatile private var isRecordingEnabled = true // Master toggle for recording
-    @Volatile private var isSilenceEnabled = true // Toggle for TTS silencing
-    private var sessionRetryCount = 0 // Track DexKit scan attempts
+    @Volatile private var isRecordingEnabled = true // Master toggle for call recording enablement
+    @Volatile private var isSilenceEnabled = true // Master toggle for announcement silencing
+    private var sessionRetryCount = 0 // Tracks background DexKit retry attempts
     
-    @Volatile private var lastListener: WeakReference<UtteranceProgressListener>? = null
-    @Volatile private var startId = -1 // Resource ID for start recording prompt
-    @Volatile private var endId = -1 // Resource ID for stop recording prompt
+    @Volatile private var lastListener: WeakReference<UtteranceProgressListener>? = null // Captures Dialer's progress listener
+    @Volatile private var lastResourceReadTime = 0L // Timestamp of recent call_recording_voice string resource read
+    @Volatile private var startId = -1 // Cached resource ID for call_recording_starting_voice
+    @Volatile private var endId = -1 // Cached resource ID for call_recording_ending_voice
 
-    // Generates a minimal silent WAV header to bypass TTS audio playback
+    // Generates a minimal 44-byte silent WAV header to bypass TTS audio playback
     private fun buildSilentWav(sampleRate: Int = 8000, channels: Int = 1, bitsPerSample: Int = 16): ByteArray {
         val byteRate = sampleRate * channels * (bitsPerSample / 8)
         val blockAlign = channels * (bitsPerSample / 8)
         val dataSize = 0 
-        val buffer = java.nio.ByteBuffer.allocate(44).order(java.nio.ByteOrder.LITTLE_ENDIAN)
+        val buffer = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN)
         buffer.put("RIFF".toByteArray(Charsets.US_ASCII))
         buffer.putInt(36 + dataSize)
         buffer.put("WAVE".toByteArray(Charsets.US_ASCII))
         buffer.put("fmt ".toByteArray(Charsets.US_ASCII))
         buffer.putInt(16)
-        buffer.putShort(1)
+        buffer.putShort(1) // PCM format
         buffer.putShort(channels.toShort())
         buffer.putInt(sampleRate)
         buffer.putInt(byteRate)
@@ -65,7 +70,20 @@ object CallRecordingHook {
         return buffer.array()
     }
 
-    // Fetches initial toggle states from the module's preference provider
+    // Inspects current thread stack trace to verify if caller originates from Call Recording
+    private fun isCallRecordingAnnouncementCaller(): Boolean {
+        val stack = Thread.currentThread().stackTrace
+        return stack.any {
+            val cls = it.className
+            cls.contains("CallRecording", true) ||
+            cls.contains("AudioInjector", true) ||
+            cls.contains("Crosby", true) ||
+            cls.contains("callrecording", true) ||
+            cls.contains("Fermat", true)
+        }
+    }
+
+    // Synchronizes feature toggles from RemotePrefProvider
     private fun syncState(module: XposedModule) {
         runCatching {
             val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
@@ -78,14 +96,14 @@ object CallRecordingHook {
         }
     }
 
-    // Entry point: Decides which basic framework hooks to apply
+    // Primary entry point for basic framework-level hooks (Telephony, Application, Resources, TTS)
     fun hook(module: XposedModule, classLoader: ClassLoader, packageName: String) {
         Logger.i(TAG, "Init", "Initializing CallRecording module v$VERSION")
         syncState(module)
         val moduleUid = module.getModuleApplicationInfo().uid
 
         // Early synchronization for system-level processes
-        if (android.os.Process.myUid() == 1000) {
+        if (Process.myUid() == 1000) {
             IpcManager.getSafeContext(classLoader, packageName)?.let { ctx ->
                 registerReceiver(ctx, moduleUid)
                 syncState(module)
@@ -93,7 +111,7 @@ object CallRecordingHook {
         }
 
         try {
-            // 1. Telephony ISO Hook: Spoof country to "us" to bypass Geo-fencing
+            // 1. Telephony ISO Hook: Spoof country to "us" to bypass regional recording restrictions
             val tm = TelephonyManager::class.java
             val isoInterceptor: (XposedInterface.Chain) -> Any? = { chain ->
                 if (isRecordingEnabled) "us" else chain.proceed()
@@ -108,7 +126,7 @@ object CallRecordingHook {
                 Logger.e(TAG, "Error", "Telephony ISO hooks failed", e)
             }
 
-            // 2. Application Lifecycle: Standard registration for app context
+            // 2. Application Lifecycle: Register secure IPC broadcast receiver
             val appClass = classLoader.loadClass("android.app.Application")
             module.hookBefore(appClass.getDeclaredMethod("onCreate")) { chain ->
                 val app = chain.thisObject as? Context
@@ -118,7 +136,7 @@ object CallRecordingHook {
                 }
             }
 
-            // 3. Resource Hook: Mutes voice announcements identified by string IDs
+            // 3. Resource Hook (getString): Language-agnostic muting of starting/ending announcement strings
             module.hook(Resources::class.java.getDeclaredMethod("getString", Int::class.java)).intercept { chain ->
                 if (!isRecordingEnabled || !isSilenceEnabled) return@intercept chain.proceed()
                 val res = chain.thisObject as Resources
@@ -128,12 +146,14 @@ object CallRecordingHook {
                 }
                 val resId = chain.args[0] as Int
                 if (resId != 0 && (resId == startId || resId == endId)) {
-                    Logger.i(TAG, "Active", "Muting voice announcement (getString): $resId")
+                    lastResourceReadTime = SystemClock.uptimeMillis()
+                    val name = if (resId == startId) "call_recording_starting_voice" else "call_recording_ending_voice"
+                    Logger.i(TAG, "Active", "[Resource Mute] Intercepted getString($name, ID: $resId)")
                     ""
                 } else chain.proceed()
             }
 
-            // 4. Resource Hook (getText): Alternative resource access point muting
+            // 4. Resource Hook (getText): Alternative CharSequence access point muting
             runCatching {
                 module.hook(Resources::class.java.getDeclaredMethod("getText", Int::class.java)).intercept { chain ->
                     if (!isRecordingEnabled || !isSilenceEnabled) return@intercept chain.proceed()
@@ -144,7 +164,9 @@ object CallRecordingHook {
                     }
                     val resId = chain.args[0] as Int
                     if (resId != 0 && (resId == startId || resId == endId)) {
-                        Logger.i(TAG, "Active", "Muting voice announcement (getText): $resId")
+                        lastResourceReadTime = SystemClock.uptimeMillis()
+                        val name = if (resId == startId) "call_recording_starting_voice" else "call_recording_ending_voice"
+                        Logger.i(TAG, "Active", "[Resource Mute] Intercepted getText($name, ID: $resId)")
                         ""
                     } else chain.proceed()
                 }
@@ -152,13 +174,13 @@ object CallRecordingHook {
                 Logger.e(TAG, "Error", "Resources.getText hook failed", e)
             }
 
-            hookTtsHooks(module) // Hook TTS engine to silence playback
+            hookTtsHooks(module) // Apply non-destructive TTS speech synthesis hooks
         } catch (e: Throwable) {
             Logger.e(TAG, "Error", "Framework hook application failed", e)
         }
     }
 
-    // Orchestrates DexKit scan or cache loading for Dialer internal methods
+    // Entry point for full edition: Orchestrates DexKit bytecode scanning or cache loading
     fun hookFull(module: XposedModule, classLoader: ClassLoader, packageName: String, targetSourceDir: String?) {
         hook(module, classLoader, packageName)
         if (targetSourceDir == null) {
@@ -171,13 +193,13 @@ object CallRecordingHook {
             IpcManager.getSystemContext(classLoader)?.packageManager?.getPackageInfo(packageName, 0)?.longVersionCode ?: 0L
         } catch (_: Exception) { 0L }
 
-        // Fast path: reuse previous scan results if version matches
+        // Fast path: reuse cached method signatures if version matches
         if (loadFromCache(module, classLoader, cacheFile, currentVersion)) {
             Logger.i(TAG, "Hook", "Call recording flags applied from cache")
             return
         }
 
-        // Slow path: scan APK bytecode for feature flags
+        // Slow path: scan APK bytecode in a background thread
         sessionRetryCount = 0
         Thread {
             while (sessionRetryCount < 3) {
@@ -195,7 +217,7 @@ object CallRecordingHook {
         }.start()
     }
 
-    // Uses DexKit to find and hook obfuscated recording methods
+    // Uses DexKit to find and hook obfuscated recording boolean flags and locale provider methods
     private fun performDexKitScan(module: XposedModule, classLoader: ClassLoader, targetSourceDir: String, cacheFile: File, version: Long) {
         val moduleLibDir = module.getModuleApplicationInfo().nativeLibraryDir
         val dexKitLib = File(moduleLibDir, "libdexkit.so")
@@ -222,7 +244,7 @@ object CallRecordingHook {
                 }
             }
 
-            // Find and spoof the Dialer's internal locale provider
+            // Find and spoof Dialer's internal locale provider
             val localeCands = bridge.findMethod { matcher { usingStrings("getSupportedLocaleFromCountryCode"); returnType = "java.util.Locale" } }
             localeCands.firstOrNull()?.let { data ->
                 runCatching {
@@ -243,7 +265,7 @@ object CallRecordingHook {
         }
     }
 
-    // Applies hooks from a persistent file to avoid re-scanning the APK
+    // Applies method hooks directly from the persistent cache file
     private fun loadFromCache(module: XposedModule, cl: ClassLoader, cacheFile: File, currentVersion: Long): Boolean {
         if (!cacheFile.exists()) return false
         return runCatching {
@@ -262,8 +284,14 @@ object CallRecordingHook {
 
                     module.hook(method).intercept { chain ->
                         when (type) {
-                            "LOCALE" -> if (isRecordingEnabled) Locale.US else chain.proceed()
-                            "FLAG" -> if (isRecordingEnabled) true else chain.proceed()
+                            "LOCALE" -> if (isRecordingEnabled) {
+                                Logger.i(TAG, "Active", "[DexKit] LocaleProvider intercepted -> returning Locale.US")
+                                Locale.US
+                            } else chain.proceed()
+                            "FLAG" -> if (isRecordingEnabled) {
+                                Logger.i(TAG, "Active", "[DexKit] Flag '${mParts.getOrNull(1) ?: mParts[0]}' intercepted -> returning true")
+                                true
+                            } else chain.proceed()
                             else -> chain.proceed()
                         }
                     }
@@ -275,38 +303,9 @@ object CallRecordingHook {
         }.getOrDefault(false)
     }
 
-    // Hijacks the TTS engine to force "SUCCESS" during initialization and playback
+    // Intercepts TTS speech synthesis using stack-trace and time-window signals
     private fun hookTtsHooks(module: XposedModule) {
-        runCatching {
-            val c1 = TextToSpeech::class.java.getDeclaredConstructor(Context::class.java, TextToSpeech.OnInitListener::class.java)
-            module.hookBefore(c1) { chain ->
-                val listener = chain.args[1] as? TextToSpeech.OnInitListener
-                if (isRecordingEnabled && isSilenceEnabled && listener != null) {
-                    Logger.i(TAG, "Active", "Hijacking TTS initialization -> SUCCESS")
-                    runCatching { listener.onInit(TextToSpeech.SUCCESS) }
-                }
-            }
-            val c2 = TextToSpeech::class.java.getDeclaredConstructor(Context::class.java, TextToSpeech.OnInitListener::class.java, String::class.java)
-            module.hookBefore(c2) { chain ->
-                val listener = chain.args[1] as? TextToSpeech.OnInitListener
-                if (isRecordingEnabled && isSilenceEnabled && listener != null) {
-                    Logger.i(TAG, "Active", "Hijacking TTS initialization -> SUCCESS")
-                    runCatching { listener.onInit(TextToSpeech.SUCCESS) }
-                }
-            }
-        }.onFailure { e ->
-            Logger.e(TAG, "Error", "TTS constructor hooks failed", e)
-        }
-
-        // Ensures language check always returns available for recording locale
-        runCatching {
-            val m = TextToSpeech::class.java.getDeclaredMethod("isLanguageAvailable", Locale::class.java)
-            module.hook(m).intercept { TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE }
-        }.onFailure { e ->
-            Logger.e(TAG, "Error", "isLanguageAvailable hook failed", e)
-        }
-
-        // Monitors for playback listener to properly bypass audio start/stop calls
+        // Captures Dialer's utterance listener so we can trigger completion callbacks when bypassing TTS synthesis
         runCatching {
             val m = TextToSpeech::class.java.getDeclaredMethod("setOnUtteranceProgressListener", UtteranceProgressListener::class.java)
             module.hookBefore(m) { chain ->
@@ -316,18 +315,23 @@ object CallRecordingHook {
             Logger.e(TAG, "Error", "setOnUtteranceProgressListener hook failed", e)
         }
 
-        // Core bypass: Replaces real speech synthesis with a silent file write and fake callbacks
         val speakInterceptor: (XposedInterface.Chain) -> Any? = { chain ->
-            if (isRecordingEnabled && isSilenceEnabled) {
-                val utteranceId = chain.args[3] as? String
-                val targetFile = if (chain.args.size >= 3 && chain.args[2] is File) chain.args[2] as File else null
-                
-                Logger.i(TAG, "Active", "Bypassing TTS playback: $utteranceId")
+            val utteranceId = chain.args.getOrNull(3) as? String
+            val targetFile = if (chain.args.size >= 3 && chain.args[2] is File) chain.args[2] as File else null
+            
+            val now = SystemClock.uptimeMillis()
+            val isRecentResourceRead = (now - lastResourceReadTime) < 500L
+            val isRecordingCaller = isCallRecordingAnnouncementCaller()
 
+            if (isRecordingEnabled && isSilenceEnabled && (isRecentResourceRead || isRecordingCaller)) {
                 if (targetFile != null) {
+                    Logger.i(TAG, "Active", "[TTS Silent WAV] Intercepted synthesizeToFile -> wrote 44-byte silent WAV to ${targetFile.name}")
                     runCatching { targetFile.outputStream().use { it.write(buildSilentWav()) } }
+                } else {
+                    Logger.i(TAG, "Active", "[TTS Speak Mute] Intercepted speak -> returning SUCCESS for utterance: $utteranceId")
                 }
 
+                // Notify Dialer that speech synthesis completed so recording starts immediately without timing out
                 lastListener?.get()?.let { listener ->
                     utteranceId?.let { id ->
                         runCatching {
@@ -336,6 +340,7 @@ object CallRecordingHook {
                         }
                     }
                 }
+
                 TextToSpeech.SUCCESS
             } else {
                 chain.proceed()
@@ -352,7 +357,7 @@ object CallRecordingHook {
         }
     }
 
-    // Listens for real-time setting changes and full synchronization broadcasts
+    // Registers a secure broadcast receiver for real-time setting updates
     private fun registerReceiver(context: Context, moduleUid: Int) {
         IpcManager.registerSecureReceiver(context, moduleUid) { intent ->
             val action = intent.action ?: return@registerSecureReceiver

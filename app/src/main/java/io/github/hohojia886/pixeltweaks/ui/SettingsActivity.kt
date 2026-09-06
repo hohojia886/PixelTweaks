@@ -103,25 +103,43 @@ class SettingsActivity : AppCompatActivity() {
     private fun setupDialerMods(dePrefs: SharedPreferences, cePrefs: SharedPreferences) {
         val layoutCallRecordingSection = findViewById<View>(R.id.layout_call_recording_section)
         val cardDisableAnnouncement = findViewById<View>(R.id.card_disable_announcement)
-        val switchDisableAnnouncement = findViewById<MaterialSwitch>(R.id.switch_disable_announcement)
         val switchCallRecording = findViewById<MaterialSwitch>(R.id.switch_call_recording)
+        val switchDisableCallNotes = findViewById<MaterialSwitch>(R.id.switch_disable_call_notes)
 
         if (BuildConfig.ENABLE_CALL_RECORDING) {
             layoutCallRecordingSection.visibility = View.VISIBLE
+            
+            // 1. Voice Announcement Mute Switch
             setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_announcement, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true)
+
+            // 2. Call Recording Switch (Rule 1 & Rule 2)
             setupM3Switch(cePrefs, dePrefs, R.id.switch_call_recording, PreferenceKeys.ENABLE_CALL_RECORDING, true) { isChecked ->
                 cardDisableAnnouncement.visibility = if (isChecked) View.VISIBLE else View.GONE
-                if (!isChecked) {
-                    if (switchDisableAnnouncement.isChecked) {
-                        switchDisableAnnouncement.isChecked = false
+                if (isChecked) {
+                    // Rule 2: When Call Recording is turned ON, automatically turn OFF Call Notes
+                    if (switchDisableCallNotes.isChecked) {
+                        switchDisableCallNotes.isChecked = false
                     } else {
-                        saveDoublePref(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, false, cePrefs, dePrefs)
-                        IpcManager.sendUpdateBroadcast(this, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, false)
+                        saveDoublePref(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false, cePrefs, dePrefs)
+                        IpcManager.sendUpdateBroadcast(this, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false)
                     }
                 }
             }
             cardDisableAnnouncement.visibility = if (dePrefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, true)) View.VISIBLE else View.GONE
-            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_call_notes, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, true)
+
+            // 3. Call Notes Switch (Rule 3)
+            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_call_notes, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, true) { isChecked ->
+                if (isChecked) {
+                    // Rule 3: When Call Notes is turned ON, automatically turn OFF Call Recording
+                    if (switchCallRecording.isChecked) {
+                        switchCallRecording.isChecked = false
+                    } else {
+                        saveDoublePref(PreferenceKeys.ENABLE_CALL_RECORDING, false, cePrefs, dePrefs)
+                        IpcManager.sendUpdateBroadcast(this, PreferenceKeys.ENABLE_CALL_RECORDING, false)
+                    }
+                    cardDisableAnnouncement.visibility = View.GONE
+                }
+            }
         } else {
             layoutCallRecordingSection.visibility = View.GONE
         }
