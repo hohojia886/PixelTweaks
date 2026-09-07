@@ -48,7 +48,3 @@ temp/
 *.ap_
 *.dex
 *.flat
-
-# Custom build scripts
-Build_APKs.bat
-Create_Test_Signature.bat

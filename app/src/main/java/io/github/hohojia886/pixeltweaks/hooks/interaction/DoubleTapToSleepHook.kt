@@ -208,7 +208,7 @@ object DoubleTapToSleepHook {
             val distance = sqrt((dx * dx + dy * dy).toDouble())
 
             val slop = ViewConfiguration.get(view.context).scaledTouchSlop
-            if (now - lastDownTime < 300 && distance < slop) {
+            if (now - lastDownTime < 400 && distance < slop * 1.5f) {
                 lastDownTime = 0
                 if (isLauncher) {
                     Logger.i(TAG, "Running", "Sending sleep request from Launcher")

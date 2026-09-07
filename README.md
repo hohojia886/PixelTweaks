@@ -1,11 +1,9 @@
 # PixelTweaks
 
-**Version:** 1.0.0 (Master Release)
-**Target:** Android 16 / 17 (Pixel), `libxposed` API 102 (LSPosed)
+**Version:** v1.0.1 (Stable Release)
+**Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
-A professional, high-performance Xposed module tailored specifically for Google Pixel devices. This version consolidates all previous development optimizations into a stable v1.0.0 baseline.
-
-## 📸 Preview
+A professional, high-performance Xposed module tailored specifically for Google Pixel devices.
 
 ## 📸 Preview
 
@@ -20,17 +18,17 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.0.0)
+## ✨ Features (v1.0.1)
 
 ### 🎨 Double Tap To Sleep
-- **Launcher Workspace**: Integrated support for double-tap gestures on the launcher workspace to sleep.
+- **Launcher Workspace**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
 - **Lockscreen Area**: Integrated support for double-tap gestures on the lockscreen area to sleep.
 - **Status Bar**: Integrated support for double-tap gestures on the status bar to sleep.
 
 ### 📞 Google Dialer
 - **Enable Call Recording**: Unlocks native recording in Google Dialer via background DexKit scanning.
-- **Disable Voice Announcement**: Blocks the voice warning at the start of call recording.
-- **Disable Call Notes Announcement**: Silences AI recording and transcription announcements.
+- **Disable Voice Announcement**: Blocks the voice warning at the start of call recording (language-agnostic resource ID & time-window TTS interception).
+- **Disable Call Notes Announcement**: Silences AI recording and transcription announcements (mutually exclusive with Call Recording).
 
 ### ⚙️ Quick Settings
 - **Mobile Data Direct Toggle**: Removes the confirmation dialog when switching to mobile data.
@@ -39,7 +37,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ### 🛡️ Security Settings
 - **Allow App Downgrade**: Install older APKs over newer ones without data loss (auto-resets after 3 minutes).
 - **Bypass Signature Verification**: Install modified APKs with different signatures (auto-resets after 3 minutes).
-- **Easy Unlock**: Automatically dismisses the keyguard when the entered PIN/Password length matches the learned pattern.
+- **Easy Unlock**: Automatically dismisses the keyguard when the entered PIN/Password length matches the learned pattern (with DE storage fallback & cross-process sync protection).
 - **Bypass Restriction**: Optional setting to allow auto-unlock immediately after system boot.
 - **Unrestricted Screenshots**: Force-enable screenshots and recordings in restricted apps (Banking, Incognito).
 
@@ -48,11 +46,18 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Network Traffic Indicator**: Real-time speed monitor in status bar with intensity-aware color syncing.
 
 ### 🐞 Debug & Logs
-- **Enable Master Logging**: Standardized, low-overhead logging system with per-module toggles (**Debug build only**).
+- **Enable Master Logging**: Standardized, low-overhead logging system with complete coverage across all 10 functional modules and sliders (**Debug build only**).
+
+## 📝 Changelog (v1.0.1)
+
+- 🔀 **Feature Mutual Exclusion**: Call Recording and Call Notes cannot be enabled at the same time in Settings to prevent audio conflict.
+- 🔓 **Easy Unlock Fix**: Fixed PIN length reset issues after app updates or reboots by adding robust DE storage fallback queries.
+- 🎨 **DT2S Tuning**: Made double-tap to sleep more responsive and easier to trigger on the launcher.
+- 🐞 **Log Coverage**: Added complete log output for all switches and sliders.
 
 ## 📦 Editions
 
-| Feature | `lite` | `full` |
+| Feature | `lite` (Recommended) | `full` |
 |---|:---:|:---:|
 | Material 3 & Edge-to-Edge | ✅ | ✅ |
 | Clear All button & Network Traffic Indicator | ✅ | ✅ |
@@ -66,13 +71,37 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ## 🛠️ Requirements & Installation
 
 - **Root + LSPosed** (or any manager supporting `libxposed` API 102).
-- **Android 16 (API 36)** or newer.
+- **Android 17 (API 37)** or newer.
 - **Static Scope Enforcement**: System Framework, Phone, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-<flavor>-v1.0.0-<buildType>.apk`.
+1. Build or download `pixel-tweaks-<flavor>-v1.0.1-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Reboot your device.
+
+## 📦 Build & Signing Instructions
+
+### 1. How to Build
+You can build all variants (`lite` / `full` x `debug` / `release`) easily using the provided batch script on Windows:
+- Double-click **`Build_APKs.bat`** in the root directory.
+- Or run `./gradlew assemble` from your terminal.
+Built APKs will be output to `app/build/outputs/apk/`.
+
+### 2. Using Custom Signing Keys
+- **Debug Builds**: Automatically signed using your computer's local debug keystore (no setup required).
+- **Release Builds (`release.jks`)**:
+  1. Place your release keystore file (`release.jks`) into the **`app/keystore/`** directory (`app/keystore/release.jks`).
+  2. Create or open **`local.properties`** in the root project directory and add your keystore credentials:
+     ```properties
+     keystore.storePassword=your_store_password
+     keystore.keyAlias=your_key_alias
+     keystore.keyPassword=your_key_password
+     ```
+  3. If `release.jks` is not present, release builds will automatically fall back to signing with your local debug key.
+
+## 📋 To Do
+
+- Extract Call Recording & Call Notes features into a standalone, separate project to simplify codebase structure and ease long-term maintenance.
 
 ## 📄 License
 

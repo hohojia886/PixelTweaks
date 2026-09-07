@@ -3,6 +3,7 @@ package io.github.hohojia886.pixeltweaks.hooks.apps
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
 import android.os.Process
 import android.os.SystemClock
@@ -83,12 +84,30 @@ object CallRecordingHook {
         }
     }
 
-    // Synchronizes feature toggles from RemotePrefProvider
-    private fun syncState(module: XposedModule) {
+    // Synchronizes feature toggles from RemotePrefProvider with ContentProvider fallback
+    private fun syncState(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
-            isSilenceEnabled = prefs.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true)
-            isRecordingEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, true)
+            var recordingEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, true)
+            var silenceEnabled = prefs.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true)
+            
+            // Fallback: If preferences appear to be defaults, perform a robust ContentProvider query
+            if (recordingEnabled && silenceEnabled) {
+                runCatching {
+                    val ctx = IpcManager.getSafeContext(classLoader, "com.google.android.dialer") ?: IpcManager.getSystemContext(classLoader)
+                    if (ctx != null) {
+                        val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+                        val bundle = ctx.contentResolver.call(uri, "get", null, null)
+                        if (bundle != null) {
+                            recordingEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, recordingEnabled)
+                            silenceEnabled = bundle.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, silenceEnabled)
+                        }
+                    }
+                }
+            }
+
+            isRecordingEnabled = recordingEnabled
+            isSilenceEnabled = silenceEnabled
             Logger.i(TAG, "Sync", "State synced: recording=$isRecordingEnabled, silence=$isSilenceEnabled")
             Logger.sync(module)
         }.onFailure { e ->
@@ -99,14 +118,14 @@ object CallRecordingHook {
     // Primary entry point for basic framework-level hooks (Telephony, Application, Resources, TTS)
     fun hook(module: XposedModule, classLoader: ClassLoader, packageName: String) {
         Logger.i(TAG, "Init", "Initializing CallRecording module v$VERSION")
-        syncState(module)
+        syncState(module, classLoader)
         val moduleUid = module.getModuleApplicationInfo().uid
 
         // Early synchronization for system-level processes
         if (Process.myUid() == 1000) {
             IpcManager.getSafeContext(classLoader, packageName)?.let { ctx ->
                 registerReceiver(ctx, moduleUid)
-                syncState(module)
+                syncState(module, classLoader)
             }
         }
 
@@ -132,7 +151,7 @@ object CallRecordingHook {
                 val app = chain.thisObject as? Context
                 if (app != null) {
                     registerReceiver(app, moduleUid)
-                    syncState(module)
+                    syncState(module, classLoader)
                 }
             }
 

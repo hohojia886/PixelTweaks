@@ -14,7 +14,7 @@
     <!-- 2. CallRec -->
     <string name="dialer_mods">Google Dialer</string>
     <string name="enable_call_recording">Enable Call Recording</string>
-    <string name="desc_call_recording">Default on, will reset after Clear All</string>
+    <string name="desc_call_recording">Conflicts with Call Notes (choose one)</string>
     <string name="disable_voice_announcement">Disable Voice Announcement</string>
     <string name="desc_disable_announcement">Block call recording announcement</string>
     <string name="log_call_rec">PXTK_CallRec</string>
