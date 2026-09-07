@@ -158,16 +158,26 @@ object CallNotesHook {
     private fun hookToneAndRingtone(module: XposedModule) {
         runCatching {
             val m = ToneGenerator::class.java.getDeclaredMethod("startTone", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
-            module.hookBefore(m) { chain ->
-                val instance = chain.thisObject ?: return@hookBefore
-                if (isSilenceEnabled && isFermatCaller("ToneGenerator", instance)) { /* Blocked */ } 
+            module.hook(m).intercept { chain ->
+                val instance = chain.thisObject
+                if (instance != null && isSilenceEnabled && isFermatCaller("ToneGenerator", instance)) {
+                    Logger.e(TAG, "Active", "Blocked ToneGenerator startTone from AI announcer")
+                    false
+                } else {
+                    chain.proceed()
+                }
             }
         }
         runCatching {
             val m = Ringtone::class.java.getDeclaredMethod("play")
-            module.hookBefore(m) { chain ->
-                val instance = chain.thisObject ?: return@hookBefore
-                if (isSilenceEnabled && isFermatCaller("Ringtone", instance)) { /* Blocked */ } 
+            module.hook(m).intercept { chain ->
+                val instance = chain.thisObject
+                if (instance != null && isSilenceEnabled && isFermatCaller("Ringtone", instance)) {
+                    Logger.e(TAG, "Active", "Blocked Ringtone play from AI announcer")
+                    null
+                } else {
+                    chain.proceed()
+                }
             }
         }
     }
