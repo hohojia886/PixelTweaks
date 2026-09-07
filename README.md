@@ -3,6 +3,8 @@
 **Version:** v1.0.1 (Stable Release)
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
+**Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
+
 A professional, high-performance Xposed module tailored specifically for Google Pixel devices.
 
 ## 📸 Preview
