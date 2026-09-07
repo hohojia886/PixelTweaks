@@ -171,14 +171,12 @@ object ClearAllButtonHook {
                 newParams
             } else {
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                    gravity = Gravity.CENTER_VERTICAL
-                    marginStart = dp(context, 8)
+                    gravity = Gravity.CENTER_VERTICAL; marginStart = dp(context, 8)
                 }
             }
         } else {
             FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                gravity = Gravity.END or Gravity.CENTER_VERTICAL
-                marginEnd = dp(context, 16)
+                gravity = Gravity.END or Gravity.CENTER_VERTICAL; marginEnd = dp(context, 16)
             }
         }
 
@@ -212,10 +210,12 @@ object ClearAllButtonHook {
             when (intent.action) {
                 IpcManager.ACTION_SETTINGS_SYNC -> {
                     isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_CLEAR_ALL, true)
+                    Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
                 }
                 IpcManager.ACTION_SETTING_CHANGED -> {
                     if (intent.getStringExtra(PreferenceKeys.EXTRA_KEY) == PreferenceKeys.ENABLE_CLEAR_ALL) {
                         isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                        Logger.i(TAG, "Sync", "Setting [enable_clear_all] updated to $isEnabled")
                     }
                 }
             }
@@ -236,7 +236,7 @@ object ClearAllButtonHook {
         var c: Class<*>? = clazz
         while (c != null) {
             try { return c.getDeclaredMethod(name, *parameterTypes).apply { isAccessible = true } }
-            catch (e: NoSuchMethodException) { c = c.superclass }
+            catch (_: NoSuchMethodException) { c = c.superclass }
         }
         return null
     }

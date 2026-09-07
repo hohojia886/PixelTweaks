@@ -1,5 +1,7 @@
 package io.github.hohojia886.pixeltweaks.hooks.ui
 
+import android.app.Application
+import android.os.IBinder
 import android.view.WindowManager
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
@@ -44,7 +46,7 @@ object ScreenshotHook {
         val realClassLoader = runCatching {
             val smClass = classLoader.loadClass("android.os.ServiceManager")
             val getService = smClass.getDeclaredMethod("getService", String::class.java)
-            val binder = getService.invoke(null, "window") as android.os.IBinder
+            val binder = getService.invoke(null, "window") as IBinder
             binder.javaClass.classLoader
         }.getOrNull() ?: classLoader
 
@@ -94,14 +96,16 @@ object ScreenshotHook {
         
         runCatching {
             val ctxClass = Class.forName("android.app.ActivityThread")
-            val app = ctxClass.getDeclaredMethod("currentApplication").invoke(null) as? android.app.Application
+            val app = ctxClass.getDeclaredMethod("currentApplication").invoke(null) as? Application
             app?.let {
                 IpcManager.registerSecureReceiver(it, module.getModuleApplicationInfo().uid) { intent ->
                     val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
                     if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
                         isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
+                        Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
                     } else if (key == PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS) {
                         isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                        Logger.i(TAG, "Sync", "Setting [enable_unrestricted_screenshots] updated to $isEnabled")
                     }
                 }
             }

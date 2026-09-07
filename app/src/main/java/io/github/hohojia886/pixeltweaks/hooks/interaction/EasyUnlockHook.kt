@@ -20,13 +20,13 @@ import java.lang.reflect.Method
 object EasyUnlockHook {
 
     private const val TAG = "EasyUnlock"
-    @Volatile private var isEnabled = true // Master toggle for Easy Unlock
-    @Volatile private var isBypassActive = false // Bypass reboot restriction toggle
-    @Volatile private var isFirstUnlockDone = false // Session flag tracking if first unlock completed
-    @Volatile private var learnedPinLength = -1 // Learned PIN length (-1 if not yet learned)
+    @Volatile private var isEnabled = true // Enable the overall feature
+    @Volatile private var isBypassActive = false // Bypass the reboot restriction
+    @Volatile private var isFirstUnlockDone = false // Local session state
+    @Volatile private var learnedPinLength = -1 // The PIN length learned from previous successful unlock
     @Volatile private var processPackageName: String? = null
 
-    // Entry point: Syncs settings, registers IPC receiver, and applies LockPatternUtils hooks
+    // Entry point: Syncs settings and hooks the Application lifecycle
     fun hook(module: XposedModule, classLoader: ClassLoader, packageName: String) {
         processPackageName = packageName
         syncSettings(module, classLoader)
@@ -46,18 +46,19 @@ object EasyUnlockHook {
         applyNativeHijack(module, classLoader)
     }
 
-    // Synchronously loads initial settings from RemotePreferences
+    // Synchronously loads settings from RemotePreferences to ensure early availability
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
             isEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
             isBypassActive = prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
-            val len = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1)
-            if (len > 0) learnedPinLength = len
+            learnedPinLength = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1)
+            Logger.i(TAG, "Sync", "Settings loaded from DE: enabled=$isEnabled, bypass=$isBypassActive, len=$learnedPinLength")
         }
+        isFirstUnlockDone = false
     }
 
-    // Processes real-time IPC broadcasts for setting changes
+    // Processes incoming IPC broadcasts to update feature states in real-time
     private fun handleBroadcast(intent: Intent) {
         when (intent.action) {
             IpcManager.ACTION_SETTINGS_SYNC -> {
@@ -65,27 +66,35 @@ object EasyUnlockHook {
                 isBypassActive = intent.getBooleanExtra(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
                 val syncedLen = intent.getIntExtra(PreferenceKeys.EXPECTED_PASS_LEN, -1)
                 if (syncedLen > 0) learnedPinLength = syncedLen
+                Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled, bypass=$isBypassActive, len=$learnedPinLength")
             }
             IpcManager.ACTION_SETTING_CHANGED -> {
                 val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
+                val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
                 when (key) {
-                    PreferenceKeys.ENABLE_EASY_UNLOCK -> isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
-                    PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT -> isBypassActive = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
+                    PreferenceKeys.ENABLE_EASY_UNLOCK -> {
+                        isEnabled = value
+                        Logger.i(TAG, "Sync", "Setting [enable_easy_unlock] updated to $isEnabled")
+                    }
+                    PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT -> {
+                        isBypassActive = value
+                        Logger.i(TAG, "Sync", "Setting [enable_easy_unlock_reboot] updated to $isBypassActive")
+                    }
                     PreferenceKeys.EXPECTED_PASS_LEN -> {
-                        val len = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, -1)
-                        if (len > 0) learnedPinLength = len
+                        learnedPinLength = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, -1)
+                        Logger.i(TAG, "Sync", "Setting [expected_pass_len] updated to $learnedPinLength")
                     }
                 }
             }
         }
     }
 
-    // Applies core hijacks to LockPatternUtils and Keyguard password verification
+    // Applies core hijacks to the system's lockscreen policy and password checking logic
     private fun applyNativeHijack(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val lpuClass = classLoader.loadClass("com.android.internal.widget.LockPatternUtils")
 
-            // Forces system to treat Auto PIN Confirm as enabled when PIN length is known
+            // Forces the system to believe "Auto PIN Confirm" is enabled if we have a learned length
             module.hook(lpuClass.getDeclaredMethod("isAutoPinConfirmEnabled", Int::class.javaPrimitiveType)).intercept { chain ->
                 if (isEnabled && learnedPinLength > 0) {
                     if (isBypassActive || isFirstUnlockDone) return@intercept true
@@ -93,7 +102,7 @@ object EasyUnlockHook {
                 chain.proceed()
             }
 
-            // Spoofs expected PIN length to trigger auto-unlock at the exact learned length
+            // Spoofs the expected PIN length to the system to trigger auto-unlock at the right moment
             module.hook(lpuClass.getDeclaredMethod("getPinLength", Int::class.javaPrimitiveType)).intercept { chain ->
                 if (isEnabled && learnedPinLength > 0) {
                     if (isBypassActive || isFirstUnlockDone) {
@@ -104,12 +113,12 @@ object EasyUnlockHook {
                 chain.proceed()
             }
 
-            // Always returns true for 6-digit PIN checks to enable advanced unlock UI
+            // Always returns true for 6-digit PIN checks to enable advanced unlock UI features
             lpuClass.declaredMethods.find { it.name == "userHas6DigitPin" }?.let { m ->
                 module.hook(m).intercept { if (isEnabled) true else it.proceed() }
             }
 
-            // Learner: Intercepts successful password checks to capture and persist PIN length
+            // Learner: Intercepts successful password checks to capture and save the current PIN length
             val securityCtrlClass = classLoader.loadClass("com.android.keyguard.KeyguardAbsKeyInputViewController")
             securityCtrlClass.declaredMethods.find { it.name == "onPasswordChecked" }?.let { m ->
                 module.hookBefore(m) { chain ->
@@ -141,14 +150,13 @@ object EasyUnlockHook {
         }
     }
 
-    // Persists learned PIN length to DE storage via ContentProvider and broadcasts update
+    // Persists the learned PIN length to the device-protected storage via ContentProvider
     private fun saveLearnedLength(classLoader: ClassLoader, len: Int) {
         runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: return@runCatching
             val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
             val bundle = Bundle().apply { putInt(PreferenceKeys.EXPECTED_PASS_LEN, len) }
             ctx.contentResolver.call(uri, "put", null, bundle)
-            IpcManager.sendUpdateBroadcast(ctx, PreferenceKeys.EXPECTED_PASS_LEN, len)
         }
     }
 

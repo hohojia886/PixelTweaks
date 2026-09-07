@@ -1,6 +1,7 @@
 package io.github.hohojia886.pixeltweaks.hooks.ui
 
 import android.annotation.SuppressLint
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Canvas
@@ -25,6 +26,8 @@ import io.github.hohojia886.pixeltweaks.utils.hookAfter
 import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
+import java.lang.reflect.Method
+import java.util.Collections
 
 /**
  * NetworkTrafficHook: Adds a real-time network speed indicator to the status bar.
@@ -38,7 +41,7 @@ object NetworkTrafficHook {
     private const val TAG = "Traffic"
 
     // Thread-safe list of active traffic views across different system bar instances
-    private val trafficViews = java.util.Collections.synchronizedList(mutableListOf<WeakReference<TrafficView>>())
+    private val trafficViews = Collections.synchronizedList(mutableListOf<WeakReference<TrafficView>>())
 
     private var isEnabled = true // Feature master toggle
     private var updateInterval = 1000L // Polling frequency in milliseconds
@@ -90,7 +93,7 @@ object NetworkTrafficHook {
             }
 
             // Logic to suppress polling and hide views when the device is locked
-            val km = firstView!!.context.getSystemService(Context.KEYGUARD_SERVICE) as? android.app.KeyguardManager
+            val km = firstView.context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
             if (km?.isKeyguardLocked == true) {
                 uiHandler.post {
                     iterateViews { view -> if (view.visibility != View.GONE) view.visibility = View.GONE }
@@ -179,18 +182,23 @@ object NetworkTrafficHook {
 
             // Injection: Targets the 'Clock' view attachment to anchor the indicator
             val clockClass = classLoader.loadClass("com.android.systemui.statusbar.policy.Clock")
-            module.hookAfter(clockClass.getDeclaredMethod("onAttachedToWindow")) { chain, _ ->
-                runCatching {
-                    val clock = chain.thisObject as View
-                    if (isStatusBarClock(clock)) {
-                        val parent = clock.parent as? ViewGroup
-                        if (parent != null) {
-                            attachToClock(clock, parent)
+            val onAttachedMethod = findMethod(clockClass, "onAttachedToWindow")
+            if (onAttachedMethod != null) {
+                module.hookAfter(onAttachedMethod) { chain, _ ->
+                    runCatching {
+                        val clock = chain.thisObject as View
+                        if (isStatusBarClock(clock)) {
+                            val parent = clock.parent as? ViewGroup
+                            if (parent != null) {
+                                attachToClock(clock, parent)
+                            }
                         }
+                    }.onFailure { e ->
+                        Logger.e(TAG, "Error", "Hitchhiker injection failed", e)
                     }
-                }.onFailure { e ->
-                    Logger.e(TAG, "Error", "Hitchhiker injection failed", e)
                 }
+            } else {
+                Logger.e(TAG, "Error", "onAttachedToWindow method not found on Clock class hierarchy")
             }
 
             // Dark Mode Sync: Intercepts color changes to keep text visible against backgrounds
@@ -345,17 +353,23 @@ object NetworkTrafficHook {
                     when (key) {
                         PreferenceKeys.ENABLE_NETWORK_TRAFFIC -> {
                             isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                            Logger.i(TAG, "Sync", "Setting [enable_network_traffic] updated to $isEnabled")
                             updateState()
                         }
                         PreferenceKeys.NETWORK_TRAFFIC_INTERVAL -> {
-                            updateInterval = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, 1) * 1000L
+                            val intervalSec = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, 1)
+                            updateInterval = intervalSec * 1000L
+                            Logger.i(TAG, "Sync", "Setting [network_traffic_interval] updated to ${intervalSec}s")
                             workerHandler?.post { poller.reset() }
                         }
                         PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD -> {
-                            autoHideThreshold = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, 1) * 1024L
+                            val threshKb = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, 1)
+                            autoHideThreshold = threshKb * 1024L
+                            Logger.i(TAG, "Sync", "Setting [network_traffic_threshold] updated to ${threshKb}KB")
                         }
                         PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE -> {
                             fontSizeSp = intent.getFloatExtra(PreferenceKeys.EXTRA_VALUE, 8f)
+                            Logger.i(TAG, "Sync", "Setting [network_traffic_font_size] updated to ${fontSizeSp}sp")
                             uiHandler.post { iterateViews { it.updateFontSize(fontSizeSp) } }
                         }
                     }
@@ -371,6 +385,7 @@ object NetworkTrafficHook {
         fontSizeSp = intent.getFloatExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
         updateInterval = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1) * 1000L
         autoHideThreshold = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1) * 1024L
+        Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled, interval=${updateInterval/1000}s, font=${fontSizeSp}sp, thresh=${autoHideThreshold/1024}KB")
         uiHandler.post { iterateViews { it.updateFontSize(fontSizeSp) } }
         updateState()
     }
@@ -385,6 +400,15 @@ object NetworkTrafficHook {
     }
 
     private fun dp(context: Context, value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
+
+    private fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
+        var c: Class<*>? = clazz
+        while (c != null) {
+            try { return c.getDeclaredMethod(name, *parameterTypes).apply { isAccessible = true } }
+            catch (_: NoSuchMethodException) { c = c.superclass }
+        }
+        return null
+    }
 
     /**
      * TrafficView: A specialized custom view for rendering the two-line RX/TX text.
