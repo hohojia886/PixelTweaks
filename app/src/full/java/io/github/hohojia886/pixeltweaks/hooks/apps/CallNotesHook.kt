@@ -5,6 +5,7 @@ import android.media.AudioTrack
 import android.media.MediaPlayer
 import android.media.Ringtone
 import android.media.ToneGenerator
+import android.os.Process
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -57,11 +58,11 @@ object CallNotesHook {
         return isFermat
     }
 
-    // Synchronizes the silence toggle state from remote preferences
-    private fun syncState(module: XposedModule) {
+    // Synchronizes the silence toggle state from DE storage / remote preferences
+    private fun syncState(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
-            val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
-            isSilenceEnabled = prefs.getBoolean(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, true)
+            val bundle = IpcManager.loadPreferences(module, classLoader, currentPkg)
+            isSilenceEnabled = bundle.getBoolean(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false)
             Logger.i(TAG, "Sync", "Settings synced: silenceEnabled=$isSilenceEnabled")
         }
     }
@@ -70,24 +71,14 @@ object CallNotesHook {
     fun hook(module: XposedModule, classLoader: ClassLoader, packageName: String) {
         currentPkg = packageName
         Logger.i(TAG, "Init", "Initializing CallNotesHook")
-        syncState(module)
+        syncState(module, classLoader)
         val moduleUid = module.getModuleApplicationInfo().uid
 
-        // Immediate registration for system_server to ensure early synchronization
-        if (android.os.Process.myUid() == 1000) {
-            IpcManager.getSafeContext(classLoader, packageName)?.let { ctx ->
-                registerReceiver(ctx, moduleUid)
-            }
-        }
-
-        // Secondary registration via lifecycle hooks for normal app processes
+        // Register broadcast receiver: system_server uses SystemContext, app processes use Application.onCreate
         runCatching {
-            if (packageName == "android") {
-                val ssClass = runCatching { classLoader.loadClass("com.android.server.SystemServer") }.getOrNull()
-                if (ssClass != null) {
-                    module.hookBefore(ssClass.getDeclaredMethod("run")) {
-                        IpcManager.getSystemContext(classLoader)?.let { registerReceiver(it, moduleUid) }
-                    }
+            if (packageName == "android" || Process.myUid() == 1000) {
+                IpcManager.getSystemContext(classLoader)?.let { ctx ->
+                    registerReceiver(ctx, moduleUid)
                 }
             } else {
                 val appClass = runCatching { classLoader.loadClass("android.app.Application") }.getOrNull()
@@ -98,6 +89,8 @@ object CallNotesHook {
                     }
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed receiver registration in $packageName", e)
         }
 
         hookMediaPlayer(module) // Hook standard media player components
@@ -187,11 +180,11 @@ object CallNotesHook {
         IpcManager.registerSecureReceiver(context, moduleUid) { intent ->
             val action = intent.action ?: return@registerSecureReceiver
             if (action == IpcManager.ACTION_SETTINGS_SYNC) {
-                isSilenceEnabled = intent.getBooleanExtra(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, true)
+                isSilenceEnabled = intent.getBooleanExtra(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false)
             } else {
                 val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
                 if (key == PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT) {
-                    isSilenceEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                    isSilenceEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
                 }
             }
             mutedInstances.clear() // Clear cache on change to re-evaluate new streams

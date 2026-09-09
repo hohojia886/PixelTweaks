@@ -1,6 +1,7 @@
 package io.github.hohojia886.pixeltweaks.hooks.system
 
 import android.content.Context
+import android.net.Uri
 import android.net.wifi.WifiManager
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
@@ -25,13 +26,25 @@ object QuickSettingsHook {
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Started", "Initializing QuickSettingsHook")
         
-        runCatching {
-            val prefs = module.getRemotePreferences(io.github.hohojia886.pixeltweaks.utils.IpcManager.PREF_NAME)
-            isDataFixEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
-            isWifiFixEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
-            Logger.i(TAG, "Success", "Initial load finished: Data=$isDataFixEnabled, WiFi=$isWifiFixEnabled")
-        }.onFailure { e ->
-            Logger.e(TAG, "Error", "Failed to load settings via RemotePrefProvider", e)
+        val loadedFromDe = runCatching {
+            val ctx = IpcManager.getSafeContext(classLoader, "com.android.systemui") ?: IpcManager.getSystemContext(classLoader) ?: return@runCatching false
+            val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+            val bundle = ctx.contentResolver.call(uri, "get", null, null) ?: return@runCatching false
+            isDataFixEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
+            isWifiFixEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
+            Logger.i(TAG, "Success", "Initial load from DE (ContentProvider): Data=$isDataFixEnabled, WiFi=$isWifiFixEnabled")
+            true
+        }.getOrDefault(false)
+
+        if (!loadedFromDe) {
+            runCatching {
+                val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
+                isDataFixEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
+                isWifiFixEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
+                Logger.i(TAG, "Success", "Initial load from CE (fallback): Data=$isDataFixEnabled, WiFi=$isWifiFixEnabled")
+            }.onFailure { e ->
+                Logger.e(TAG, "Error", "Failed to load settings via RemotePrefProvider", e)
+            }
         }
 
         runCatching {

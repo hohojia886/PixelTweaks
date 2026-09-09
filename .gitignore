@@ -1,5 +1,6 @@
 # Gradle and Build artifacts
 .gradle/
+.kotlin/
 build/
 app/build/
 captured_screenshots/

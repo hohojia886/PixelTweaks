@@ -6,7 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
+import android.net.Uri
+import android.os.Bundle
 import android.os.Process
+import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
 
 /**
@@ -55,12 +58,78 @@ object IpcManager {
                 packages?.get(0) as? String
             }.getOrNull()
 
-            if (myUid != 1000 && targetPackage != null && targetPackage != "android") {
-                sysContext.createPackageContext(targetPackage, 0)
+            if (myUid != 1000 && targetPackage != null && targetPackage != "android" && targetPackage != "unknown") {
+                runCatching { sysContext.createPackageContext(targetPackage, 0) }.getOrDefault(sysContext)
             } else {
                 sysContext
             }
         }.getOrNull()
+    }
+
+    // Unified preference loader: Prioritizes ContentProvider DE storage query (Direct Boot compatible) before CE fallback
+    fun loadPreferences(module: XposedModule, classLoader: ClassLoader? = null, packageName: String? = null): Bundle {
+        val bundle = Bundle()
+        
+        // 1. Primary: Xposed/LSPosed RemotePreferences
+        val prefs = runCatching { module.getRemotePreferences(PREF_NAME) }.getOrNull()
+        if (prefs != null) {
+            runCatching {
+                prefs.all.forEach { (k, v) ->
+                    when (v) {
+                        is Boolean -> bundle.putBoolean(k, v)
+                        is Int -> bundle.putInt(k, v)
+                        is Float -> bundle.putFloat(k, v)
+                        is Long -> bundle.putLong(k, v)
+                        is String -> bundle.putString(k, v)
+                    }
+                }
+            }
+            val knownBooleans = listOf(
+                PreferenceKeys.ENABLE_EASY_UNLOCK, PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
+                PreferenceKeys.ENABLE_QS_WIFI_FIX, PreferenceKeys.ENABLE_QS_DATA_FIX,
+                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
+                PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
+                PreferenceKeys.ENABLE_CALL_RECORDING, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT,
+                PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
+                PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_CALL_NOTES, PreferenceKeys.LOG_CALL_RECORDING,
+                PreferenceKeys.LOG_CLEAR_ALL, PreferenceKeys.LOG_NETWORK_TRAFFIC, PreferenceKeys.LOG_QUICK_SETTINGS,
+                PreferenceKeys.LOG_SECURITY_BYPASSES, PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, PreferenceKeys.LOG_DT2S, PreferenceKeys.LOG_EASY_UNLOCK
+            )
+            knownBooleans.forEach { key ->
+                runCatching {
+                    val v = prefs.getBoolean(key, true)
+                    bundle.putBoolean(key, v)
+                }
+            }
+            runCatching {
+                val len = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1)
+                if (len > 0) bundle.putInt(PreferenceKeys.EXPECTED_PASS_LEN, len)
+            }
+        }
+
+        // 2. Direct DE Storage ContentProvider query (overlays/overrides for Direct Boot / pre-unlock)
+        if (classLoader != null) {
+            runCatching {
+                val ctx = getSafeContext(classLoader, packageName) ?: getSystemContext(classLoader)
+                if (ctx != null) {
+                    val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+                    val cpBundle = ctx.contentResolver.call(uri, "get", null, null)
+                    if (cpBundle != null && !cpBundle.isEmpty) {
+                        cpBundle.keySet().forEach { k ->
+                            val v = cpBundle.get(k)
+                            when (v) {
+                                is Boolean -> bundle.putBoolean(k, v)
+                                is Int -> bundle.putInt(k, v)
+                                is Float -> bundle.putFloat(k, v)
+                                is Long -> bundle.putLong(k, v)
+                                is String -> bundle.putString(k, v)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return bundle
     }
 
     // Dispatches a full settings synchronization broadcast to all active hook processes
@@ -72,7 +141,7 @@ object IpcManager {
             putExtra(PreferenceKeys.LOG_CALL_NOTES, prefs.getBoolean(PreferenceKeys.LOG_CALL_NOTES, true))
 
             // 2. CallRec
-            putExtra(PreferenceKeys.ENABLE_CALL_RECORDING, prefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, true))
+            putExtra(PreferenceKeys.ENABLE_CALL_RECORDING, prefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, false))
             putExtra(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, prefs.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true))
             putExtra(PreferenceKeys.LOG_CALL_RECORDING, prefs.getBoolean(PreferenceKeys.LOG_CALL_RECORDING, true))
 
@@ -87,9 +156,16 @@ object IpcManager {
             putExtra(PreferenceKeys.LOG_DT2S, prefs.getBoolean(PreferenceKeys.LOG_DT2S, true))
 
             // 5. EasyUnlock
+            val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
+                if (inMemoryLen > 0) inMemoryLen else runCatching {
+                    val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+                    val bundle = context.contentResolver.call(uri, "get", null, null)
+                    bundle?.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1) ?: -1
+                }.getOrDefault(-1)
+            }
             putExtra(PreferenceKeys.ENABLE_EASY_UNLOCK, prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true))
             putExtra(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false))
-            putExtra(PreferenceKeys.EXPECTED_PASS_LEN, prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1))
+            putExtra(PreferenceKeys.EXPECTED_PASS_LEN, expectedPassLen)
             putExtra(PreferenceKeys.IS_FIRST_UNLOCK_DONE, prefs.getBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false))
             putExtra(PreferenceKeys.LOG_EASY_UNLOCK, prefs.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true))
 

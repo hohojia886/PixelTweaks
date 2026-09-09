@@ -1,6 +1,7 @@
 package io.github.hohojia886.pixeltweaks.hooks.ui
 
 import android.app.Application
+import android.os.Bundle
 import android.os.IBinder
 import android.view.WindowManager
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
@@ -36,7 +37,7 @@ object ScreenshotHook {
     // Secondary entry for SystemUI to ensure its own settings are synchronized
     fun hookSystemUI(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Init", "Initializing ScreenshotHook for [SystemUI]")
-        syncSettings(module)
+        syncSettings(module, classLoader)
     }
 
     // Injects logic into WindowManagerService to strip FLAG_SECURE from all incoming windows
@@ -85,14 +86,20 @@ object ScreenshotHook {
             
             isSystemHooked = true
             Logger.i(TAG, "Init", "Successfully initialized ScreenshotHook for [SystemServer]")
-            syncSettings(module)
+            syncSettings(module, realClassLoader)
         }
     }
 
-    // Loads settings from RemotePreferences and registers a receiver for real-time updates
+    // Loads settings from DE storage/RemotePreferences and registers a receiver for real-time updates
     private fun syncSettings(module: XposedModule) {
-        isEnabled = module.getRemotePreferences(IpcManager.PREF_NAME)
-            .getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
+        syncSettings(module, null)
+    }
+
+    private fun syncSettings(module: XposedModule, classLoader: ClassLoader?) {
+        val bundle = if (classLoader != null) IpcManager.loadPreferences(module, classLoader) else Bundle()
+        val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
+
+        isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, prefs?.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true) ?: true)
         
         runCatching {
             val ctxClass = Class.forName("android.app.ActivityThread")

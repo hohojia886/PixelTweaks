@@ -46,16 +46,32 @@ object EasyUnlockHook {
         applyNativeHijack(module, classLoader)
     }
 
-    // Synchronously loads settings from RemotePreferences to ensure early availability
+    // Synchronously loads settings from DE ContentProvider first (for Direct Boot / pre-unlock availability)
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
-        runCatching {
-            val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
-            isEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
-            isBypassActive = prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
-            learnedPinLength = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1)
-            Logger.i(TAG, "Sync", "Settings loaded from DE: enabled=$isEnabled, bypass=$isBypassActive, len=$learnedPinLength")
+        val loadedFromDe = runCatching {
+            val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: IpcManager.getSystemContext(classLoader) ?: return@runCatching false
+            val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+            val bundle = ctx.contentResolver.call(uri, "get", null, null) ?: return@runCatching false
+            isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
+            isBypassActive = bundle.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
+            val len = bundle.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1)
+            if (len > 0) learnedPinLength = len
+            Logger.i(TAG, "Sync", "Settings loaded from DE (ContentProvider): enabled=$isEnabled, bypass=$isBypassActive, len=$learnedPinLength")
+            true
+        }.getOrDefault(false)
+
+        if (!loadedFromDe) {
+            runCatching {
+                val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
+                isEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
+                isBypassActive = prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
+                val len = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1)
+                if (len > 0) learnedPinLength = len
+                Logger.i(TAG, "Sync", "Settings loaded from CE (fallback): enabled=$isEnabled, bypass=$isBypassActive, len=$learnedPinLength")
+            }.onFailure { e ->
+                Logger.e(TAG, "Error", "Both DE and CE settings load failed", e)
+            }
         }
-        isFirstUnlockDone = false
     }
 
     // Processes incoming IPC broadcasts to update feature states in real-time
@@ -157,6 +173,7 @@ object EasyUnlockHook {
             val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
             val bundle = Bundle().apply { putInt(PreferenceKeys.EXPECTED_PASS_LEN, len) }
             ctx.contentResolver.call(uri, "put", null, bundle)
+            IpcManager.sendUpdateBroadcast(ctx, PreferenceKeys.EXPECTED_PASS_LEN, len)
         }
     }
 

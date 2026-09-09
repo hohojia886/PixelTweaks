@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**Version:** v1.0.1 (Stable Release)
+**Version:** v1.0.2 (Stable Release)
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -20,7 +20,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.0.1)
+## ✨ Features (v1.0.2)
 
 ### 🎨 Double Tap To Sleep
 - **Launcher Workspace**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -50,8 +50,13 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ### 🐞 Debug & Logs
 - **Enable Master Logging**: Standardized, low-overhead logging system with complete coverage across all 10 functional modules and sliders (**Debug build only**).
 
-## 📝 Changelog (v1.0.1)
+## 📝 Changelog
 
+### v1.0.2
+- 🔓 **Direct Boot DE Storage Unified Loader**: Unified all 10 hook modules to prioritize reading settings directly from DE (Device-Protected) storage via `RemotePrefProvider` on early boot, completely resolving FBE encryption barriers prior to the first unlock.
+- ⚙️ **Default Settings Realignment**: Realigned Call Recording and Call Notes default states to OFF for a cleaner initial installation experience.
+
+### v1.0.1
 - 🔀 **Feature Mutual Exclusion**: Call Recording and Call Notes cannot be enabled at the same time in Settings to prevent audio conflict.
 - 🔓 **Easy Unlock Fix**: Fixed PIN length reset issues after app updates or reboots by adding robust DE storage fallback queries.
 - 🎨 **DT2S Tuning**: Made double-tap to sleep more responsive and easier to trigger on the launcher.
@@ -77,9 +82,10 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Static Scope Enforcement**: System Framework, Phone, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-<flavor>-v1.0.1-<buildType>.apk`.
+1. Build or download `pixel-tweaks-<flavor>-v1.0.2-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
-3. Reboot your device.
+3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
+4. Reboot your device.
 
 ## 📦 Build & Signing Instructions
 

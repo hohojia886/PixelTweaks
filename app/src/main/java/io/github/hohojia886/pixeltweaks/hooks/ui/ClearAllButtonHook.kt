@@ -35,7 +35,7 @@ object ClearAllButtonHook {
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Init", "Initializing ClearAllButtonHook")
         try {
-            isEnabled = module.getRemotePreferences(IpcManager.PREF_NAME)
+            isEnabled = IpcManager.loadPreferences(module, classLoader)
                 .getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true)
 
             val recentsViewClass = classLoader.loadClass("com.android.quickstep.views.RecentsView")

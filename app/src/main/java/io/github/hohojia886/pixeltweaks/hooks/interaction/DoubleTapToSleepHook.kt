@@ -58,10 +58,10 @@ object DoubleTapToSleepHook {
 
         // 1. Initial State Load
         runCatching {
-            val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
-            isDtLauncherEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
-            isDtLockscreenEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
-            isDtStatusbarEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true)
+            val bundle = IpcManager.loadPreferences(module, classLoader, proc)
+            isDtLauncherEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
+            isDtLockscreenEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
+            isDtStatusbarEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true)
         }.onFailure { e ->
             Logger.e(TAG, "Error", "Failed to load initial settings via RemotePrefProvider", e)
         }

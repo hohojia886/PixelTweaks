@@ -33,14 +33,13 @@ object CallRecordingHook {
 
     private const val TAG = "CallRec"
     private const val CACHE_FILE = "call_rec_v1.cache" // Persistent cache for DexKit method locations
-    private const val VERSION = "1.0.0"
 
     // String keywords used by DexKit to locate internal boolean flag methods
     private val DEX_KEYWORDS = listOf(
         "canRecordCall", "Crosby", "GeoFence", "isCallRecordingCountry"
     )
 
-    @Volatile private var isRecordingEnabled = true // Master toggle for call recording enablement
+    @Volatile private var isRecordingEnabled = false // Master toggle for call recording enablement
     @Volatile private var isSilenceEnabled = true // Master toggle for announcement silencing
     private var sessionRetryCount = 0 // Tracks background DexKit retry attempts
     
@@ -88,20 +87,18 @@ object CallRecordingHook {
     private fun syncState(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
-            var recordingEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, true)
+            var recordingEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, false)
             var silenceEnabled = prefs.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true)
             
-            // Fallback: If preferences appear to be defaults, perform a robust ContentProvider query
-            if (recordingEnabled && silenceEnabled) {
-                runCatching {
-                    val ctx = IpcManager.getSafeContext(classLoader, "com.google.android.dialer") ?: IpcManager.getSystemContext(classLoader)
-                    if (ctx != null) {
-                        val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
-                        val bundle = ctx.contentResolver.call(uri, "get", null, null)
-                        if (bundle != null) {
-                            recordingEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, recordingEnabled)
-                            silenceEnabled = bundle.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, silenceEnabled)
-                        }
+            // Fallback: Query ContentProvider DE storage
+            runCatching {
+                val ctx = IpcManager.getSafeContext(classLoader, "com.google.android.dialer") ?: IpcManager.getSystemContext(classLoader)
+                if (ctx != null) {
+                    val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+                    val bundle = ctx.contentResolver.call(uri, "get", null, null)
+                    if (bundle != null) {
+                        recordingEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, false)
+                        silenceEnabled = bundle.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, silenceEnabled)
                     }
                 }
             }
@@ -117,7 +114,7 @@ object CallRecordingHook {
 
     // Primary entry point for basic framework-level hooks (Telephony, Application, Resources, TTS)
     fun hook(module: XposedModule, classLoader: ClassLoader, packageName: String) {
-        Logger.i(TAG, "Init", "Initializing CallRecording module v$VERSION")
+        Logger.i(TAG, "Init", "Initializing CallRecording module")
         syncState(module, classLoader)
         val moduleUid = module.getModuleApplicationInfo().uid
 
@@ -382,11 +379,11 @@ object CallRecordingHook {
             val action = intent.action ?: return@registerSecureReceiver
             if (action == IpcManager.ACTION_SETTINGS_SYNC) {
                 isSilenceEnabled = intent.getBooleanExtra(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true)
-                isRecordingEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_CALL_RECORDING, true)
+                isRecordingEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_CALL_RECORDING, false)
                 Logger.i(TAG, "Sync", "Full sync received: recording=$isRecordingEnabled, silence=$isSilenceEnabled")
             } else {
                 val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY) ?: return@registerSecureReceiver
-                val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
                 when (key) {
                     PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT -> {
                         isSilenceEnabled = value

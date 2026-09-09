@@ -1,5 +1,6 @@
 package io.github.hohojia886.pixeltweaks.hooks.system
 
+import android.os.Bundle
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -28,7 +29,7 @@ object PackageManagerHook {
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         if (isHooked) return
         
-        refreshSettings(module)
+        refreshSettings(module, classLoader)
 
         if (applyHijacks(module, classLoader)) {
             isHooked = true
@@ -37,14 +38,20 @@ object PackageManagerHook {
         }
     }
 
-    // Direct read from RemotePreferences to establish initial security state
+    // Direct read from DE storage / RemotePreferences to establish initial security state
     private fun refreshSettings(module: XposedModule) {
+        refreshSettings(module, null)
+    }
+
+    private fun refreshSettings(module: XposedModule, classLoader: ClassLoader?) {
         runCatching {
-            val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
-            isDowngradeEnabled = prefs.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
-            isSignatureBypassEnabled = prefs.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
-            downgradeTimestamp = prefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
-            signatureTimestamp = prefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
+            val bundle = if (classLoader != null) IpcManager.loadPreferences(module, classLoader) else Bundle()
+            val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
+
+            isDowngradeEnabled = bundle.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, prefs?.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false) ?: false)
+            isSignatureBypassEnabled = bundle.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, prefs?.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false) ?: false)
+            downgradeTimestamp = bundle.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs?.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L) ?: 0L)
+            signatureTimestamp = bundle.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs?.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L) ?: 0L)
         }
     }
 

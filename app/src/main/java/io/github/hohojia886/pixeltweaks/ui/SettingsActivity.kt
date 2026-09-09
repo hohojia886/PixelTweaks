@@ -110,10 +110,10 @@ class SettingsActivity : AppCompatActivity() {
             layoutCallRecordingSection.visibility = View.VISIBLE
             
             // 1. Voice Announcement Mute Switch
-            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_announcement, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true)
+            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_announcement, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, false)
 
             // 2. Call Recording Switch (Rule 1 & Rule 2)
-            setupM3Switch(cePrefs, dePrefs, R.id.switch_call_recording, PreferenceKeys.ENABLE_CALL_RECORDING, true) { isChecked ->
+            setupM3Switch(cePrefs, dePrefs, R.id.switch_call_recording, PreferenceKeys.ENABLE_CALL_RECORDING, false) { isChecked ->
                 cardDisableAnnouncement.visibility = if (isChecked) View.VISIBLE else View.GONE
                 if (isChecked) {
                     // Rule 2: When Call Recording is turned ON, automatically turn OFF Call Notes
@@ -125,10 +125,10 @@ class SettingsActivity : AppCompatActivity() {
                     }
                 }
             }
-            cardDisableAnnouncement.visibility = if (dePrefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, true)) View.VISIBLE else View.GONE
+            cardDisableAnnouncement.visibility = if (dePrefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, false)) View.VISIBLE else View.GONE
 
             // 3. Call Notes Switch (Rule 3)
-            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_call_notes, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, true) { isChecked ->
+            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_call_notes, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false) { isChecked ->
                 if (isChecked) {
                     // Rule 3: When Call Notes is turned ON, automatically turn OFF Call Recording
                     if (switchCallRecording.isChecked) {

@@ -1,6 +1,7 @@
 package io.github.hohojia886.pixeltweaks.utils
 
 import android.content.Intent
+import android.os.Bundle
 import android.util.Log
 import io.github.libxposed.api.XposedModule
 
@@ -40,20 +41,22 @@ object Logger {
     @Volatile var logDT2S = true // Double Tap to Sleep logs
     @Volatile var logEasyUnlock = true // Easy Unlock logs
 
-    // Initializes logging state from RemotePreferences during process attachment
-    fun sync(module: XposedModule) {
+    // Initializes logging state from DE storage / RemotePreferences during process attachment
+    fun sync(module: XposedModule, classLoader: ClassLoader? = null) {
         runCatching {
-            val prefs = module.getRemotePreferences(io.github.hohojia886.pixeltweaks.utils.IpcManager.PREF_NAME)
-            isMasterEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, false)
-            logCallRec = prefs.getBoolean(PreferenceKeys.LOG_CALL_RECORDING, true)
-            logCallNotes = prefs.getBoolean(PreferenceKeys.LOG_CALL_NOTES, true)
-            logClearAll = prefs.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, true)
-            logTraffic = prefs.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, true)
-            logQS = prefs.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true)
-            logPM = prefs.getBoolean(PreferenceKeys.LOG_SECURITY_BYPASSES, true)
-            logScreenshot = prefs.getBoolean(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, true)
-            logDT2S = prefs.getBoolean(PreferenceKeys.LOG_DT2S, true)
-            logEasyUnlock = prefs.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true)
+            val bundle = if (classLoader != null) IpcManager.loadPreferences(module, classLoader) else Bundle()
+            val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
+
+            isMasterEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, prefs?.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, false) ?: false)
+            logCallRec = bundle.getBoolean(PreferenceKeys.LOG_CALL_RECORDING, prefs?.getBoolean(PreferenceKeys.LOG_CALL_RECORDING, true) ?: true)
+            logCallNotes = bundle.getBoolean(PreferenceKeys.LOG_CALL_NOTES, prefs?.getBoolean(PreferenceKeys.LOG_CALL_NOTES, true) ?: true)
+            logClearAll = bundle.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, prefs?.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, true) ?: true)
+            logTraffic = bundle.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, prefs?.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, true) ?: true)
+            logQS = bundle.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, prefs?.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true) ?: true)
+            logPM = bundle.getBoolean(PreferenceKeys.LOG_SECURITY_BYPASSES, prefs?.getBoolean(PreferenceKeys.LOG_SECURITY_BYPASSES, true) ?: true)
+            logScreenshot = bundle.getBoolean(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, prefs?.getBoolean(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, true) ?: true)
+            logDT2S = bundle.getBoolean(PreferenceKeys.LOG_DT2S, prefs?.getBoolean(PreferenceKeys.LOG_DT2S, true) ?: true)
+            logEasyUnlock = bundle.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, prefs?.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true) ?: true)
             
             logger.i("PXTK_Hook", "[Logger] Settings synced. Master=$isMasterEnabled (PID: ${android.os.Process.myPid()})")
         }

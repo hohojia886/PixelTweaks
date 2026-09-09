@@ -173,12 +173,12 @@ object NetworkTrafficHook {
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Started", "Initializing NetworkTrafficHook (Robust Edition)")
         try {
-            val prefs = module.getRemotePreferences(IpcManager.PREF_NAME)
+            val bundle = IpcManager.loadPreferences(module, classLoader, "com.android.systemui")
             val moduleUid = module.getModuleApplicationInfo().uid
-            isEnabled = prefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
-            fontSizeSp = prefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
-            updateInterval = prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1) * 1000L
-            autoHideThreshold = prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1) * 1024L
+            isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
+            fontSizeSp = bundle.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
+            updateInterval = bundle.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1) * 1000L
+            autoHideThreshold = bundle.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1) * 1024L
 
             // Injection: Targets the 'Clock' view attachment to anchor the indicator
             val clockClass = classLoader.loadClass("com.android.systemui.statusbar.policy.Clock")
