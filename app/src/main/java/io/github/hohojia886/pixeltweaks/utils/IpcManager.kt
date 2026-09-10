@@ -95,9 +95,18 @@ object IpcManager {
                 PreferenceKeys.LOG_CLEAR_ALL, PreferenceKeys.LOG_NETWORK_TRAFFIC, PreferenceKeys.LOG_QUICK_SETTINGS,
                 PreferenceKeys.LOG_SECURITY_BYPASSES, PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, PreferenceKeys.LOG_DT2S, PreferenceKeys.LOG_EASY_UNLOCK
             )
+            val defaultFalseKeys = setOf(
+                PreferenceKeys.ENABLE_CALL_RECORDING,
+                PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT,
+                PreferenceKeys.ALLOW_DOWNGRADE,
+                PreferenceKeys.BYPASS_SIGNATURE,
+                PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
+                PreferenceKeys.ENABLE_MASTER_LOG
+            )
             knownBooleans.forEach { key ->
                 runCatching {
-                    val v = prefs.getBoolean(key, true)
+                    val defaultVal = key !in defaultFalseKeys
+                    val v = prefs.getBoolean(key, defaultVal)
                     bundle.putBoolean(key, v)
                 }
             }
@@ -129,6 +138,7 @@ object IpcManager {
                 }
             }
         }
+
         return bundle
     }
 

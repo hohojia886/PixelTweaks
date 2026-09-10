@@ -62,6 +62,29 @@ class SettingsActivity : AppCompatActivity() {
         val dePrefs = deContext.getSharedPreferences(IpcManager.PREF_NAME, MODE_PRIVATE)
         val cePrefs = getSharedPreferences(IpcManager.PREF_NAME, MODE_PRIVATE)
 
+        // Populate initial default preferences if first run and perform full sync
+        if (!dePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC)) {
+            saveDoublePref(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_EASY_UNLOCK, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_QS_WIFI_FIX, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_QS_DATA_FIX, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_CLEAR_ALL, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_DT_LAUNCHER, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_DT_STATUSBAR, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ALLOW_DOWNGRADE, false, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.BYPASS_SIGNATURE, false, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_CALL_RECORDING, false, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false, cePrefs, dePrefs)
+            IpcManager.syncAllSettings(this, dePrefs)
+        }
+
         // Security
         setupSecurityBypasses(dePrefs, cePrefs)
         setupM3Switch(cePrefs, dePrefs, R.id.switch_unrestricted_screenshots, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)

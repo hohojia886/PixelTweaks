@@ -235,10 +235,18 @@ object CallRecordingHook {
 
     // Uses DexKit to find and hook obfuscated recording boolean flags and locale provider methods
     private fun performDexKitScan(module: XposedModule, classLoader: ClassLoader, targetSourceDir: String, cacheFile: File, version: Long) {
-        val moduleLibDir = module.getModuleApplicationInfo().nativeLibraryDir
-        val dexKitLib = File(moduleLibDir, "libdexkit.so")
-        if (dexKitLib.exists()) { @Suppress("UnsafeDynamicallyLoadedCode") System.load(dexKitLib.absolutePath) }
-        else { runCatching { System.loadLibrary("dexkit") } }
+        runCatching {
+            val moduleLibDir = module.getModuleApplicationInfo().nativeLibraryDir
+            val dexKitLib = File(moduleLibDir, "libdexkit.so")
+            if (dexKitLib.exists()) {
+                @Suppress("UnsafeDynamicallyLoadedCode")
+                System.load(dexKitLib.absolutePath)
+            } else {
+                System.loadLibrary("dexkit")
+            }
+        }.onFailure { e ->
+            Logger.w(TAG, "Hook", "DexKit native lib load fallback: ${e.message}")
+        }
 
         val foundMethods = mutableListOf<String>()
         foundMethods.add("VERSION|$version")

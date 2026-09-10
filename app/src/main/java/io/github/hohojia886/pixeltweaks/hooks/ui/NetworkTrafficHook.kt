@@ -176,9 +176,12 @@ object NetworkTrafficHook {
             val bundle = IpcManager.loadPreferences(module, classLoader, "com.android.systemui")
             val moduleUid = module.getModuleApplicationInfo().uid
             isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
-            fontSizeSp = bundle.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
-            updateInterval = bundle.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1) * 1000L
-            autoHideThreshold = bundle.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1) * 1024L
+            val rawFont = bundle.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
+            fontSizeSp = if (rawFont > 0f) rawFont.coerceAtLeast(6f) else 8f
+            val rawInterval = bundle.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
+            updateInterval = (if (rawInterval > 0) rawInterval else 1) * 1000L
+            val rawThreshold = bundle.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
+            autoHideThreshold = (if (rawThreshold >= 0) rawThreshold else 1) * 1024L
 
             // Injection: Targets the 'Clock' view attachment to anchor the indicator
             val clockClass = classLoader.loadClass("com.android.systemui.statusbar.policy.Clock")
@@ -382,9 +385,12 @@ object NetworkTrafficHook {
     // Batch updates all configuration variables during a full sync event
     private fun handleSync(intent: Intent) {
         isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
-        fontSizeSp = intent.getFloatExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
-        updateInterval = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1) * 1000L
-        autoHideThreshold = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1) * 1024L
+        val rawFont = intent.getFloatExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
+        fontSizeSp = if (rawFont > 0f) rawFont.coerceAtLeast(6f) else 8f
+        val rawInterval = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
+        updateInterval = (if (rawInterval > 0) rawInterval else 1) * 1000L
+        val rawThreshold = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
+        autoHideThreshold = (if (rawThreshold >= 0) rawThreshold else 1) * 1024L
         Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled, interval=${updateInterval/1000}s, font=${fontSizeSp}sp, thresh=${autoHideThreshold/1024}KB")
         uiHandler.post { iterateViews { it.updateFontSize(fontSizeSp) } }
         updateState()

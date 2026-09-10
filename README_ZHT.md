@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**版本：** v1.0.2 (穩定版)
+**版本：** v1.0.3 (穩定版)
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
@@ -22,7 +22,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.0.2)
+## ✨ 功能特點 (v1.0.3)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **桌面空白處**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -54,6 +54,11 @@
 
 ## 📝 更新日誌 (Changelog)
 
+### v1.0.3
+- 🐛 **LSPosed API 102 崩潰修復**：修復 `ScreenshotHook` 直接修改不可變引數清單造成的 `UnsupportedOperationException` 例外崩潰，改用合規的 `chain.proceed(args)`。
+- 🛡️ **Native 庫載入安全防護**：將 `libdexkit.so` 的載入包覆於 `runCatching` 保護區塊，避免多模組並存時背景掃描線程意外中斷。
+- 📶 **網速指示器與 IPC 偏好護航**：修復初次安裝時字型與輪詢週期歸零導致顯示隱形的問題，強化 SystemUI 跨進程偏好數據防護。
+
 ### v1.0.2
 - 🔓 **全模組 DE 儲存區統一載入**：全專案 10 個 Hook 模組統一改用 DE 儲存區優先查詢，徹底解決解鎖前（Direct Boot）因 FBE 加密導致 Easy Unlock 與 Quick Settings 讀不到設定的問題。
 - ⚙️ **預設值對齊**：將通話錄音與 Call Notes 相關設定全數對齊為預設關閉，提供更乾淨的初次安裝體驗。
@@ -84,7 +89,7 @@
 - **靜態作用域 (Scope)**：系統框架 (System Framework)、電話 (Phone)、Pixel Launcher、System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-<flavor>-v1.0.2-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-<flavor>-v1.0.3-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
 3. 開啟 **PixelTweaks** App 一次以初始化設定（解除 Android `STOPPED` 停止狀態）。
 4. **重新開機您的裝置**。

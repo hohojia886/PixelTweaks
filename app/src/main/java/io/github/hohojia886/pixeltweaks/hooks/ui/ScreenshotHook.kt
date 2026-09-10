@@ -25,10 +25,12 @@ object ScreenshotHook {
     fun hookApp(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val builderClass = classLoader.loadClass("android.view.SurfaceControl\$Builder")
-            module.hookBefore(builderClass.getDeclaredMethod("setSecure", Boolean::class.java)) { chain ->
+            module.hook(builderClass.getDeclaredMethod("setSecure", Boolean::class.java)).intercept { chain ->
                 if (isEnabled) {
-                    chain.args[0] = false
                     Logger.d(TAG, "Action", "Forced SurfaceControl.setSecure(false)")
+                    chain.proceed(arrayOf(false))
+                } else {
+                    chain.proceed()
                 }
             }
         }
