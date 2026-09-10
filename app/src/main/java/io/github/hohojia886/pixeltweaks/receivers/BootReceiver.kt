@@ -21,6 +21,24 @@ class BootReceiver : BroadcastReceiver() {
             val deContext = context.createDeviceProtectedStorageContext()
             val prefs = deContext.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
             
+            if (action == Intent.ACTION_USER_UNLOCKED) {
+                // When user unlocks, CE storage is accessible. Sync CE preferences over to DE preferences to preserve user settings.
+                val cePrefs = context.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
+                if (cePrefs.all.isNotEmpty()) {
+                    val editor = prefs.edit()
+                    cePrefs.all.forEach { (k, v) ->
+                        when (v) {
+                            is Boolean -> editor.putBoolean(k, v)
+                            is Int -> editor.putInt(k, v)
+                            is Float -> editor.putFloat(k, v)
+                            is Long -> editor.putLong(k, v)
+                            is String -> editor.putString(k, v)
+                        }
+                    }
+                    editor.apply()
+                }
+            }
+
             // Seed DE defaults if keys are absent, and reset high-risk security bypasses
             prefs.edit().apply {
                 if (!prefs.contains(PreferenceKeys.ENABLE_EASY_UNLOCK)) putBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)

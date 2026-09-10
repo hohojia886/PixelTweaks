@@ -66,7 +66,7 @@ object IpcManager {
         }.getOrNull()
     }
 
-    // Unified preference loader: Prioritizes ContentProvider DE storage query (Direct Boot compatible) before CE fallback
+    // Unified preference loader: Prioritizes RemotePreferences, falls back to DE ContentProvider if RemotePreferences is empty or missing
     fun loadPreferences(module: XposedModule, classLoader: ClassLoader? = null, packageName: String? = null): Bundle {
         val bundle = Bundle()
         
@@ -116,8 +116,8 @@ object IpcManager {
             }
         }
 
-        // 2. Direct DE Storage ContentProvider query (overlays/overrides for Direct Boot / pre-unlock)
-        if (classLoader != null) {
+        // 2. Fallback / Overlay: Direct DE Storage ContentProvider query if RemotePreferences is empty or missing
+        if (classLoader != null && (bundle.isEmpty || prefs == null || prefs.all.isEmpty())) {
             runCatching {
                 val ctx = getSafeContext(classLoader, packageName) ?: getSystemContext(classLoader)
                 if (ctx != null) {

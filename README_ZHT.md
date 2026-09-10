@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**版本：** v1.0.3 (穩定版)
+**版本：** v1.0.4 (穩定版)
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
@@ -22,7 +22,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.0.3)
+## ✨ 功能特點 (v1.0.4)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **桌面空白處**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -53,6 +53,10 @@
 - **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有 10 個功能模組與滑桿（**僅限 Debug Build**）。
 
 ## 📝 更新日誌 (Changelog)
+
+### v1.0.4
+- 🛠️ **設定儲存架構重構與自我修復**：將 LSPosed RemotePreferences 設為唯一權威來源，徹底解決安裝其他模組後設定消失或重開機被預設值覆蓋的問題。
+- 🔄 **雙向同步與 Direct Boot 防護**：實作 SettingsActivity 啟動時 CE/DE 雙向自我修復與 `BootReceiver` 解鎖時同步機制，確保設定永不丟失且跨進程即時生效。
 
 ### v1.0.3
 - 🐛 **LSPosed API 102 崩潰修復**：修復 `ScreenshotHook` 直接修改不可變引數清單造成的 `UnsupportedOperationException` 例外崩潰，改用合規的 `chain.proceed(args)`。

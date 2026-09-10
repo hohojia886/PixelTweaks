@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**Version:** v1.0.3 (Stable Release)
+**Version:** v1.0.4 (Stable Release)
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -20,7 +20,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.0.3)
+## ✨ Features (v1.0.4)
 
 ### 🎨 Double Tap To Sleep
 - **Launcher Workspace**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -51,6 +51,10 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Enable Master Logging**: Standardized, low-overhead logging system with complete coverage across all 10 functional modules and sliders (**Debug build only**).
 
 ## 📝 Changelog
+
+### v1.0.4
+- 🛠️ **Settings Persistence & Self-Healing Architecture**: Refactored preference storage to establish LSPosed RemotePreferences as the primary source of truth, resolving preference loss and boot override issues when installing other modules.
+- 🔄 **Bidirectional Sync & Direct Boot Protection**: Implemented robust startup CE/DE self-healing and `ACTION_USER_UNLOCKED` synchronization to ensure user settings are never overwritten and sync instantly across processes.
 
 ### v1.0.3
 - 🐛 **LSPosed API 102 Exception Fix**: Resolved an `UnsupportedOperationException` in `ScreenshotHook` by replacing immutable argument list mutations with standard `chain.proceed(args)` calls.

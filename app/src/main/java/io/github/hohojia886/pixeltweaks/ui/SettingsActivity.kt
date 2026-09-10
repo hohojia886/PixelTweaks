@@ -62,8 +62,11 @@ class SettingsActivity : AppCompatActivity() {
         val dePrefs = deContext.getSharedPreferences(IpcManager.PREF_NAME, MODE_PRIVATE)
         val cePrefs = getSharedPreferences(IpcManager.PREF_NAME, MODE_PRIVATE)
 
-        // Populate initial default preferences if first run and perform full sync
-        if (!dePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC)) {
+        // Self-Healing & Synchronization Flow:
+        // 1. If both CE and DE are empty, seed defaults to both.
+        // 2. If CE has data but DE is empty, sync CE -> DE.
+        // 3. If DE has data but CE is empty, sync DE -> CE.
+        if (!cePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC) && !dePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC)) {
             saveDoublePref(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f, cePrefs, dePrefs)
@@ -83,6 +86,14 @@ class SettingsActivity : AppCompatActivity() {
             saveDoublePref(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false, cePrefs, dePrefs)
             IpcManager.syncAllSettings(this, dePrefs)
+        } else {
+            if (cePrefs.all.isNotEmpty() && dePrefs.all.isEmpty()) {
+                cePrefs.all.forEach { (k, v) -> if (v != null) saveDoublePref(k, v, cePrefs, dePrefs) }
+                IpcManager.syncAllSettings(this, dePrefs)
+            } else if (dePrefs.all.isNotEmpty() && cePrefs.all.isEmpty()) {
+                dePrefs.all.forEach { (k, v) -> if (v != null) saveDoublePref(k, v, cePrefs, dePrefs) }
+                IpcManager.syncAllSettings(this, dePrefs)
+            }
         }
 
         // Security
