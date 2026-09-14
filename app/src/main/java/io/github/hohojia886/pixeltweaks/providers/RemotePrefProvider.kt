@@ -28,7 +28,14 @@ class RemotePrefProvider : ContentProvider() {
         if (trustedUids.isNotEmpty()) return
         val ctx = context ?: return
         val pm = ctx.packageManager
-        val packages = listOf("com.android.systemui", "com.google.android.dialer", "com.android.dialer")
+        val packages = listOf(
+            "com.android.systemui", 
+            "com.google.android.dialer", 
+            "com.android.dialer",
+            "com.google.android.apps.nexuslauncher",
+            "com.google.android.launcher",
+            "com.android.launcher3"
+        )
         
         packages.forEach { pkg ->
             runCatching {
@@ -60,16 +67,17 @@ class RemotePrefProvider : ContentProvider() {
         if (method == "get") {
             val isWhitelisted = callingUid < 1000 || trustedUids.contains(callingUid)
             if (!isWhitelisted) {
-                Logger.w(TAG, "Warning", "UID $callingUid is reading prefs without whitelist")
+                Logger.e(TAG, "Blocked", "Unauthorized READ from UID: $callingUid")
+                return null
             }
-            return handleGet(isWhitelisted)
+            return handleGet()
         }
 
         return null
     }
 
     // Internal read logic that bundles DE SharedPreferences into a Bundle for IPC
-    private fun handleGet(fullAccess: Boolean): Bundle {
+    private fun handleGet(): Bundle {
         val ctx = context?.createDeviceProtectedStorageContext() ?: return Bundle()
         val prefs = ctx.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
         val bundle = Bundle()

@@ -166,8 +166,8 @@ class MainHook : XposedModule() {
     // Lifecycle: Iterates through defined hooks and applies those matching the current package
     override fun onPackageLoaded(param: PackageLoadedParam) {
         super.onPackageLoaded(param)
-        val pkgName = param.packageName ?: return
-        val classLoader = param.defaultClassLoader ?: return
+        val pkgName = param.packageName
+        val classLoader = param.defaultClassLoader
         
         val isRootSystemServer = pkgName == "android" && isSystemServerProcess
 

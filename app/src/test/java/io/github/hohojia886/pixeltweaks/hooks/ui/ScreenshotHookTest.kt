@@ -51,9 +51,9 @@ class ScreenshotHookTest {
 
         val clazz = ScreenshotHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)
-        val syncMethod = clazz.getDeclaredMethod("syncSettings", XposedModule::class.java)
+        val syncMethod = clazz.getDeclaredMethod("syncSettings", XposedModule::class.java, ClassLoader::class.java)
         syncMethod.isAccessible = true
-        syncMethod.invoke(instance, module)
+        syncMethod.invoke(instance, module, null)
 
         val enabledField = clazz.getDeclaredField("isEnabled").apply { isAccessible = true }
         assertFalse(enabledField.get(instance) as Boolean)

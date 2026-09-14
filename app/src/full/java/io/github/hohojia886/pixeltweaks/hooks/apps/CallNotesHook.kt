@@ -181,14 +181,16 @@ object CallNotesHook {
             val action = intent.action ?: return@registerSecureReceiver
             if (action == IpcManager.ACTION_SETTINGS_SYNC) {
                 isSilenceEnabled = intent.getBooleanExtra(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false)
-            } else {
+                mutedInstances.clear()
+                Logger.i(TAG, "Sync", "Full sync received: isSilenceEnabled=$isSilenceEnabled")
+            } else if (action == IpcManager.ACTION_SETTING_CHANGED) {
                 val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
                 if (key == PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT) {
                     isSilenceEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
+                    mutedInstances.clear() // Clear cache on change to re-evaluate new streams
+                    Logger.i(TAG, "Sync", "isSilenceEnabled updated to: $isSilenceEnabled")
                 }
             }
-            mutedInstances.clear() // Clear cache on change to re-evaluate new streams
-            Logger.i(TAG, "Sync", "isSilenceEnabled updated to: $isSilenceEnabled")
         }
         Logger.d(TAG, "Receiver", "Registered for $currentPkg")
     }

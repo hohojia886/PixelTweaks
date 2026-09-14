@@ -22,7 +22,6 @@ object IpcManager {
     const val ACTION_SETTING_CHANGED = "io.github.hohojia886.pixeltweaks.SETTING_CHANGED"
     const val ACTION_SETTINGS_SYNC = "io.github.hohojia886.pixeltweaks.SETTINGS_SYNC"
     const val ACTION_REQUEST_SLEEP = "io.github.hohojia886.pixeltweaks.REQUEST_SLEEP"
-    const val PERMISSION_SYNC_SETTINGS = "io.github.hohojia886.pixeltweaks.permission.SYNC_SETTINGS"
 
     private var sysContextRef: WeakReference<Context>? = null // Cached system context
 
@@ -113,6 +112,10 @@ object IpcManager {
             runCatching {
                 val len = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1)
                 if (len > 0) bundle.putInt(PreferenceKeys.EXPECTED_PASS_LEN, len)
+                val dgTs = prefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
+                if (dgTs > 0) bundle.putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, dgTs)
+                val sigTs = prefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
+                if (sigTs > 0) bundle.putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, sigTs)
             }
         }
 

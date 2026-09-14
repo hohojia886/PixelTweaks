@@ -7,7 +7,7 @@ cd /d "%~dp0"
 set "JAVA_HOME=C:\Program Files\Android\Android Studio\jbr"
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 
-set "VERSION=1.0.2"
+set "VERSION=1.0.5"
 
 echo ========================================
 echo   PixelTweaks Build Script (v%VERSION%)

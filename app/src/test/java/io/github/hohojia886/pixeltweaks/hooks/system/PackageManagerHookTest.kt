@@ -101,9 +101,9 @@ class PackageManagerHookTest {
         
         val clazz = PackageManagerHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)
-        val refreshMethod = clazz.getDeclaredMethod("refreshSettings", XposedModule::class.java)
+        val refreshMethod = clazz.getDeclaredMethod("refreshSettings", XposedModule::class.java, ClassLoader::class.java)
         refreshMethod.isAccessible = true
-        refreshMethod.invoke(instance, module)
+        refreshMethod.invoke(instance, module, javaClass.classLoader)
         
         val downgradeField = clazz.getDeclaredField("isDowngradeEnabled")
         downgradeField.isAccessible = true

@@ -148,7 +148,7 @@ object EasyUnlockHook {
                         runCatching {
                             val instance = chain.thisObject
                             val passwordEntry = findField(instance.javaClass, "mPasswordEntry")?.get(instance) ?: return@runCatching
-                            val text = findMethod(passwordEntry.javaClass, "getText")?.invoke(passwordEntry) ?: 
+                            val text = findMethod(passwordEntry.javaClass)?.invoke(passwordEntry) ?: 
                                        findField(passwordEntry.javaClass, "mText")?.get(passwordEntry)
                             
                             val length = if (text is CharSequence) text.length else 0
@@ -178,11 +178,11 @@ object EasyUnlockHook {
     }
 
     // Reflection Helper: Finds a method in the class hierarchy
-    private fun findMethod(clazz: Class<*>, name: String): Method? {
+    private fun findMethod(clazz: Class<*>): Method? {
         var curr: Class<*>? = clazz
         while (curr != null) {
-            try { return curr.getDeclaredMethod(name).apply { isAccessible = true } } 
-            catch (e: NoSuchMethodException) { curr = curr.superclass }
+            try { return curr.getDeclaredMethod("getText").apply { isAccessible = true } } 
+            catch (_: NoSuchMethodException) { curr = curr.superclass }
         }
         return null
     }

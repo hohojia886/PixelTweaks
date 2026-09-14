@@ -6,8 +6,8 @@ plugins {
     id("com.android.application")
 }
 
-val appVersionName = "1.0.4"
-val appVersionCode = 5
+val appVersionName = "1.0.5"
+val appVersionCode = 6
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")

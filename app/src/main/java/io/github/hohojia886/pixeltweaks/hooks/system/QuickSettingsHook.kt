@@ -8,6 +8,8 @@ import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 
 /**
  * QuickSettingsHook: Enhances Quick Settings tile behaviors.
@@ -62,6 +64,10 @@ object QuickSettingsHook {
             val wifiRepoClass = classLoader.loadClass("com.android.systemui.statusbar.pipeline.wifi.data.repository.prod.WifiRepositoryImpl")
             val pauseWifiMethod = wifiRepoClass.getDeclaredMethod("pauseWifi")
 
+            // Cache reflections outside of the interceptor
+            var cancelMethodCached: Method? = null
+            var wifiManagerFieldCached: Field? = null
+
             module.hook(pauseWifiMethod).intercept { chain ->
                 if (!isWifiFixEnabled) {
                     Logger.i(TAG, "Running", "WiFi Fix Disabled -> Proceeding with factory pauseWifi")
@@ -70,15 +76,20 @@ object QuickSettingsHook {
 
                 val instance = chain.thisObject ?: return@intercept chain.proceed()
                 try {
-                    // Prevent state flicker: cancelOptimisticToggleTimeoutJobs()
-                    runCatching {
-                        val cancelMethod = instance.javaClass.getDeclaredMethod("cancelOptimisticToggleTimeoutJobs")
-                        cancelMethod.isAccessible = true
-                        cancelMethod.invoke(instance)
+                    // Lazy-init cache (since instance class might be needed)
+                    if (cancelMethodCached == null) {
+                        cancelMethodCached = instance.javaClass.getDeclaredMethod("cancelOptimisticToggleTimeoutJobs").apply { isAccessible = true }
+                    }
+                    if (wifiManagerFieldCached == null) {
+                        wifiManagerFieldCached = instance.javaClass.getDeclaredField("wifiManager").apply { isAccessible = true }
                     }
 
-                    val wifiManagerField = instance.javaClass.getDeclaredField("wifiManager").apply { isAccessible = true }
-                    val wifiManager = wifiManagerField.get(instance) as? WifiManager
+                    // Prevent state flicker: cancelOptimisticToggleTimeoutJobs()
+                    runCatching {
+                        cancelMethodCached?.invoke(instance)
+                    }
+
+                    val wifiManager = wifiManagerFieldCached?.get(instance) as? WifiManager
 
                     if (wifiManager != null) {
                         Logger.i(TAG, "Success", "WiFi Fix Active -> Forcing setWifiEnabled(false)")

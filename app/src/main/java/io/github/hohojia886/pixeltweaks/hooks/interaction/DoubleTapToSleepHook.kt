@@ -20,6 +20,7 @@
 package io.github.hohojia886.pixeltweaks.hooks.interaction
 
 import android.content.Context
+import android.os.PowerManager
 import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
@@ -150,22 +151,28 @@ object DoubleTapToSleepHook {
             val pulsingClass = classLoader.loadClass("com.android.systemui.shade.PulsingGestureListener")
             val stateControllerClass = classLoader.loadClass("com.android.systemui.plugins.statusbar.StatusBarStateController")
             
+            // Cache reflection and system services outside the interceptor block to avoid Hot-path lag
+            val controllerField = pulsingClass.getDeclaredField("statusBarStateController").apply { isAccessible = true }
+            val isDozingMethod = stateControllerClass.getMethod("isDozing")
+            val sysContext = IpcManager.getSystemContext(classLoader)
+            val powerManager = sysContext?.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            
             pulsingClass.declaredMethods.find { it.name == "onDoubleTapEvent" && it.parameterTypes.isEmpty() }?.let { m ->
                 module.hook(m).intercept { chain ->
                     if (isDtLockscreenEnabled) {
                         val listener = chain.thisObject
-                        val controllerField = pulsingClass.getDeclaredField("statusBarStateController").apply { isAccessible = true }
                         val controller = controllerField.get(listener)
-                        val isDozing = stateControllerClass.getMethod("isDozing").invoke(controller) as Boolean
+                        val isDozing = isDozingMethod.invoke(controller) as Boolean
                         
-                        val pm = IpcManager.getSystemContext(classLoader)?.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
-                        val isInteractive = pm?.isInteractive ?: false
+                        val isInteractive = powerManager?.isInteractive ?: false
                         val isUserTyping = (SystemClock.uptimeMillis() - lastUnlockInteractionTime) < 2000
                         val isRecentlyWoken = (SystemClock.uptimeMillis() - lastWakeTime) < 500
 
                         if (isInteractive && !isDozing && !isBouncerShowing && !isUserTyping && !isRecentlyWoken) {
                             Logger.i(TAG, "Success", "DT2S triggered on Lockscreen")
-                            triggerSleep(IpcManager.getSystemContext(classLoader)!!)
+                            if (sysContext != null) {
+                                triggerSleep(sysContext)
+                            }
                             return@intercept true
                         }
                     }

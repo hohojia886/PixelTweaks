@@ -38,10 +38,6 @@ object PackageManagerHook {
         }
     }
 
-    // Direct read from DE storage / RemotePreferences to establish initial security state
-    private fun refreshSettings(module: XposedModule) {
-        refreshSettings(module, null)
-    }
 
     private fun refreshSettings(module: XposedModule, classLoader: ClassLoader?) {
         runCatching {
@@ -72,7 +68,8 @@ object PackageManagerHook {
                         isSignatureBypassEnabled = intent.getBooleanExtra(PreferenceKeys.BYPASS_SIGNATURE, false)
                         downgradeTimestamp = intent.getLongExtra(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
                         signatureTimestamp = intent.getLongExtra(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
-                    } else {
+                        Logger.d(TAG, "Sync", "Settings updated via broadcast: DG=$isDowngradeEnabled, Sig=$isSignatureBypassEnabled")
+                    } else if (intent.action == IpcManager.ACTION_SETTING_CHANGED) {
                         val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
                         val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
                         val now = System.currentTimeMillis()
@@ -80,14 +77,15 @@ object PackageManagerHook {
                             PreferenceKeys.ALLOW_DOWNGRADE -> {
                                 isDowngradeEnabled = value
                                 if (value) downgradeTimestamp = now
+                                Logger.d(TAG, "Sync", "Setting [allow_downgrade] updated to $isDowngradeEnabled")
                             }
                             PreferenceKeys.BYPASS_SIGNATURE -> {
                                 isSignatureBypassEnabled = value
                                 if (value) signatureTimestamp = now
+                                Logger.d(TAG, "Sync", "Setting [bypass_signature] updated to $isSignatureBypassEnabled")
                             }
                         }
                     }
-                    Logger.d(TAG, "Sync", "Settings updated via broadcast: DG=$isDowngradeEnabled, Sig=$isSignatureBypassEnabled")
                 }
             }
         }.start()

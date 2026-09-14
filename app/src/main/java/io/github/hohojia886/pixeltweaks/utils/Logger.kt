@@ -2,6 +2,7 @@ package io.github.hohojia886.pixeltweaks.utils
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import io.github.libxposed.api.XposedModule
 
@@ -41,8 +42,17 @@ object Logger {
     @Volatile var logDT2S = true // Double Tap to Sleep logs
     @Volatile var logEasyUnlock = true // Easy Unlock logs
 
+    private var lastSyncTime = 0L // Debounce caching for syncSettings
+
     // Initializes logging state from DE storage / RemotePreferences during process attachment
     fun sync(module: XposedModule, classLoader: ClassLoader? = null) {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastSyncTime < 2000L) {
+            // Already synced recently within this process, skip to avoid IPC spam
+            return
+        }
+        lastSyncTime = now
+
         runCatching {
             val bundle = if (classLoader != null) IpcManager.loadPreferences(module, classLoader) else Bundle()
             val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
@@ -61,6 +71,9 @@ object Logger {
             logger.i("PXTK_Hook", "[Logger] Settings synced. Master=$isMasterEnabled (PID: ${android.os.Process.myPid()})")
         }
     }
+
+    private var lastBroadcastKey = ""
+    private var lastBroadcastTime = 0L
 
     // Handles real-time log toggle updates via IPC broadcasts
     fun handleBroadcast(intent: Intent) {
@@ -103,18 +116,17 @@ object Logger {
             targetValue = value
         }
 
+        val now = SystemClock.elapsedRealtime()
         if (isChanged && (isMasterEnabled || targetKey == PreferenceKeys.ENABLE_MASTER_LOG)) {
-            logger.i("PXTK_Hook", "[Success] Log setting [$targetKey] updated to $targetValue")
+            // Debounce identical logs from multiple hooks receiving the same broadcast
+            if (targetKey != lastBroadcastKey || now - lastBroadcastTime > 2000L) {
+                lastBroadcastKey = targetKey
+                lastBroadcastTime = now
+                logger.i("PXTK_Hook", "[Success] Log setting [$targetKey] updated to $targetValue")
+            }
         }
     }
 
-    // Verbose: Only logs if Master and Sub-toggle are both enabled
-    @Suppress("NOTHING_TO_INLINE")
-    inline fun v(tag: String, status: String, msg: String) {
-        if (isMasterEnabled && isSubEnabled(tag)) {
-            runCatching { logger.v("PXTK_$tag", "[$status] $msg") }
-        }
-    }
 
     // Debug: Only logs if Master and Sub-toggle are both enabled
     @Suppress("NOTHING_TO_INLINE")

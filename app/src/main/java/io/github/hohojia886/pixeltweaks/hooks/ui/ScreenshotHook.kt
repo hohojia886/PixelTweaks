@@ -26,7 +26,8 @@ object ScreenshotHook {
         runCatching {
             val builderClass = classLoader.loadClass("android.view.SurfaceControl\$Builder")
             module.hook(builderClass.getDeclaredMethod("setSecure", Boolean::class.java)).intercept { chain ->
-                if (isEnabled) {
+                val requestedSecure = chain.args.getOrNull(0) as? Boolean ?: false
+                if (isEnabled && requestedSecure) {
                     Logger.d(TAG, "Action", "Forced SurfaceControl.setSecure(false)")
                     chain.proceed(arrayOf(false))
                 } else {
@@ -93,10 +94,6 @@ object ScreenshotHook {
     }
 
     // Loads settings from DE storage/RemotePreferences and registers a receiver for real-time updates
-    private fun syncSettings(module: XposedModule) {
-        syncSettings(module, null)
-    }
-
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader?) {
         val bundle = if (classLoader != null) IpcManager.loadPreferences(module, classLoader) else Bundle()
         val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
