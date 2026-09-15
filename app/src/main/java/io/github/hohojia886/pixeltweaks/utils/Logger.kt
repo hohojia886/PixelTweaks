@@ -2,6 +2,7 @@ package io.github.hohojia886.pixeltweaks.utils
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Process
 import android.os.SystemClock
 import android.util.Log
 import io.github.libxposed.api.XposedModule
@@ -32,8 +33,6 @@ object Logger {
     @Volatile var logger: Logger = AndroidLogger
 
     @Volatile var isMasterEnabled = false // Master toggle for all logs
-    @Volatile var logCallRec = true // Call Recording specific logs
-    @Volatile var logCallNotes = true // Call Notes specific logs
     @Volatile var logClearAll = true // Clear All button specific logs
     @Volatile var logTraffic = true // Network Traffic specific logs
     @Volatile var logQS = true // Quick Settings specific logs
@@ -58,8 +57,6 @@ object Logger {
             val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
 
             isMasterEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, prefs?.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, false) ?: false)
-            logCallRec = bundle.getBoolean(PreferenceKeys.LOG_CALL_RECORDING, prefs?.getBoolean(PreferenceKeys.LOG_CALL_RECORDING, true) ?: true)
-            logCallNotes = bundle.getBoolean(PreferenceKeys.LOG_CALL_NOTES, prefs?.getBoolean(PreferenceKeys.LOG_CALL_NOTES, true) ?: true)
             logClearAll = bundle.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, prefs?.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, true) ?: true)
             logTraffic = bundle.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, prefs?.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, true) ?: true)
             logQS = bundle.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, prefs?.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true) ?: true)
@@ -68,7 +65,7 @@ object Logger {
             logDT2S = bundle.getBoolean(PreferenceKeys.LOG_DT2S, prefs?.getBoolean(PreferenceKeys.LOG_DT2S, true) ?: true)
             logEasyUnlock = bundle.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, prefs?.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true) ?: true)
             
-            logger.i("PXTK_Hook", "[Logger] Settings synced. Master=$isMasterEnabled (PID: ${android.os.Process.myPid()})")
+            logger.i("PXTK_Hook", "[Logger] Settings synced. Master=$isMasterEnabled (PID: ${Process.myPid()})")
         }
     }
 
@@ -85,8 +82,6 @@ object Logger {
 
         if (action == "io.github.hohojia886.pixeltweaks.SETTINGS_SYNC") {
             isMasterEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_MASTER_LOG, false)
-            logCallRec = intent.getBooleanExtra(PreferenceKeys.LOG_CALL_RECORDING, true)
-            logCallNotes = intent.getBooleanExtra(PreferenceKeys.LOG_CALL_NOTES, true)
             logClearAll = intent.getBooleanExtra(PreferenceKeys.LOG_CLEAR_ALL, true)
             logTraffic = intent.getBooleanExtra(PreferenceKeys.LOG_NETWORK_TRAFFIC, true)
             logQS = intent.getBooleanExtra(PreferenceKeys.LOG_QUICK_SETTINGS, true)
@@ -102,8 +97,6 @@ object Logger {
             val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
             when (key) {
                 PreferenceKeys.ENABLE_MASTER_LOG -> if (isMasterEnabled != value) { isMasterEnabled = value; isChanged = true }
-                PreferenceKeys.LOG_CALL_RECORDING -> if (logCallRec != value) { logCallRec = value; isChanged = true }
-                PreferenceKeys.LOG_CALL_NOTES -> if (logCallNotes != value) { logCallNotes = value; isChanged = true }
                 PreferenceKeys.LOG_CLEAR_ALL -> if (logClearAll != value) { logClearAll = value; isChanged = true }
                 PreferenceKeys.LOG_NETWORK_TRAFFIC -> if (logTraffic != value) { logTraffic = value; isChanged = true }
                 PreferenceKeys.LOG_QUICK_SETTINGS -> if (logQS != value) { logQS = value; isChanged = true }
@@ -126,7 +119,6 @@ object Logger {
             }
         }
     }
-
 
     // Debug: Only logs if Master and Sub-toggle are both enabled
     @Suppress("NOTHING_TO_INLINE")
@@ -163,8 +155,6 @@ object Logger {
     // Helper: Maps functional tags to their respective toggle states
     fun isSubEnabled(tag: String): Boolean {
         return when (tag) {
-            "CallRec" -> logCallRec
-            "CallNotes" -> logCallNotes
             "ClearAll" -> logClearAll
             "Traffic" -> logTraffic
             "QuickSettings" -> logQS

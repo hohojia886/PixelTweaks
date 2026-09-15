@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**版本：** v1.0.5 (穩定版)
+**版本：** v1.0.6 (穩定版)  
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
@@ -22,17 +22,12 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.0.5)
+## ✨ 功能特點 (v1.0.6)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **桌面空白處**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
 - **鎖定畫面區域**：支援在鎖定畫面區域雙擊熄屏。
 - **狀態列**：支援在狀態列雙擊熄屏。
-
-### 📞 Google 電話 (Google Dialer)
-- **啟用通話錄音**：透過背景 DexKit 掃描解鎖 Google 電話原生通話錄音。
-- **停用通話錄音語音提示**：阻擋通話錄音開始時的語音警告（採用跨語言資源 ID 與時間窗口 TTS 攔截）。
-- **停用 Call Notes 語音提示**：靜音 AI 錄音與轉錄公告（與通话錄音功能互斥）。
 
 ### ⚙️ 快捷設定 (Quick Settings)
 - **行動數據直接切換**：切換行動數據時直接生效，移除確認對話框。
@@ -50,9 +45,13 @@
 - **網路流量指示器**：狀態列即時網速監控，支援隨狀態列主題自動調整色彩。
 
 ### 🐞 偵錯與日誌 (Debug & Logs)
-- **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有 10 個功能模組與滑桿（**僅限 Debug Build**）。
+- **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有功能模組與滑桿（**僅限 Debug Build**）。
 
 ## 📝 更新日誌 (Changelog)
+
+### v1.0.6
+- 🚀 **專案架構簡化與構建風味統一**：移除 Lite/Full 構建風味，統一為單一 PixelTweaks 產出，顯著降低 APK 體積。
+- 🗑️ **功能完全剝離**：將通話錄音與 Call Notes 功能完全移至獨立專案 **[DialerTweaks](https://github.com/hohojia886/DialerTweaks)** 維護。
 
 ### v1.0.5
 - 🛡️ **IPC 安全性強化與白名單修正**：在 `RemotePrefProvider` 實作嚴格的 UID 存取控制，並將 Launcher 系列包名補齊至信任白名單中。
@@ -69,78 +68,60 @@
 - 📶 **網速指示器與 IPC 偏好護航**：修復初次安裝時字型與輪詢週期歸零導致顯示隱形的問題，強化 SystemUI 跨進程偏好數據防護。
 
 ### v1.0.2
-- 🔓 **全模組 DE 儲存區統一載入**：全專案 10 個 Hook 模組統一改用 DE 儲存區優先查詢，徹底解決解鎖前（Direct Boot）因 FBE 加密導致 Easy Unlock 與 Quick Settings 讀不到設定的問題。
-- ⚙️ **預設值對齊**：將通話錄音與 Call Notes 相關設定全數對齊為預設關閉，提供更乾淨的初次安裝體驗。
+- 🔓 **Direct Boot DE 儲存區統一載入器**：將所有 Hook 模組改為開機初期優先經由 `RemotePrefProvider` 存取 DE 儲存區，徹底解鎖 FBE 加密下首解前的設定綁定。
+- ⚙️ **預設設定重新微調**：將通話錄音與 Call Notes 預設狀態調整為關閉，保持乾淨的初始安裝體驗。
 
 ### v1.0.1
-- 🔀 **功能互斥機制**：設定中通話錄音與 Call Notes 靜音無法同時啟用，以防止共用音訊管線發生衝突。
-- 🔓 **輕鬆解鎖韌性**：修復 App 更新或重開機後因過期廣播導致已學習 PIN 碼長度被重置的問題。
-- 🎨 **DT2S 觸控微調**：使桌面雙擊熄屏更加靈敏且易於觸發。
-- 🐞 **日誌完整覆蓋**：為所有開關與滑桿補全實時日誌輸出，方便 Logcat 除錯。
+- 🔀 **功能互斥保護**：設定介面中通話錄音與 Call Notes 無法同時開啟，防止音訊衝突。
+- 🔓 **Easy Unlock 修正**：修復更新或重開機後 PIN 碼長度被重置的問題。
+- 🎨 **雙擊熄屏優化**：優化雙擊觸控視窗與手勢響應。
+- 🐞 **Log 覆蓋**：補齊所有開關與滑桿的除錯日誌。
 
-## 📦 版本差異 (Editions)
+## 🛠️ 需求與安裝
 
-| 功能 | `lite` (推薦) | `full` |
-|---|:---:|:---:|
-| Material 3 & 邊緣到邊緣 (Edge-to-Edge) | ✅ | ✅ |
-| 清除全部按鈕 & 網路流量指示器 | ✅ | ✅ |
-| 安全設定 & 輕鬆解鎖 | ✅ | ✅ |
-| 雙擊熄屏 (Double Tap To Sleep) | ✅ | ✅ |
-| 啟用通話錄音 | - | ✅ |
-| 停用通話錄音語音提示 | - | ✅ |
-| 停用 Call Notes 語音提示 | - | ✅ |
-| 依賴套件大小 | 最小 | 標準 (含 DexKit) |
-
-## 🛠️ 系統需求與安裝
-
-- **Root + LSPosed**（或任何支援 `libxposed` API 102 的管理器）。
-- **Android 17 (API 37)** 或更新版本。
-- **靜態作用域 (Scope)**：系統框架 (System Framework)、電話 (Phone)、Pixel Launcher、System UI。
+- **Root + LSPosed**（或任何支援 `libxposed` API 102 的框架管理器）。
+- **Android 17 (API 37)** 或更高版本。
+- **作用域**：System Framework, Pixel Launcher, System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-<flavor>-v1.0.3-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-v1.0.6-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
-3. 開啟 **PixelTweaks** App 一次以初始化設定（解除 Android `STOPPED` 停止狀態）。
-4. **重新開機您的裝置**。
+3. 開啟 **PixelTweaks** App 一次以初始化設定（消除 Android 的 `STOPPED` 狀態）。
+4. 重新啟動您的裝置。
 
-## 📦 編譯與簽名說明 (Build & Signing)
+## 📦 編譯與簽名說明
 
 ### 1. 如何編譯
-您可以使用專案內附的 Windows 批次腳本一鍵編譯所有版本：
-- 雙擊根目錄下的 **`Build_APKs.bat`**。
-- 或在終端機執行 `./gradlew assemble`。
-編譯出的 APK 將會輸出至 `app/build/outputs/apk/` 資料夾中。
+您可以在 Windows 上使用提供的批次檔輕鬆編譯所有變體 (`debug` / `release`)：
+- 雙擊專案根目錄下的 **`Build_APKs.bat`**。
+- 或在終端機中執行 `./gradlew assemble`。
+編譯完成的 APK 將輸出至 `app/build/outputs/apk/`。
 
-### 2. 使用自定義簽名金鑰
-- **Debug 版本**：自動使用您電腦本地的 debug keystore（免設定）。
-- **Release 版本 (`release.jks`)**：
-  1. 將您的簽名金鑰檔案 (`release.jks`) 放入 **`app/keystore/`** 資料夾中 (`app/keystore/release.jks`)。
-  2. 在根目錄建立或開啟 **`local.properties`** 檔案並加入您的金鑰憑證：
+### 2. 使用自訂簽名金鑰
+- **Debug Builds**：自動使用電腦本地的 debug 金鑰進行簽名（無需設定）。
+- **Release Builds (`release.jks`)**：
+  1. Place your release keystore file (`release.jks`) into the **`app/keystore/`** directory (`app/keystore/release.jks`).
+  2. Create or open **`local.properties`** in the root project directory and add your keystore credentials:
      ```properties
      keystore.storePassword=your_store_password
      keystore.keyAlias=your_key_alias
      keystore.keyPassword=your_key_password
      ```
-  3. 若無 `release.jks`，Release 建置會自動安全回退（Fallback）使用本地 debug 金鑰進行簽名。
+  3. If `release.jks` is not present, release builds will automatically fall back to signing with your local debug key.
 
-## 📋 待辦事項 (To Do)
-
-- 將通話錄音與 Call Notes 功能剝離成獨立的單一專案，以簡化程式碼結構並便於長期維護。
-
-## 📄 授權條款 (License)
+## 📄 License
 
 本專案採用 **GNU General Public License v3.0 (GPL-3.0)** 授權條款釋出。
 
 詳情請參閱 [LICENSE](./LICENSE) 檔案。
 
-## 📚 致謝與參考
+## 📚 相關專案與致謝
 
+- **[DialerTweaks](https://github.com/hohojia886/DialerTweaks)**：專為 Google Dialer 通話錄音與 Call Notes 語音提示打造的獨立 Xposed 模組。
 - **靈感來源**：部分早期實作構想啟發自 @siavash79 與 @ElTifo 的 [PixelXpert](https://github.com/siavash79/PixelXpert)。目前實作採用與原專案完全不同的技術架構。
-- **技術分析**：特別感謝 [vvb2060/CallRecording](https://github.com/vvb2060/CallRecording) 提供 Dialer 內部運作機制的深入技術解析。
 
 ### 感謝
 - Android Team
 - @topjohnwu (Magisk)
 - @rovo89 (Xposed)
 - LSPosed Team
-- @luckypray (DexKit)

@@ -82,9 +82,6 @@ class SettingsActivity : AppCompatActivity() {
             saveDoublePref(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ALLOW_DOWNGRADE, false, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.BYPASS_SIGNATURE, false, cePrefs, dePrefs)
-            saveDoublePref(PreferenceKeys.ENABLE_CALL_RECORDING, false, cePrefs, dePrefs)
-            saveDoublePref(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true, cePrefs, dePrefs)
-            saveDoublePref(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false, cePrefs, dePrefs)
             IpcManager.syncAllSettings(this, dePrefs)
         } else {
             if (cePrefs.all.isNotEmpty() && dePrefs.all.isEmpty()) {
@@ -130,53 +127,7 @@ class SettingsActivity : AppCompatActivity() {
         setupM3Switch(cePrefs, dePrefs, R.id.switch_qs_wifi_fix, PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
         setupM3Switch(cePrefs, dePrefs, R.id.switch_qs_data_fix, PreferenceKeys.ENABLE_QS_DATA_FIX, true)
 
-        setupDialerMods(dePrefs, cePrefs)
         setupDebugCard(dePrefs, cePrefs)
-    }
-
-    private fun setupDialerMods(dePrefs: SharedPreferences, cePrefs: SharedPreferences) {
-        val layoutCallRecordingSection = findViewById<View>(R.id.layout_call_recording_section)
-        val cardDisableAnnouncement = findViewById<View>(R.id.card_disable_announcement)
-        val switchCallRecording = findViewById<MaterialSwitch>(R.id.switch_call_recording)
-        val switchDisableCallNotes = findViewById<MaterialSwitch>(R.id.switch_disable_call_notes)
-
-        if (BuildConfig.ENABLE_CALL_RECORDING) {
-            layoutCallRecordingSection.visibility = View.VISIBLE
-            
-            // 1. Voice Announcement Mute Switch
-            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_announcement, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, false)
-
-            // 2. Call Recording Switch (Rule 1 & Rule 2)
-            setupM3Switch(cePrefs, dePrefs, R.id.switch_call_recording, PreferenceKeys.ENABLE_CALL_RECORDING, false) { isChecked ->
-                cardDisableAnnouncement.visibility = if (isChecked) View.VISIBLE else View.GONE
-                if (isChecked) {
-                    // Rule 2: When Call Recording is turned ON, automatically turn OFF Call Notes
-                    if (switchDisableCallNotes.isChecked) {
-                        switchDisableCallNotes.isChecked = false
-                    } else {
-                        saveDoublePref(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false, cePrefs, dePrefs)
-                        IpcManager.sendUpdateBroadcast(this, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false)
-                    }
-                }
-            }
-            cardDisableAnnouncement.visibility = if (dePrefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, false)) View.VISIBLE else View.GONE
-
-            // 3. Call Notes Switch (Rule 3)
-            setupM3Switch(cePrefs, dePrefs, R.id.switch_disable_call_notes, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, false) { isChecked ->
-                if (isChecked) {
-                    // Rule 3: When Call Notes is turned ON, automatically turn OFF Call Recording
-                    if (switchCallRecording.isChecked) {
-                        switchCallRecording.isChecked = false
-                    } else {
-                        saveDoublePref(PreferenceKeys.ENABLE_CALL_RECORDING, false, cePrefs, dePrefs)
-                        IpcManager.sendUpdateBroadcast(this, PreferenceKeys.ENABLE_CALL_RECORDING, false)
-                    }
-                    cardDisableAnnouncement.visibility = View.GONE
-                }
-            }
-        } else {
-            layoutCallRecordingSection.visibility = View.GONE
-        }
     }
 
     private fun setupDebugCard(dePrefs: SharedPreferences, cePrefs: SharedPreferences) {
@@ -199,8 +150,6 @@ class SettingsActivity : AppCompatActivity() {
             toggleDebugSubSettingsVisibility(isChecked)
         }
 
-        setupM3Switch(cePrefs, dePrefs, R.id.switch_log_call_notes, PreferenceKeys.LOG_CALL_NOTES, true)
-        setupM3Switch(cePrefs, dePrefs, R.id.switch_log_call_recording, PreferenceKeys.LOG_CALL_RECORDING, true)
         setupM3Switch(cePrefs, dePrefs, R.id.switch_log_clear_all, PreferenceKeys.LOG_CLEAR_ALL, true)
         setupM3Switch(cePrefs, dePrefs, R.id.switch_log_dt2s, PreferenceKeys.LOG_DT2S, true)
         setupM3Switch(cePrefs, dePrefs, R.id.switch_log_easy_unlock, PreferenceKeys.LOG_EASY_UNLOCK, true)
@@ -212,7 +161,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun toggleDebugSubSettingsVisibility(visible: Boolean) {
         val ids = listOf(
-            R.id.card_log_call_notes, R.id.card_log_call_recording, R.id.card_log_clear_all,
+            R.id.card_log_clear_all,
             R.id.card_log_dt2s, R.id.card_log_easy_unlock, R.id.card_log_quick_settings,
             R.id.card_log_unrestricted_screenshots, R.id.card_log_security_bypasses, R.id.card_log_network_traffic
         )

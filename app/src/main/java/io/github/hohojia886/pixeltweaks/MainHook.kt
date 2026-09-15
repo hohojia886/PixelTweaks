@@ -1,11 +1,10 @@
 package io.github.hohojia886.pixeltweaks
 
+import android.os.Process
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface
 import io.github.libxposed.api.XposedModuleInterface.PackageLoadedParam
 import io.github.hohojia886.pixeltweaks.hooks.PixelHook
-import io.github.hohojia886.pixeltweaks.hooks.apps.CallRecordingHook
-import io.github.hohojia886.pixeltweaks.hooks.apps.CallNotesHook
 import io.github.hohojia886.pixeltweaks.hooks.ui.ClearAllButtonHook
 import io.github.hohojia886.pixeltweaks.hooks.interaction.DoubleTapToSleepHook
 import io.github.hohojia886.pixeltweaks.hooks.interaction.EasyUnlockHook
@@ -21,7 +20,6 @@ private val LAUNCHER_PKGS = setOf(
     "com.google.android.launcher",
     "com.android.launcher3"
 )
-private val DIALER_PKGS = setOf("com.google.android.dialer", "com.android.dialer")
 
 /**
  * MainHook: The primary entry point for the LSPosed module.
@@ -29,27 +27,7 @@ private val DIALER_PKGS = setOf("com.google.android.dialer", "com.android.dialer
  * and dispatching specific hook modules to their target packages.
  */
 
-// 1. CallNotes: AI silence logic in Dialer, SystemUI, and system_server
-private object CallNotesEntry : PixelHook {
-    override val name = "CallNotes"
-    override fun matches(packageName: String, isRootSystemServer: Boolean) =
-        isRootSystemServer || packageName == SYSTEMUI_PKG || packageName in DIALER_PKGS
-    override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
-        CallNotesHook.hook(module, classLoader, param.packageName)
-    }
-}
-
-// 2. CallRecording: Enablement in Google Dialer
-private object CallRecordingEntry : PixelHook {
-    override val name = "CallRecording"
-    override fun matches(packageName: String, isRootSystemServer: Boolean) =
-        BuildConfig.ENABLE_CALL_RECORDING && packageName in DIALER_PKGS
-    override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
-        CallRecordingHook.hookFull(module, classLoader, param.packageName, param.applicationInfo.sourceDir)
-    }
-}
-
-// 3. ClearAllButton: "Clear all" button in Pixel Launcher Recents
+// 1. ClearAllButton: "Clear all" button in Pixel Launcher Recents
 private object ClearAllButtonEntry : PixelHook {
     override val name = "ClearAllButton"
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName in LAUNCHER_PKGS
@@ -58,7 +36,7 @@ private object ClearAllButtonEntry : PixelHook {
     }
 }
 
-// 4. DoubleTapToSleep: Gesture handling in SystemUI and Launchers
+// 2. DoubleTapToSleep: Gesture handling in SystemUI and Launchers
 private object DoubleTapToSleepEntry : PixelHook {
     override val name = "DoubleTapToSleep"
     override fun matches(packageName: String, isRootSystemServer: Boolean) =
@@ -68,7 +46,7 @@ private object DoubleTapToSleepEntry : PixelHook {
     }
 }
 
-// 5. EasyUnlock: Auto PIN confirm and learning
+// 3. EasyUnlock: Auto PIN confirm and learning
 private object EasyUnlockEntry : PixelHook {
     override val name = "EasyUnlock"
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
@@ -77,7 +55,7 @@ private object EasyUnlockEntry : PixelHook {
     }
 }
 
-// 6. QuickSettings: WiFi and Mobile Data tile fixes
+// 4. QuickSettings: WiFi and Mobile Data tile fixes
 private object QuickSettingsEntry : PixelHook {
     override val name = "QuickSettings"
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
@@ -86,17 +64,17 @@ private object QuickSettingsEntry : PixelHook {
     }
 }
 
-// 7. Screenshot: Bypassing FLAG_SECURE (Server level)
+// 5. Screenshot: Bypassing FLAG_SECURE (Server level)
 private object ScreenshotServerEntry : PixelHook {
     override val name = "Screenshot-Server"
     override fun matches(packageName: String, isRootSystemServer: Boolean) = 
-        isRootSystemServer || (android.os.Process.myUid() == 1000)
+        isRootSystemServer || (Process.myUid() == 1000)
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         ScreenshotHook.hookSystemServer(module, classLoader)
     }
 }
 
-// 7. Screenshot: Bypassing FLAG_SECURE (SystemUI level)
+// 5. Screenshot: Bypassing FLAG_SECURE (SystemUI level)
 private object ScreenshotSystemUIEntry : PixelHook {
     override val name = "Screenshot-SystemUI"
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
@@ -105,27 +83,26 @@ private object ScreenshotSystemUIEntry : PixelHook {
     }
 }
 
-// 7. Screenshot: Bypassing FLAG_SECURE (App level)
+// 5. Screenshot: Bypassing FLAG_SECURE (App level)
 private object ScreenshotAppEntry : PixelHook {
     override val name = "Screenshot-App"
-    override fun matches(packageName: String, isRootSystemServer: Boolean) =
-        packageName != SYSTEMUI_PKG && packageName !in DIALER_PKGS
+    override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName != SYSTEMUI_PKG
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         ScreenshotHook.hookApp(module, classLoader)
     }
 }
 
-// 8. PackageManager: Downgrade and Signature bypass (Security)
+// 6. PackageManager: Downgrade and Signature bypass (Security)
 private object PackageManagerEntry : PixelHook {
     override val name = "PackageManager"
     override fun matches(packageName: String, isRootSystemServer: Boolean) = 
-        isRootSystemServer || (android.os.Process.myUid() == 1000)
+        isRootSystemServer || (Process.myUid() == 1000)
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         PackageManagerHook.hook(module, classLoader)
     }
 }
 
-// 9. NetworkTraffic: Traffic indicator in SystemUI
+// 7. NetworkTraffic: Traffic indicator in SystemUI
 private object NetworkTrafficEntry : PixelHook {
     override val name = "NetworkTraffic"
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
@@ -139,8 +116,6 @@ class MainHook : XposedModule() {
     private var isSystemServerProcess = false // Tracks if current process is the system_server
 
     private val allHooks: List<PixelHook> = listOf(
-        CallNotesEntry,
-        CallRecordingEntry,
         ClearAllButtonEntry,
         DoubleTapToSleepEntry,
         EasyUnlockEntry,
@@ -155,11 +130,11 @@ class MainHook : XposedModule() {
     // Lifecycle: Initializes logging and identifies process type upon module load
     override fun onModuleLoaded(param: XposedModuleInterface.ModuleLoadedParam) {
         super.onModuleLoaded(param)
-        isSystemServerProcess = param.isSystemServer || android.os.Process.myUid() == 1000
+        isSystemServerProcess = param.isSystemServer || Process.myUid() == 1000
         Logger.sync(this)
         Logger.i(
             "Hook", "Started",
-            "Module loaded (PID: ${android.os.Process.myPid()}, UID: ${android.os.Process.myUid()}, isSys: $isSystemServerProcess)"
+            "Module loaded (PID: ${Process.myPid()}, UID: ${Process.myUid()}, isSys: $isSystemServerProcess)"
         )
     }
 

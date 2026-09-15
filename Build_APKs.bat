@@ -1,44 +1,47 @@
 @echo off
 setlocal enabledelayedexpansion
 
-cd /d "%~dp0"
+:: ================================================================
+:: PixelTweaks Automated Build Script
+:: Batch builds Debug and Release APKs
+:: ================================================================
 
-:: Set path to Java and Android SDK tools
-set "JAVA_HOME=C:\Program Files\Android\Android Studio\jbr"
-set "PATH=%JAVA_HOME%\bin;%PATH%"
+title PixelTweaks Build Script
 
-set "VERSION=1.0.5"
+set "VERSION=1.0.6"
 
-echo ========================================
+echo ================================================================
 echo   PixelTweaks Build Script (v%VERSION%)
-echo ========================================
-
-:: [1] Clean
-echo [1/2] Cleaning old build artifacts...
-call .\gradlew.bat clean
-if %ERRORLEVEL% neq 0 goto :error
-
-:: [2] Assemble All Variants
-echo [2/2] Building all APK variants (Lite/Full x Debug/Release)...
-call .\gradlew.bat assemble
-if %ERRORLEVEL% neq 0 goto :error
-
+echo ================================================================
 echo.
-echo ========================================
-echo   BUILD SUCCESSFUL!
-echo ========================================
-echo.
-echo Output APKs:
-echo   [Lite Debug]   app\build\outputs\apk\lite\debug\pixel-tweaks-lite-v%VERSION%-debug.apk
-echo   [Full Debug]   app\build\outputs\apk\full\debug\pixel-tweaks-full-v%VERSION%-debug.apk
-echo   [Lite Release] app\build\outputs\apk\lite\release\pixel-tweaks-lite-v%VERSION%-release.apk (Signed)
-echo   [Full Release] app\build\outputs\apk\full\release\pixel-tweaks-full-v%VERSION%-release.apk (Signed)
-echo ========================================
-exit /b 0
 
-:error
+echo [1/2] Building Debug APKs...
+call gradlew.bat assembleDebug --daemon
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Debug build failed!
+    pause
+    exit /b %ERRORLEVEL%
+)
+echo [SUCCESS] Debug APKs built successfully!
 echo.
-echo ****************************************
-echo   BUILD FAILED! Please check the logs.
-echo ****************************************
-exit /b 1
+
+echo [2/2] Building Release APKs...
+call gradlew.bat assembleRelease --daemon
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Release build failed!
+    pause
+    exit /b %ERRORLEVEL%
+)
+echo [SUCCESS] Release APKs built successfully!
+echo.
+
+echo ================================================================
+echo   ALL BUILDS COMPLETED SUCCESSFULLY!
+echo ================================================================
+echo Output APK Locations:
+echo   [Debug]   app\build\outputs\apk\debug\pixel-tweaks-v%VERSION%-debug.apk
+echo   [Release] app\build\outputs\apk\release\pixel-tweaks-v%VERSION%-release.apk
+echo ================================================================
+echo.
+
+pause

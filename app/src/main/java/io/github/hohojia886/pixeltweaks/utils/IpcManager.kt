@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
 import android.os.Process
+import android.util.Log
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
 
@@ -88,15 +89,11 @@ object IpcManager {
                 PreferenceKeys.ENABLE_QS_WIFI_FIX, PreferenceKeys.ENABLE_QS_DATA_FIX,
                 PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
                 PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
-                PreferenceKeys.ENABLE_CALL_RECORDING, PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT,
                 PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
-                PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_CALL_NOTES, PreferenceKeys.LOG_CALL_RECORDING,
-                PreferenceKeys.LOG_CLEAR_ALL, PreferenceKeys.LOG_NETWORK_TRAFFIC, PreferenceKeys.LOG_QUICK_SETTINGS,
+                PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_CLEAR_ALL, PreferenceKeys.LOG_NETWORK_TRAFFIC, PreferenceKeys.LOG_QUICK_SETTINGS,
                 PreferenceKeys.LOG_SECURITY_BYPASSES, PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, PreferenceKeys.LOG_DT2S, PreferenceKeys.LOG_EASY_UNLOCK
             )
             val defaultFalseKeys = setOf(
-                PreferenceKeys.ENABLE_CALL_RECORDING,
-                PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT,
                 PreferenceKeys.ALLOW_DOWNGRADE,
                 PreferenceKeys.BYPASS_SIGNATURE,
                 PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
@@ -149,26 +146,17 @@ object IpcManager {
     @SuppressLint("WrongConstant")
     fun syncAllSettings(context: Context, prefs: SharedPreferences) {
         val intent = Intent(ACTION_SETTINGS_SYNC).apply {
-            // 1. CallNotes
-            putExtra(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, prefs.getBoolean(PreferenceKeys.DISABLE_CALL_NOTES_ANNOUNCEMENT, true))
-            putExtra(PreferenceKeys.LOG_CALL_NOTES, prefs.getBoolean(PreferenceKeys.LOG_CALL_NOTES, true))
-
-            // 2. CallRec
-            putExtra(PreferenceKeys.ENABLE_CALL_RECORDING, prefs.getBoolean(PreferenceKeys.ENABLE_CALL_RECORDING, false))
-            putExtra(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, prefs.getBoolean(PreferenceKeys.DISABLE_VOICE_ANNOUNCEMENT, true))
-            putExtra(PreferenceKeys.LOG_CALL_RECORDING, prefs.getBoolean(PreferenceKeys.LOG_CALL_RECORDING, true))
-
-            // 3. ClearAll
+            // ClearAll
             putExtra(PreferenceKeys.ENABLE_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true))
             putExtra(PreferenceKeys.LOG_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, true))
 
-            // 4. DT2S
+            // DT2S
             putExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true))
             putExtra(PreferenceKeys.ENABLE_DT_LOCKSCREEN, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true))
             putExtra(PreferenceKeys.ENABLE_DT_STATUSBAR, prefs.getBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true))
             putExtra(PreferenceKeys.LOG_DT2S, prefs.getBoolean(PreferenceKeys.LOG_DT2S, true))
 
-            // 5. EasyUnlock
+            // EasyUnlock
             val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
                 if (inMemoryLen > 0) inMemoryLen else runCatching {
                     val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
@@ -182,23 +170,23 @@ object IpcManager {
             putExtra(PreferenceKeys.IS_FIRST_UNLOCK_DONE, prefs.getBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false))
             putExtra(PreferenceKeys.LOG_EASY_UNLOCK, prefs.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true))
 
-            // 6. QuickSettings
+            // QuickSettings
             putExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, prefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true))
             putExtra(PreferenceKeys.ENABLE_QS_DATA_FIX, prefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true))
             putExtra(PreferenceKeys.LOG_QUICK_SETTINGS, prefs.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true))
 
-            // 7. Screenshot
+            // Screenshot
             putExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, prefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true))
             putExtra(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, prefs.getBoolean(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, true))
 
-            // 8. Security
+            // Security
             putExtra(PreferenceKeys.ALLOW_DOWNGRADE, prefs.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false))
             putExtra(PreferenceKeys.BYPASS_SIGNATURE, prefs.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false))
             putExtra(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L))
             putExtra(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L))
             putExtra(PreferenceKeys.LOG_SECURITY_BYPASSES, prefs.getBoolean(PreferenceKeys.LOG_SECURITY_BYPASSES, true))
 
-            // 9. Traffic
+            // Traffic
             putExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, prefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, prefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f))
@@ -267,7 +255,7 @@ object IpcManager {
             val targetContext = context.applicationContext ?: context
             targetContext.registerReceiver(receiver, filter, null, null, Context.RECEIVER_EXPORTED)
         } catch (t: Throwable) {
-            android.util.Log.wtf("PXTK_Ipc", "CRITICAL: Receiver registration failed", t)
+            Log.wtf("PXTK_Ipc", "CRITICAL: Receiver registration failed", t)
         }
     }
 
@@ -299,7 +287,7 @@ object IpcManager {
             val targetContext = context.applicationContext ?: context
             targetContext.registerReceiver(receiver, filter, null, null, Context.RECEIVER_EXPORTED)
         } catch (t: Throwable) {
-            android.util.Log.wtf("PXTK_Ipc", "CRITICAL: Sleep receiver registration failed", t)
+            Log.wtf("PXTK_Ipc", "CRITICAL: Sleep receiver registration failed", t)
         }
     }
 }

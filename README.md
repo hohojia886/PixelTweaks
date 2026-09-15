@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**Version:** v1.0.5 (Stable Release)
+**Version:** v1.0.6 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -20,17 +20,12 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.0.5)
+## ✨ Features (v1.0.6)
 
 ### 🎨 Double Tap To Sleep
 - **Launcher Workspace**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
 - **Lockscreen Area**: Integrated support for double-tap gestures on the lockscreen area to sleep.
 - **Status Bar**: Integrated support for double-tap gestures on the status bar to sleep.
-
-### 📞 Google Dialer
-- **Enable Call Recording**: Unlocks native recording in Google Dialer via background DexKit scanning.
-- **Disable Voice Announcement**: Blocks the voice warning at the start of call recording (language-agnostic resource ID & time-window TTS interception).
-- **Disable Call Notes Announcement**: Silences AI recording and transcription announcements (mutually exclusive with Call Recording).
 
 ### ⚙️ Quick Settings
 - **Mobile Data Direct Toggle**: Removes the confirmation dialog when switching to mobile data.
@@ -51,6 +46,10 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Enable Master Logging**: Standardized, low-overhead logging system with complete coverage across all 10 functional modules and sliders (**Debug build only**).
 
 ## 📝 Changelog
+
+### v1.0.6
+- 🚀 **Simplified Architecture & Flavor Unification**: Removed Full/Lite build variants into a unified PixelTweaks build with reduced APK size.
+- 🗑️ **Feature Deprecation**: Completely extracted and removed Call Recording & Call Notes features into [DialerTweaks](https://github.com/hohojia886/DialerTweaks).
 
 ### v1.0.5
 - 🛡️ **IPC Security & Whitelist Enforcement**: Enforced strict UID access controls in `RemotePrefProvider` and updated trusted package whitelists for launcher components.
@@ -76,27 +75,14 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - 🎨 **DT2S Tuning**: Made double-tap to sleep more responsive and easier to trigger on the launcher.
 - 🐞 **Log Coverage**: Added complete log output for all switches and sliders.
 
-## 📦 Editions
-
-| Feature | `lite` (Recommended) | `full` |
-|---|:---:|:---:|
-| Material 3 & Edge-to-Edge | ✅ | ✅ |
-| Clear All button & Network Traffic Indicator | ✅ | ✅ |
-| Security Settings & Easy Unlock | ✅ | ✅ |
-| Double Tap To Sleep | ✅ | ✅ |
-| Enable Call Recording | - | ✅ |
-| Disable Voice Announcement | - | ✅ |
-| Disable Call Notes Announcement | - | ✅ |
-| Dependency Size | Minimum | Standard (DexKit) |
-
 ## 🛠️ Requirements & Installation
 
 - **Root + LSPosed** (or any manager supporting `libxposed` API 102).
 - **Android 17 (API 37)** or newer.
-- **Static Scope Enforcement**: System Framework, Phone, Pixel Launcher, System UI.
+- **Static Scope Enforcement**: System Framework, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-<flavor>-v1.0.3-<buildType>.apk`.
+1. Build or download `pixel-tweaks-v1.0.6-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
 4. Reboot your device.
@@ -104,7 +90,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ## 📦 Build & Signing Instructions
 
 ### 1. How to Build
-You can build all variants (`lite` / `full` x `debug` / `release`) easily using the provided batch script on Windows:
+You can build all variants (`debug` / `release`) easily using the provided batch script on Windows:
 - Double-click **`Build_APKs.bat`** in the root directory.
 - Or run `./gradlew assemble` from your terminal.
 Built APKs will be output to `app/build/outputs/apk/`.
@@ -120,10 +106,6 @@ Built APKs will be output to `app/build/outputs/apk/`.
      keystore.keyPassword=your_key_password
      ```
   3. If `release.jks` is not present, release builds will automatically fall back to signing with your local debug key.
-
-## 📋 To Do
-
-- Extract Call Recording & Call Notes features into a standalone, separate project to simplify codebase structure and ease long-term maintenance.
 
 ## 📄 License
 
@@ -149,13 +131,11 @@ See [LICENSE](./LICENSE) for the full text.
   [PixelXpert](https://github.com/siavash79/PixelXpert) by @siavash79 & @ElTifo.
   The current implementations use different technical approaches from the
   original project.
-- **Technical Analysis**: Special thanks to
-  [vvb2060/CallRecording](https://github.com/vvb2060/CallRecording) for the
-  in-depth technical breakdown of Dialer internals.
+- **Related Projects**:
+  - **[DialerTweaks](https://github.com/hohojia886/DialerTweaks)**: Standalone Xposed module for Google Dialer Call Recording and Call Notes features.
 
 ### Thanks
 - **Android Team**
 - **@topjohnwu** for Magisk
 - **@rovo89** for Xposed
 - **LSPosed Team**
-- **@luckypray** for DexKit

@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ApplicationExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Properties
@@ -6,8 +8,8 @@ plugins {
     id("com.android.application")
 }
 
-val appVersionName = "1.0.5"
-val appVersionCode = 6
+val appVersionName = "1.0.6"
+val appVersionCode = 7
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -19,7 +21,7 @@ val localProperties = Properties().apply {
 val releaseKeystoreFile = rootProject.file("app/keystore/release.jks")
 val hasReleaseKeystore = releaseKeystoreFile.exists()
 
-configure<com.android.build.api.dsl.ApplicationExtension> {
+configure<ApplicationExtension> {
     namespace = "io.github.hohojia886.pixeltweaks"
     compileSdk = 37
 
@@ -54,18 +56,6 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
         }
     }
 
-    flavorDimensions += "tier"
-    productFlavors {
-        create("lite") {
-            dimension = "tier"
-            buildConfigField("boolean", "ENABLE_CALL_RECORDING", "false")
-        }
-        create("full") {
-            dimension = "tier"
-            buildConfigField("boolean", "ENABLE_CALL_RECORDING", "true")
-        }
-    }
-
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
@@ -90,18 +80,16 @@ configure<com.android.build.api.dsl.ApplicationExtension> {
 androidComponents {
     onVariants { variant ->
         variant.outputs.forEach { output ->
-            val flavor = variant.flavorName?.lowercase() ?: ""
             val buildType = variant.buildType?.lowercase() ?: ""
             @Suppress("UnstableApiUsage")
-            output.outputFileName.set("pixel-tweaks-$flavor-v$appVersionName-$buildType.apk")
+            output.outputFileName.set("pixel-tweaks-v$appVersionName-$buildType.apk")
         }
     }
 }
 
-
 kotlin {
     compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
@@ -116,9 +104,6 @@ dependencies {
     implementation("androidx.core:core-ktx:1.19.0")
     implementation("androidx.constraintlayout:constraintlayout:2.2.2")
     implementation("androidx.activity:activity-ktx:1.13.0")
-
-    // DexKit only for full version
-    "fullImplementation"("org.luckypray:dexkit:2.2.0")
 
     // Unit tests
     testImplementation("junit:junit:4.13.2")
