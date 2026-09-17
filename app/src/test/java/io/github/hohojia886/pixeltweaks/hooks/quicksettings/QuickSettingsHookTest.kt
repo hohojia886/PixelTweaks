@@ -1,5 +1,7 @@
-package io.github.hohojia886.pixeltweaks.hooks.ui
+package io.github.hohojia886.pixeltweaks.hooks.quicksettings
 
+import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
@@ -12,10 +14,9 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-class ClearAllButtonHookTest {
+class QuickSettingsHookTest {
 
     private lateinit var module: XposedModule
     private lateinit var prefs: SharedPreferences
@@ -33,29 +34,34 @@ class ClearAllButtonHookTest {
     }
 
     private fun resetSingleton() {
-        val clazz = ClearAllButtonHook::class.java
+        val clazz = QuickSettingsHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)
         val fields = clazz.declaredFields
         for (field in fields) {
             field.isAccessible = true
-            when (field.name) {
-                "isEnabled" -> field.set(instance, true)
-                "receiverRegistered" -> field.set(instance, false)
-            }
+            if (field.name == "isWifiFixEnabled") field.set(instance, true)
+            if (field.name == "isDataFixEnabled") field.set(instance, true)
+            if (field.name == "receiverRegistered") field.set(instance, false)
         }
     }
 
     @Test
     fun testInitialLoad() {
-        whenever(prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true)).thenReturn(false)
+        whenever(prefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)).thenReturn(false)
+        whenever(prefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true)).thenReturn(false)
 
         val classLoader = mock(ClassLoader::class.java)
-        ClearAllButtonHook.hook(module, classLoader)
+        QuickSettingsHook.hook(module, classLoader)
 
-        val clazz = ClearAllButtonHook::class.java
+        val clazz = QuickSettingsHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)
-        val enabledField = clazz.getDeclaredField("isEnabled").apply { isAccessible = true }
-        assertFalse(enabledField.get(instance) as Boolean)
+        val wifiField = clazz.getDeclaredField("isWifiFixEnabled")
+        wifiField.isAccessible = true
+        assertFalse(wifiField.get(instance) as Boolean)
+
+        val dataField = clazz.getDeclaredField("isDataFixEnabled")
+        dataField.isAccessible = true
+        assertFalse(dataField.get(instance) as Boolean)
     }
 
 }

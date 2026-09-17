@@ -1,6 +1,7 @@
-package io.github.hohojia886.pixeltweaks.hooks.system
+package io.github.hohojia886.pixeltweaks.hooks.security
 
 import android.os.Bundle
+import android.os.IBinder
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -96,7 +97,7 @@ object PackageManagerHook {
         return runCatching {
             val smClass = classLoader.loadClass("android.os.ServiceManager")
             val getService = smClass.getDeclaredMethod("getService", String::class.java)
-            val binder = getService.invoke(null, "package") as android.os.IBinder
+            val binder = getService.invoke(null, "package") as IBinder
             val realClassLoader = binder.javaClass.classLoader
 
             // A. PackageInstallerService: Injects flags (0x82) to permit version downgrades

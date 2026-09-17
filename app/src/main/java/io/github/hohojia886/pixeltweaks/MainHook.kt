@@ -1,18 +1,18 @@
 package io.github.hohojia886.pixeltweaks
 
 import android.os.Process
+import io.github.hohojia886.pixeltweaks.hooks.PixelHook
+import io.github.hohojia886.pixeltweaks.hooks.gestures.DoubleTapToSleepHook
+import io.github.hohojia886.pixeltweaks.hooks.`interface`.ClearAllButtonHook
+import io.github.hohojia886.pixeltweaks.hooks.`interface`.NetworkTrafficHook
+import io.github.hohojia886.pixeltweaks.hooks.quicksettings.QuickSettingsHook
+import io.github.hohojia886.pixeltweaks.hooks.security.EasyUnlockHook
+import io.github.hohojia886.pixeltweaks.hooks.security.PackageManagerHook
+import io.github.hohojia886.pixeltweaks.hooks.security.ScreenshotHook
+import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.libxposed.api.XposedModule
 import io.github.libxposed.api.XposedModuleInterface
 import io.github.libxposed.api.XposedModuleInterface.PackageLoadedParam
-import io.github.hohojia886.pixeltweaks.hooks.PixelHook
-import io.github.hohojia886.pixeltweaks.hooks.ui.ClearAllButtonHook
-import io.github.hohojia886.pixeltweaks.hooks.interaction.DoubleTapToSleepHook
-import io.github.hohojia886.pixeltweaks.hooks.interaction.EasyUnlockHook
-import io.github.hohojia886.pixeltweaks.hooks.ui.NetworkTrafficHook
-import io.github.hohojia886.pixeltweaks.hooks.system.PackageManagerHook
-import io.github.hohojia886.pixeltweaks.hooks.system.QuickSettingsHook
-import io.github.hohojia886.pixeltweaks.hooks.ui.ScreenshotHook
-import io.github.hohojia886.pixeltweaks.utils.Logger
 
 private const val SYSTEMUI_PKG = "com.android.systemui"
 private val LAUNCHER_PKGS = setOf(

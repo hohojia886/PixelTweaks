@@ -6,10 +6,11 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val appVersionName = "1.0.6"
-val appVersionCode = 7
+val appVersionName = "1.0.7"
+val appVersionCode = 8
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -43,6 +44,7 @@ configure<ApplicationExtension> {
 
     buildFeatures {
         buildConfig = true
+        compose = true
     }
 
     signingConfigs {
@@ -98,12 +100,24 @@ dependencies {
     compileOnly("io.github.libxposed:api:102.0.0")
     testImplementation("io.github.libxposed:api:102.0.0")
 
-    // Latest Stable Material 3 & AndroidX
+    // AndroidX & Material Design
     implementation("com.google.android.material:material:1.14.0")
     implementation("androidx.appcompat:appcompat:1.8.0")
     implementation("androidx.core:core-ktx:1.19.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.2.2")
     implementation("androidx.activity:activity-ktx:1.13.0")
+
+    // Jetpack Compose & Material 3
+    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.activity:activity-compose:1.13.0")
+    debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Unit tests
     testImplementation("junit:junit:4.13.2")
@@ -114,7 +128,7 @@ dependencies {
     testImplementation("androidx.test.ext:junit:1.3.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
-    // Instrumentation tests (Emulator required)
+    // Instrumentation tests
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
 }
 

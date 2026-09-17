@@ -90,8 +90,8 @@ object IpcManager {
                 PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
                 PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
                 PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
-                PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_CLEAR_ALL, PreferenceKeys.LOG_NETWORK_TRAFFIC, PreferenceKeys.LOG_QUICK_SETTINGS,
-                PreferenceKeys.LOG_SECURITY_BYPASSES, PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, PreferenceKeys.LOG_DT2S, PreferenceKeys.LOG_EASY_UNLOCK
+                PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_SECURITY, PreferenceKeys.LOG_INTERFACE,
+                PreferenceKeys.LOG_GESTURES, PreferenceKeys.LOG_QUICK_SETTINGS
             )
             val defaultFalseKeys = setOf(
                 PreferenceKeys.ALLOW_DOWNGRADE,
@@ -148,13 +148,11 @@ object IpcManager {
         val intent = Intent(ACTION_SETTINGS_SYNC).apply {
             // ClearAll
             putExtra(PreferenceKeys.ENABLE_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true))
-            putExtra(PreferenceKeys.LOG_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, true))
 
             // DT2S
             putExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true))
             putExtra(PreferenceKeys.ENABLE_DT_LOCKSCREEN, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true))
             putExtra(PreferenceKeys.ENABLE_DT_STATUSBAR, prefs.getBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true))
-            putExtra(PreferenceKeys.LOG_DT2S, prefs.getBoolean(PreferenceKeys.LOG_DT2S, true))
 
             // EasyUnlock
             val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
@@ -168,33 +166,32 @@ object IpcManager {
             putExtra(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false))
             putExtra(PreferenceKeys.EXPECTED_PASS_LEN, expectedPassLen)
             putExtra(PreferenceKeys.IS_FIRST_UNLOCK_DONE, prefs.getBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false))
-            putExtra(PreferenceKeys.LOG_EASY_UNLOCK, prefs.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true))
 
             // QuickSettings
             putExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, prefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true))
             putExtra(PreferenceKeys.ENABLE_QS_DATA_FIX, prefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true))
-            putExtra(PreferenceKeys.LOG_QUICK_SETTINGS, prefs.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true))
 
             // Screenshot
             putExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, prefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true))
-            putExtra(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, prefs.getBoolean(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, true))
 
             // Security
             putExtra(PreferenceKeys.ALLOW_DOWNGRADE, prefs.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false))
             putExtra(PreferenceKeys.BYPASS_SIGNATURE, prefs.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false))
             putExtra(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L))
             putExtra(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L))
-            putExtra(PreferenceKeys.LOG_SECURITY_BYPASSES, prefs.getBoolean(PreferenceKeys.LOG_SECURITY_BYPASSES, true))
 
             // Traffic
             putExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, prefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, prefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1))
-            putExtra(PreferenceKeys.LOG_NETWORK_TRAFFIC, prefs.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, true))
 
-            // General / Debug
+            // General / Debug Logs (4 Categories)
             putExtra(PreferenceKeys.ENABLE_MASTER_LOG, prefs.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, false))
+            putExtra(PreferenceKeys.LOG_SECURITY, prefs.getBoolean(PreferenceKeys.LOG_SECURITY, true))
+            putExtra(PreferenceKeys.LOG_INTERFACE, prefs.getBoolean(PreferenceKeys.LOG_INTERFACE, true))
+            putExtra(PreferenceKeys.LOG_GESTURES, prefs.getBoolean(PreferenceKeys.LOG_GESTURES, true))
+            putExtra(PreferenceKeys.LOG_QUICK_SETTINGS, prefs.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true))
 
             addFlags(0x01000000) // FLAG_RECEIVER_INCLUDE_BACKGROUND
         }

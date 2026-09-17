@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.ui
+package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
@@ -12,10 +12,9 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-class ScreenshotHookTest {
+class ClearAllButtonHookTest {
 
     private lateinit var module: XposedModule
     private lateinit var prefs: SharedPreferences
@@ -33,28 +32,27 @@ class ScreenshotHookTest {
     }
 
     private fun resetSingleton() {
-        val clazz = ScreenshotHook::class.java
+        val clazz = ClearAllButtonHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)
         val fields = clazz.declaredFields
         for (field in fields) {
             field.isAccessible = true
             when (field.name) {
                 "isEnabled" -> field.set(instance, true)
-                "isSystemHooked" -> field.set(instance, false)
+                "receiverRegistered" -> field.set(instance, false)
             }
         }
     }
 
     @Test
-    fun testSyncSettings() {
-        whenever(prefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)).thenReturn(false)
+    fun testInitialLoad() {
+        whenever(prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true)).thenReturn(false)
 
-        val clazz = ScreenshotHook::class.java
+        val classLoader = mock(ClassLoader::class.java)
+        ClearAllButtonHook.hook(module, classLoader)
+
+        val clazz = ClearAllButtonHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)
-        val syncMethod = clazz.getDeclaredMethod("syncSettings", XposedModule::class.java, ClassLoader::class.java)
-        syncMethod.isAccessible = true
-        syncMethod.invoke(instance, module, null)
-
         val enabledField = clazz.getDeclaredField("isEnabled").apply { isAccessible = true }
         assertFalse(enabledField.get(instance) as Boolean)
     }

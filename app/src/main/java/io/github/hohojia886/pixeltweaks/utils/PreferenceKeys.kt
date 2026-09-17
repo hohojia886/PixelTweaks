@@ -36,13 +36,10 @@ object PreferenceKeys {
     const val DOWNGRADE_TIMESTAMP = "downgrade_timestamp"
     const val SIGNATURE_TIMESTAMP = "signature_timestamp"
 
-    // ---- Debug logging configuration ---------------------------------------
+    // ---- Debug logging configuration (Consolidated into 4 categories) ------
     const val ENABLE_MASTER_LOG = "enable_master_log"
-    const val LOG_CLEAR_ALL = "log_clear_all"
-    const val LOG_NETWORK_TRAFFIC = "log_network_traffic"
+    const val LOG_SECURITY = "log_security"
+    const val LOG_INTERFACE = "log_interface"
+    const val LOG_GESTURES = "log_gestures"
     const val LOG_QUICK_SETTINGS = "log_quick_settings"
-    const val LOG_SECURITY_BYPASSES = "log_security_bypasses"
-    const val LOG_UNRESTRICTED_SCREENSHOTS = "log_unrestricted_screenshots"
-    const val LOG_DT2S = "log_dt2s"
-    const val LOG_EASY_UNLOCK = "log_easy_unlock"
 }

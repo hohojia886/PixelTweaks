@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.ui
+package io.github.hohojia886.pixeltweaks.hooks.security
 
 import android.app.Application
 import android.os.Bundle

@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.interaction
+package io.github.hohojia886.pixeltweaks.hooks.gestures
 
 import android.content.Intent
 import android.content.SharedPreferences

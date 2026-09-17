@@ -17,9 +17,12 @@
  * GNU General Public License for more details.
  */
 
-package io.github.hohojia886.pixeltweaks.hooks.interaction
+package io.github.hohojia886.pixeltweaks.hooks.gestures
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.PowerManager
 import android.os.SystemClock
 import android.view.MotionEvent
@@ -84,9 +87,9 @@ object DoubleTapToSleepHook {
                         
                         // Register ACTION_SCREEN_ON receiver for reliable Wake Guard
                         runCatching {
-                            val filter = android.content.IntentFilter(android.content.Intent.ACTION_SCREEN_ON)
-                            app.registerReceiver(object : android.content.BroadcastReceiver() {
-                                override fun onReceive(context: Context, intent: android.content.Intent) {
+                            val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+                            app.registerReceiver(object : BroadcastReceiver() {
+                                override fun onReceive(context: Context, intent: Intent) {
                                     lastWakeTime = SystemClock.uptimeMillis()
                                 }
                             }, filter)
@@ -234,7 +237,7 @@ object DoubleTapToSleepHook {
         return false
     }
 
-    private fun handleSync(intent: android.content.Intent) {
+    private fun handleSync(intent: Intent) {
         if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
             isDtLauncherEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
             isDtLockscreenEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
@@ -262,7 +265,7 @@ object DoubleTapToSleepHook {
 
     private fun triggerSleep(context: Context) {
         runCatching {
-            val pm = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             if (!pm.isInteractive) return
             val goToSleep = pm.javaClass.getMethod("goToSleep", Long::class.javaPrimitiveType)
             goToSleep.invoke(pm, SystemClock.uptimeMillis())

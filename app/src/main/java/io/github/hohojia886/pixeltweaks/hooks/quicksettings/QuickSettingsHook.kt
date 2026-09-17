@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.system
+package io.github.hohojia886.pixeltweaks.hooks.quicksettings
 
 import android.content.Context
 import android.net.Uri

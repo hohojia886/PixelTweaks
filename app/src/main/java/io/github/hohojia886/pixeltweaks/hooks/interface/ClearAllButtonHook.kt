@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.ui
+package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
 import android.content.Context
 import android.graphics.Color

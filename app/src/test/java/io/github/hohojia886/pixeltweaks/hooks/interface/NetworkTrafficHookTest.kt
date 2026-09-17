@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.ui
+package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
 import android.content.Intent
 import android.content.SharedPreferences
@@ -14,7 +14,6 @@ import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 class NetworkTrafficHookTest {

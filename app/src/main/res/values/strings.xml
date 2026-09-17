@@ -4,76 +4,66 @@
     <string name="app_name">Pixel Tweaks</string>
     <string name="module_active">Module is active</string>
     <string name="countdown_format">%1$s (%2$ds)</string>
-    <string name="interface_mods">System UI Settings</string>
+
+    <!-- Categories -->
+    <string name="category_security">System &amp; Security</string>
+    <string name="category_interface">Interface &amp; Status Bar</string>
+    <string name="category_interaction">Gestures &amp; Interactions</string>
+    <string name="category_quick_settings">Quick Settings</string>
+    <string name="category_debug">Debug Logging</string>
 
     <!-- ClearAll -->
-    <string name="clear_all_button">Clear All button</string>
-    <string name="desc_clear_all">Clear all running apps</string>
-    <string name="log_clear_all">PXTK_ClearAll</string>
+    <string name="clear_all_button">Clear All Button</string>
+    <string name="clear_all_button_summary">Add Clear All in Recents</string>
 
     <!-- DT2S -->
-    <string name="interaction_mods">Double Tap To Sleep</string>
-    <string name="dt_launcher">Launcher Workspace</string>
-    <string name="desc_dt_launcher">Double tap launcher to sleep</string>
-    <string name="dt_lockscreen">Lockscreen Area</string>
-    <string name="desc_dt_lockscreen">Double tap lockscreen to sleep</string>
-    <string name="dt_statusbar">Status Bar</string>
-    <string name="desc_dt_statusbar">Double tap status bar to sleep</string>
-    <string name="log_dt2s">PXTK_DT2S</string>
+    <string name="dt_launcher">Double Tap Launcher</string>
+    <string name="dt_launcher_summary">Double tap launcher space to sleep</string>
+    <string name="dt_lockscreen">Double Tap Lockscreen</string>
+    <string name="dt_lockscreen_summary">Double tap lockscreen to sleep</string>
+    <string name="dt_statusbar">Double Tap Status Bar</string>
+    <string name="dt_statusbar_summary">Double tap status bar to sleep</string>
 
     <!-- EasyUnlock -->
-    <string name="enable_easy_unlock">Easy Unlock</string>
-    <string name="desc_easy_unlock">Skip unlock confirmation</string>
-    <string name="bypass_reboot_restriction">Bypass Restriction</string>
-    <string name="desc_easy_unlock_reboot">No restriction after reboot, less secure</string>
-    <string name="log_easy_unlock">PXTK_EasyUnlock</string>
+    <string name="easy_unlock">Easy Unlock</string>
+    <string name="easy_unlock_summary">Auto unlock when PIN is correct</string>
+    <string name="easy_unlock_reboot">Bypass Reboot Restriction</string>
+    <string name="easy_unlock_reboot_summary">Auto unlock after restart</string>
 
     <!-- QuickSettings -->
-    <string name="system_mods">Quick Settings</string>
-    <string name="qs_wifi_fix">Wi-Fi Force Off</string>
-    <string name="desc_qs_wifi_fix">Turn Wi-Fi completely off</string>
-    <string name="qs_data_fix">Mobile Data Direct Toggle</string>
-    <string name="desc_qs_data_fix">Remove confirmation</string>
-    <string name="log_qs">PXTK_QuickSettings</string>
+    <string name="qs_wifi_fix">Force Wi-Fi Off</string>
+    <string name="qs_wifi_fix_summary">Toggle Wi-Fi completely off</string>
+    <string name="qs_data_fix">Direct Mobile Data Toggle</string>
+    <string name="qs_data_fix_summary">Toggle data without confirmation</string>
 
     <!-- Screenshot -->
     <string name="unrestricted_screenshots">Unrestricted Screenshots</string>
-    <string name="desc_unrestricted_screenshots">Allow secure screenshots</string>
-    <string name="log_screenshot">PXTK_Screenshot</string>
+    <string name="unrestricted_screenshots_summary">Allow screenshots in restricted apps</string>
 
     <!-- Security -->
-    <string name="security_mods">Security Settings</string>
     <string name="allow_downgrade">Allow App Downgrade</string>
-    <string name="desc_allow_downgrade">App may crash after downgrade</string>
+    <string name="allow_downgrade_summary">Allow installing older app versions</string>
     <string name="bypass_signature">Bypass Signature Verification</string>
-    <string name="desc_bypass_signature">Allow install app with different signature</string>
-    <string name="log_security">PXTK_Security</string>
+    <string name="bypass_signature_summary">Allow installing app with different signature</string>
 
     <!-- Traffic -->
     <string name="network_traffic">Network Traffic Indicator</string>
-    <string name="desc_network_traffic">Change settings below</string>
-    <string name="traffic_interval_title">Traffic Interval</string>
-    <string name="traffic_font_title">Traffic Font Size</string>
-    <string name="traffic_threshold_title">Traffic Threshold</string>
-    <string name="traffic_interval">Interval: %1$s</string>
-    <string name="traffic_font_size">Font Size: %1$s</string>
-    <string name="traffic_threshold">Threshold: %1$s</string>
-    <string name="traffic_interval_format">%1$ds</string>
-    <string name="traffic_font_format">%1$dsp</string>
-    <string name="traffic_threshold_always">Always Show</string>
-    <string name="traffic_threshold_mb">1MB/s</string>
-    <string name="traffic_threshold_kb">%1$d KB/s</string>
-    <string name="log_traffic">PXTK_Traffic</string>
+    <string name="network_traffic_summary">Show real-time network speed</string>
+    <string name="traffic_interval_format">Refresh Interval: %1$ds</string>
+    <string name="traffic_font_format">Font Size: %1$dsp</string>
+    <string name="traffic_threshold_always">Threshold: Always Show</string>
+    <string name="traffic_threshold_mb">Threshold: 1MB/s</string>
+    <string name="traffic_threshold_kb">Threshold: %1$d KB/s</string>
 
-    <!-- Debug & Logs -->
-    <string name="debug_logs_title">Debug &amp; Logs</string>
-    <string name="enable_master_log">Enable Master Logging</string>
-    <string name="desc_enable_master_log">Enable master logging</string>
-    <string name="desc_log_clear_all">Log Clear All</string>
-    <string name="desc_log_dt2s">Log Double Tap to Sleep</string>
-    <string name="desc_log_easy_unlock">Log Easy Unlock</string>
-    <string name="desc_log_quick_settings">Log Quick Settings</string>
-    <string name="desc_log_unrestricted_screenshots">Log Screenshots</string>
-    <string name="desc_log_security_bypasses">Log Security Bypasses</string>
-    <string name="desc_log_network_traffic">Log Network Traffic</string>
+    <!-- Debug & Logs (With Logcat Tags) -->
+    <string name="master_log">Master Logging</string>
+    <string name="master_log_summary">Logcat tag: PXTK_</string>
+    <string name="log_security">System &amp; Security Logs</string>
+    <string name="log_security_summary">Logcat tag: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Interface &amp; Status Bar Logs</string>
+    <string name="log_interface_summary">Logcat tag: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">Gestures &amp; Interactions Logs</string>
+    <string name="log_gestures_summary">Logcat tag: PXTK_DT2S</string>
+    <string name="log_quick_settings">Quick Settings Logs</string>
+    <string name="log_quick_settings_summary">Logcat tag: PXTK_QuickSettings</string>
 </resources>

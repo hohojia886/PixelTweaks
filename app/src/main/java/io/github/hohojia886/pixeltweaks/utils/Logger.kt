@@ -9,7 +9,7 @@ import io.github.libxposed.api.XposedModule
 
 /**
  * Logger: Standardized logging utility for the PixelTweaks module.
- * Features centralized toggles for each functional area, auto-prefixing with "PXTK_",
+ * Features centralized toggles for each functional category, auto-prefixing with "PXTK_",
  * and a Master switch that controls all non-critical output across processes.
  */
 object Logger {
@@ -33,13 +33,10 @@ object Logger {
     @Volatile var logger: Logger = AndroidLogger
 
     @Volatile var isMasterEnabled = false // Master toggle for all logs
-    @Volatile var logClearAll = true // Clear All button specific logs
-    @Volatile var logTraffic = true // Network Traffic specific logs
-    @Volatile var logQS = true // Quick Settings specific logs
-    @Volatile var logPM = true // PackageManager security logs
-    @Volatile var logScreenshot = true // Screenshot bypass logs
-    @Volatile var logDT2S = true // Double Tap to Sleep logs
-    @Volatile var logEasyUnlock = true // Easy Unlock logs
+    @Volatile var logSecurity = true // Security & System logs
+    @Volatile var logInterface = true // Interface & Status bar logs
+    @Volatile var logGestures = true // Gestures logs
+    @Volatile var logQuickSettings = true // Quick Settings logs
 
     private var lastSyncTime = 0L // Debounce caching for syncSettings
 
@@ -57,13 +54,10 @@ object Logger {
             val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
 
             isMasterEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, prefs?.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, false) ?: false)
-            logClearAll = bundle.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, prefs?.getBoolean(PreferenceKeys.LOG_CLEAR_ALL, true) ?: true)
-            logTraffic = bundle.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, prefs?.getBoolean(PreferenceKeys.LOG_NETWORK_TRAFFIC, true) ?: true)
-            logQS = bundle.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, prefs?.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true) ?: true)
-            logPM = bundle.getBoolean(PreferenceKeys.LOG_SECURITY_BYPASSES, prefs?.getBoolean(PreferenceKeys.LOG_SECURITY_BYPASSES, true) ?: true)
-            logScreenshot = bundle.getBoolean(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, prefs?.getBoolean(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, true) ?: true)
-            logDT2S = bundle.getBoolean(PreferenceKeys.LOG_DT2S, prefs?.getBoolean(PreferenceKeys.LOG_DT2S, true) ?: true)
-            logEasyUnlock = bundle.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, prefs?.getBoolean(PreferenceKeys.LOG_EASY_UNLOCK, true) ?: true)
+            logSecurity = bundle.getBoolean(PreferenceKeys.LOG_SECURITY, prefs?.getBoolean(PreferenceKeys.LOG_SECURITY, true) ?: true)
+            logInterface = bundle.getBoolean(PreferenceKeys.LOG_INTERFACE, prefs?.getBoolean(PreferenceKeys.LOG_INTERFACE, true) ?: true)
+            logGestures = bundle.getBoolean(PreferenceKeys.LOG_GESTURES, prefs?.getBoolean(PreferenceKeys.LOG_GESTURES, true) ?: true)
+            logQuickSettings = bundle.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, prefs?.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true) ?: true)
             
             logger.i("PXTK_Hook", "[Logger] Settings synced. Master=$isMasterEnabled (PID: ${Process.myPid()})")
         }
@@ -82,13 +76,10 @@ object Logger {
 
         if (action == "io.github.hohojia886.pixeltweaks.SETTINGS_SYNC") {
             isMasterEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_MASTER_LOG, false)
-            logClearAll = intent.getBooleanExtra(PreferenceKeys.LOG_CLEAR_ALL, true)
-            logTraffic = intent.getBooleanExtra(PreferenceKeys.LOG_NETWORK_TRAFFIC, true)
-            logQS = intent.getBooleanExtra(PreferenceKeys.LOG_QUICK_SETTINGS, true)
-            logPM = intent.getBooleanExtra(PreferenceKeys.LOG_SECURITY_BYPASSES, true)
-            logScreenshot = intent.getBooleanExtra(PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS, true)
-            logDT2S = intent.getBooleanExtra(PreferenceKeys.LOG_DT2S, true)
-            logEasyUnlock = intent.getBooleanExtra(PreferenceKeys.LOG_EASY_UNLOCK, true)
+            logSecurity = intent.getBooleanExtra(PreferenceKeys.LOG_SECURITY, true)
+            logInterface = intent.getBooleanExtra(PreferenceKeys.LOG_INTERFACE, true)
+            logGestures = intent.getBooleanExtra(PreferenceKeys.LOG_GESTURES, true)
+            logQuickSettings = intent.getBooleanExtra(PreferenceKeys.LOG_QUICK_SETTINGS, true)
             isChanged = true
             targetKey = "ALL_SETTINGS"
             targetValue = isMasterEnabled
@@ -97,13 +88,10 @@ object Logger {
             val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
             when (key) {
                 PreferenceKeys.ENABLE_MASTER_LOG -> if (isMasterEnabled != value) { isMasterEnabled = value; isChanged = true }
-                PreferenceKeys.LOG_CLEAR_ALL -> if (logClearAll != value) { logClearAll = value; isChanged = true }
-                PreferenceKeys.LOG_NETWORK_TRAFFIC -> if (logTraffic != value) { logTraffic = value; isChanged = true }
-                PreferenceKeys.LOG_QUICK_SETTINGS -> if (logQS != value) { logQS = value; isChanged = true }
-                PreferenceKeys.LOG_SECURITY_BYPASSES -> if (logPM != value) { logPM = value; isChanged = true }
-                PreferenceKeys.LOG_UNRESTRICTED_SCREENSHOTS -> if (logScreenshot != value) { logScreenshot = value; isChanged = true }
-                PreferenceKeys.LOG_DT2S -> if (logDT2S != value) { logDT2S = value; isChanged = true }
-                PreferenceKeys.LOG_EASY_UNLOCK -> if (logEasyUnlock != value) { logEasyUnlock = value; isChanged = true }
+                PreferenceKeys.LOG_SECURITY -> if (logSecurity != value) { logSecurity = value; isChanged = true }
+                PreferenceKeys.LOG_INTERFACE -> if (logInterface != value) { logInterface = value; isChanged = true }
+                PreferenceKeys.LOG_GESTURES -> if (logGestures != value) { logGestures = value; isChanged = true }
+                PreferenceKeys.LOG_QUICK_SETTINGS -> if (logQuickSettings != value) { logQuickSettings = value; isChanged = true }
             }
             targetKey = key
             targetValue = value
@@ -155,13 +143,10 @@ object Logger {
     // Helper: Maps functional tags to their respective toggle states
     fun isSubEnabled(tag: String): Boolean {
         return when (tag) {
-            "ClearAll" -> logClearAll
-            "Traffic" -> logTraffic
-            "QuickSettings" -> logQS
-            "Security" -> logPM
-            "Screenshot" -> logScreenshot
-            "DT2S" -> logDT2S
-            "EasyUnlock" -> logEasyUnlock
+            "Security", "EasyUnlock", "Screenshot" -> logSecurity
+            "ClearAll", "Traffic" -> logInterface
+            "DT2S" -> logGestures
+            "QuickSettings" -> logQuickSettings
             else -> true
         }
     }

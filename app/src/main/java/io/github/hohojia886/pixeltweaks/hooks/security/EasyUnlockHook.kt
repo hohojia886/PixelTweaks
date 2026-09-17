@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.interaction
+package io.github.hohojia886.pixeltweaks.hooks.security
 
 import android.content.Context
 import android.content.Intent

@@ -1,4 +1,4 @@
-package io.github.hohojia886.pixeltweaks.hooks.ui
+package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
 import android.annotation.SuppressLint
 import android.app.KeyguardManager

@@ -1,7 +1,9 @@
 package io.github.hohojia886.pixeltweaks.hooks
 
-import io.github.hohojia886.pixeltweaks.hooks.interaction.EasyUnlockHook
-import io.github.hohojia886.pixeltweaks.hooks.system.PackageManagerHook
+import android.content.SharedPreferences
+import android.content.pm.ApplicationInfo
+import io.github.hohojia886.pixeltweaks.hooks.security.EasyUnlockHook
+import io.github.hohojia886.pixeltweaks.hooks.security.PackageManagerHook
 import io.github.libxposed.api.XposedModule
 import org.junit.Test
 import org.mockito.Mockito.mock
@@ -9,8 +11,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.atLeastOnce
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import android.content.SharedPreferences
-import android.content.pm.ApplicationInfo
 
 class HookWiringTest {
 

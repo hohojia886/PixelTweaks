@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**Version:** v1.0.6 (Stable Release)  
+**Version:** v1.0.7 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -20,16 +20,16 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.0.6)
+## ✨ Features (v1.0.7)
 
 ### 🎨 Double Tap To Sleep
-- **Launcher Workspace**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
-- **Lockscreen Area**: Integrated support for double-tap gestures on the lockscreen area to sleep.
-- **Status Bar**: Integrated support for double-tap gestures on the status bar to sleep.
+- **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
+- **Double Tap Lockscreen**: Integrated support for double-tap gestures on the lockscreen area to sleep.
+- **Double Tap Status Bar**: Integrated support for double-tap gestures on the status bar to sleep.
 
 ### ⚙️ Quick Settings
-- **Mobile Data Direct Toggle**: Removes the confirmation dialog when switching to mobile data.
-- **WiFi Force Off**: Bypasses the "Pause WiFi" behavior, forcing a complete shutdown when toggled.
+- **Direct Mobile Data Toggle**: Removes the confirmation dialog when switching to mobile data.
+- **Force Wi-Fi Off**: Bypasses the "Pause WiFi" behavior, forcing a complete shutdown when toggled.
 
 ### 🛡️ Security Settings
 - **Allow App Downgrade**: Install older APKs over newer ones without data loss (auto-resets after 3 minutes).
@@ -39,13 +39,18 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Unrestricted Screenshots**: Force-enable screenshots and recordings in restricted apps (Banking, Incognito).
 
 ### 📱 System UI Settings
-- **Clear All button**: Adds a native-style "Clear all" button to the Pixel Launcher recents screen.
+- **Clear All Button**: Adds a native-style "Clear all" button to the Pixel Launcher recents screen.
 - **Network Traffic Indicator**: Real-time speed monitor in status bar with intensity-aware color syncing.
 
 ### 🐞 Debug & Logs
-- **Enable Master Logging**: Standardized, low-overhead logging system with complete coverage across all 10 functional modules and sliders (**Debug build only**).
+- **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).
 
 ## 📝 Changelog
+
+### v1.0.7
+- 🎨 **Jetpack Compose + Material 3 Refactoring**: Upgraded the Settings UI from legacy XML layouts to modern Jetpack Compose with full Material You / Material 3 dynamic color support.
+- 📂 **Package & Directory Alignment**: Restructured all Kotlin hook files into 4 clean package categories (`security`, `interface`, `gestures`, `quicksettings`) matching the 1:1 structure of the UI.
+- 🐞 **Debug Logging Streamlining**: Organized debug logging options in UI with clear Logcat tag search identifiers.
 
 ### v1.0.6
 - 🚀 **Simplified Architecture & Flavor Unification**: Removed Full/Lite build variants into a unified PixelTweaks build with reduced APK size.
@@ -82,7 +87,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Static Scope Enforcement**: System Framework, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-v1.0.6-<buildType>.apk`.
+1. Build or download `pixel-tweaks-v1.0.7-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
 4. Reboot your device.
