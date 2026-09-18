@@ -1,21 +1,24 @@
 # Minimum protection to test R8
--keepattributes Signature,Exceptions,*Annotation*
+-keepattributes Signature,Exceptions,*Annotation*,InnerClasses,EnclosingMethod
 
-# Keep Xposed module entry point
+# Keep LibXposed API & Service
+-keep class io.github.libxposed.** { *; }
+-dontwarn io.github.libxposed.**
+
+# Keep PixelTweaks module entry point, Hooks, UI, Providers, Receivers, and Utilities
 -keep class io.github.hohojia886.pixeltweaks.MainHook { *; }
-
-# Keep Provider and Utils for stable IPC
+-keep class io.github.hohojia886.pixeltweaks.hooks.** { *; }
 -keep class io.github.hohojia886.pixeltweaks.providers.** { *; }
+-keep class io.github.hohojia886.pixeltweaks.receivers.** { *; }
+-keep class io.github.hohojia886.pixeltweaks.ui.** { *; }
 -keep class io.github.hohojia886.pixeltweaks.utils.** { *; }
-
-# Keep BuildConfig to avoid issues with product flavor checks
 -keep class io.github.hohojia886.pixeltweaks.BuildConfig { *; }
 
-# Keep native methods for DexKit
+# Keep native methods
 -keepclasseswithmembernames class * {
     native <methods>;
 }
 
-# General Material/AndroidX rules (Library handles most)
+# Material Design & AndroidX Compose
 -dontwarn com.google.android.material.**
 -dontwarn androidx.**

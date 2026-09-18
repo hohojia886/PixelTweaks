@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**版本：** v1.0.7 (穩定版)  
+**版本：** v1.0.8 (穩定版)  
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
@@ -22,7 +22,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.0.7)
+## ✨ 功能特點 (v1.0.8)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **雙擊桌面熄屏**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -42,12 +42,16 @@
 
 ### 📱 系統介面設定 (System UI Settings)
 - **清除全部按鈕**：在 Pixel Launcher 的近期任務（Recents）畫面中新增原生風格的「清除全部」按鈕。
-- **網路流量指示器**：狀態列即時網速監控，支援隨狀態列主題自動調整色彩。
+~~- **網路流量指示器**：狀態列即時網速監控，支援隨狀態列主題自動調整色彩。
 
 ### 🐞 偵錯與日誌 (Debug & Logs)
 - **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有功能模組（**僅限 Debug Build**）。
 
-## 📝 更新日誌 (Changelog)
+## 📝 更新日誌 (Changelog)~~
+
+### v1.0.8
+- 🎨 **Compose UI 佈局與間距微調**：優化說明文字自動換行與 16dp 安全間距、開關內建勾勾與叉叉圖示色彩、頂部 TopAppBar 高度與選單標題。
+- 🧪 **ProGuard/R8 瘦身規則與測試優化**：優化 `proguard-rules.pro` 程式碼裁切規則與 R8 混淆，並擴充補全單元測試。
 
 ### v1.0.7
 - 🎨 **Jetpack Compose + Material 3 全面重構**：將設定介面由傳統 XML 重構為現代化 Jetpack Compose，完美支援 Material You 與動態配色主題。
@@ -89,7 +93,7 @@
 - **作用域**：System Framework, Pixel Launcher, System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-v1.0.7-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-v1.0.8-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
 3. 開啟 **PixelTweaks** App 一次以初始化設定（消除 Android 的 `STOPPED` 狀態）。
 4. 重新啟動您的裝置。
