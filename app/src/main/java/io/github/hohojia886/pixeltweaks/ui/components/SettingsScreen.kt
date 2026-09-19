@@ -17,14 +17,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Gesture
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -129,7 +129,7 @@ fun SettingsScreen(
         ) {
 
             // Section: System & Security
-            CategoryHeader(stringResource(R.string.category_security), Icons.Filled.Lock)
+            CategoryHeader(stringResource(R.string.category_security), Icons.Outlined.Security)
             SettingsCard {
                 SwitchSettingItem(
                     title = stringResource(R.string.unrestricted_screenshots),
@@ -176,7 +176,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Section: Interface & Status Bar
-            CategoryHeader(stringResource(R.string.category_interface), Icons.Filled.Settings)
+            CategoryHeader(stringResource(R.string.category_interface), Icons.Outlined.Settings)
             SettingsCard {
                 SwitchSettingItem(
                     title = stringResource(R.string.clear_all_button),
@@ -255,7 +255,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Section: Interaction & Gestures
-            CategoryHeader(stringResource(R.string.category_interaction), Icons.Filled.Refresh)
+            CategoryHeader(stringResource(R.string.category_interaction), Icons.Outlined.Gesture)
             SettingsCard {
                 SwitchSettingItem(
                     title = stringResource(R.string.dt_launcher),
@@ -282,7 +282,7 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Section: Quick Settings
-            CategoryHeader(stringResource(R.string.category_quick_settings), Icons.Filled.Build)
+            CategoryHeader(stringResource(R.string.category_quick_settings), Icons.Outlined.Tune)
             SettingsCard {
                 SwitchSettingItem(
                     title = stringResource(R.string.qs_wifi_fix),
@@ -302,7 +302,7 @@ fun SettingsScreen(
             // Section: Debug Logging (if DEBUG)
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(20.dp))
-                CategoryHeader(stringResource(R.string.category_debug), Icons.Filled.Info)
+                CategoryHeader(stringResource(R.string.category_debug), Icons.Outlined.BugReport)
                 SettingsCard {
                     SwitchSettingItem(
                         title = stringResource(R.string.master_log),
@@ -361,7 +361,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Filled.Share,
+                        imageVector = Icons.Outlined.Code,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(24.dp)
