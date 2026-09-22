@@ -8,7 +8,7 @@ setlocal enabledelayedexpansion
 
 title PixelTweaks Build Script
 
-set "VERSION=1.0.8"
+set "VERSION=1.0.9"
 
 echo ================================================================
 echo   PixelTweaks Build Script (v%VERSION%)
@@ -43,5 +43,3 @@ echo   [Debug]   app\build\outputs\apk\debug\pixel-tweaks-v%VERSION%-debug.apk
 echo   [Release] app\build\outputs\apk\release\pixel-tweaks-v%VERSION%-release.apk
 echo ================================================================
 echo.
-
-pause

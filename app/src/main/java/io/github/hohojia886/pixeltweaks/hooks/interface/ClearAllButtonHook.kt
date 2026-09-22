@@ -75,11 +75,16 @@ object ClearAllButtonHook {
         }
     }
 
+    // Helper: Detects tablet mode (sw >= 600dp or lowered DPI e.g. 480->320dpi) where Launcher action buttons are absent
+    private fun isTabletMode(context: Context): Boolean =
+        context.resources.configuration.smallestScreenWidthDp >= 600
+
     // Creates and adds the "Clear all" button to the Launcher's UI hierarchy
     private fun injectButton(parent: FrameLayout, recentsViewClass: Class<*>) {
         val context = parent.context
         if (parent.findViewWithTag<View>("pxtk_clear_all") != null) return
 
+        val isTablet = isTabletMode(context)
         val res = context.resources
         val screenshotId = res.getIdentifier("action_screenshot", "id", context.packageName)
         val selectId = res.getIdentifier("action_select", "id", context.packageName)
@@ -87,14 +92,18 @@ object ClearAllButtonHook {
         val screenshotBtn = if (screenshotId != 0) parent.findViewById<View>(screenshotId) else null
         val selectBtn = if (selectId != 0) parent.findViewById<View>(selectId) else null
 
+        // In tablet mode (or low DPI setups), Launcher removes or restructures default action buttons (action_screenshot/select).
+        // Force fallback pill layout fixed at Gravity.END | Gravity.CENTER_VERTICAL to ensure visibility and prevent disappearing hook points.
+        val usePillStyle = isTablet || screenshotBtn !is TextView
+
         val button = TextView(context).apply {
             tag = "pxtk_clear_all"
             text = "Clear all"
             gravity = Gravity.CENTER
             isAllCaps = false
             
-            // Stylist: Clones the visual appearance of the factory "Screenshot" button
-            if (screenshotBtn is TextView) {
+            if (!usePillStyle) {
+                // Stylist: Clones the visual appearance of the factory "Screenshot" button (Phone mode)
                 background = screenshotBtn.background?.constantState?.newDrawable()?.mutate()
                 setTextColor(screenshotBtn.textColors)
                 typeface = screenshotBtn.typeface
@@ -120,12 +129,14 @@ object ClearAllButtonHook {
                     }
                 }
             } else {
+                // Legacy / Tablet mode: Floating rounded pill design fixed at middle-right
                 setTextColor(Color.WHITE)
                 textSize = 14f
-                setPadding(dp(context, 16), dp(context, 8), dp(context, 16), dp(context, 8))
+                elevation = 10f
+                setPadding(dp(context, 18), dp(context, 12), dp(context, 18), dp(context, 12))
                 background = GradientDrawable().apply {
-                    setColor(Color.argb(180, 50, 50, 50))
-                    cornerRadius = dp(context, 20).toFloat()
+                    setColor(Color.argb(170, 60, 60, 60))
+                    cornerRadius = dp(context, 22).toFloat()
                 }
             }
 
@@ -145,45 +156,62 @@ object ClearAllButtonHook {
             }
         }
 
-        val container = selectBtn?.parent as? ViewGroup ?: parent
-        if (container is FrameLayout || container is LinearLayout) {
-            val lp = container.layoutParams
+        if (usePillStyle) {
+            val lp = parent.layoutParams
             if (lp != null && lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
                 lp.height = ViewGroup.LayoutParams.MATCH_PARENT
-                container.layoutParams = lp
+                parent.layoutParams = lp
             }
-        }
+            val params = FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = dp(context, 16)
+                gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            }
+            parent.addView(button, params)
+            Logger.i(TAG, "Success", "Button integrated with tablet layout (sw=${context.resources.configuration.smallestScreenWidthDp}dp)")
+        } else {
+            val container = selectBtn?.parent as? ViewGroup ?: parent
+            if (container is FrameLayout || container is LinearLayout) {
+                val lp = container.layoutParams
+                if (lp != null && lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+                    lp.height = ViewGroup.LayoutParams.MATCH_PARENT
+                    container.layoutParams = lp
+                }
+            }
 
-        val params = if (selectBtn != null) {
-            val oldParams = selectBtn.layoutParams
-            if (oldParams is ViewGroup.MarginLayoutParams) {
-                val newParams = runCatching {
-                    oldParams.javaClass.getConstructor(Int::class.java, Int::class.java)
-                        .newInstance(ViewGroup.LayoutParams.WRAP_CONTENT, oldParams.height) as ViewGroup.MarginLayoutParams
-                }.getOrElse { 
-                    FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, oldParams.height)
+            val params = if (selectBtn != null) {
+                val oldParams = selectBtn.layoutParams
+                if (oldParams is ViewGroup.MarginLayoutParams) {
+                    val newParams = runCatching {
+                        oldParams.javaClass.getConstructor(Int::class.java, Int::class.java)
+                            .newInstance(ViewGroup.LayoutParams.WRAP_CONTENT, oldParams.height) as ViewGroup.MarginLayoutParams
+                    }.getOrElse { 
+                        FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, oldParams.height)
+                    }
+                    val targetMargin = if (oldParams.marginStart > 0) oldParams.marginStart else dp(context, 8)
+                    newParams.setMargins(targetMargin, oldParams.topMargin, 0, oldParams.bottomMargin)
+                    if (newParams is FrameLayout.LayoutParams) {
+                        newParams.gravity = (oldParams as? FrameLayout.LayoutParams)?.gravity ?: Gravity.CENTER_VERTICAL
+                    }
+                    newParams
+                } else {
+                    FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                        gravity = Gravity.CENTER_VERTICAL; marginStart = dp(context, 8)
+                    }
                 }
-                val targetMargin = if (oldParams.marginStart > 0) oldParams.marginStart else dp(context, 8)
-                newParams.setMargins(targetMargin, oldParams.topMargin, 0, oldParams.bottomMargin)
-                if (newParams is FrameLayout.LayoutParams) {
-                    newParams.gravity = (oldParams as? FrameLayout.LayoutParams)?.gravity ?: Gravity.CENTER_VERTICAL
-                }
-                newParams
             } else {
                 FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                    gravity = Gravity.CENTER_VERTICAL; marginStart = dp(context, 8)
+                    gravity = Gravity.END or Gravity.CENTER_VERTICAL; marginEnd = dp(context, 16)
                 }
             }
-        } else {
-            FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                gravity = Gravity.END or Gravity.CENTER_VERTICAL; marginEnd = dp(context, 16)
-            }
+
+            container.addView(button, params)
+            Logger.i(TAG, "Success", "Button integrated with style from [action_screenshot]")
         }
 
-        container.addView(button, params)
         clearAllButtonRef = WeakReference(button)
         button.visibility = if (isEnabled && parent.visibility == View.VISIBLE) View.VISIBLE else View.GONE
-        Logger.i(TAG, "Success", "Button integrated with style from [action_screenshot]")
     }
 
     // Climbs the view tree to locate the RecentsView instance needed to trigger dismissal

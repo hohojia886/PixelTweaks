@@ -1,5 +1,6 @@
 package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
@@ -11,7 +12,9 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 class ClearAllButtonHookTest {
@@ -55,6 +58,22 @@ class ClearAllButtonHookTest {
         val instance = clazz.getField("INSTANCE").get(null)
         val enabledField = clazz.getDeclaredField("isEnabled").apply { isAccessible = true }
         assertFalse(enabledField.get(instance) as Boolean)
+    }
+
+    @Test
+    fun testIsTabletMode() {
+        val context = RuntimeEnvironment.getApplication()
+        val config = context.resources.configuration
+        config.smallestScreenWidthDp = 320
+        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+
+        val method = ClearAllButtonHook::class.java.getDeclaredMethod("isTabletMode", Context::class.java)
+        method.isAccessible = true
+        assertFalse(method.invoke(ClearAllButtonHook, context) as Boolean)
+
+        config.smallestScreenWidthDp = 600
+        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+        assertTrue(method.invoke(ClearAllButtonHook, context) as Boolean)
     }
 
 }

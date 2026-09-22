@@ -1,6 +1,6 @@
 # PixelTweaks
 
-**Version:** v1.0.8 (Stable Release)  
+**Version:** v1.0.9 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -20,7 +20,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.0.8)
+## ✨ Features (v1.0.9)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -46,6 +46,9 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).
 
 ## 📝 Changelog
+
+### v1.0.9
+- 📱 **Tablet Mode Fallback Fix**: Refined `ClearAllButtonHook`'s fallback trigger logic (adding `smallestScreenWidthDp >= 600` detection) to ensure tablet mode or lowered DPI setups reliably invoke the floating right-center "Clear all" button layout.
 
 ### v1.0.8
 - 🎨 **Compose UI Layout & Spacing Polish**: Refined switch summary text constraints (auto-wrapping, 16dp spacing), switch thumb check/cross icons and colors, top app bar height, and title wording.
@@ -91,7 +94,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Static Scope Enforcement**: System Framework, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-v1.0.8-<buildType>.apk`.
+1. Build or download `pixel-tweaks-v1.0.9-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
 4. Reboot your device.
