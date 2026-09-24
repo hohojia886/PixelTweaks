@@ -34,6 +34,7 @@ class SettingsActivityTest {
                 
                 // Defaults should be initialized on Activity launch
                 assertTrue(prefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC))
+                assertTrue(prefs.contains(PreferenceKeys.ENABLE_TABLET_MODE))
                 assertTrue(prefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, false))
                 assertTrue(prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, false))
             }

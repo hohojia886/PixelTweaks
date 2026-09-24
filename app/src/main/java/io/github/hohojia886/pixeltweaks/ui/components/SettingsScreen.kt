@@ -30,7 +30,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -38,8 +37,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.hohojia886.pixeltweaks.BuildConfig
 import io.github.hohojia886.pixeltweaks.R
+import io.github.hohojia886.pixeltweaks.utils.DensityUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,6 +72,8 @@ fun SettingsScreen(
     // Interface
     clearAll: Boolean,
     onClearAllChanged: (Boolean) -> Unit,
+    tabletMode: Boolean,
+    onTabletModeChanged: (Boolean) -> Unit,
     networkTraffic: Boolean,
     onNetworkTrafficChanged: (Boolean) -> Unit,
     trafficInterval: Int,
@@ -107,14 +111,14 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            LargeTopAppBar(
+            TopAppBar(
                 title = {
                     Text(
                         text = stringResource(R.string.app_name),
                         fontWeight = FontWeight.Bold
                     )
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
@@ -183,6 +187,22 @@ fun SettingsScreen(
                     summary = stringResource(R.string.clear_all_button_summary),
                     checked = clearAll,
                     onCheckedChange = onClearAllChanged
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                val targetDpi = remember(context) {
+                    val minPx = DensityUtils.getRealMinPx(context)
+                    DensityUtils.calculateTabletDpi(minPx)
+                }
+                val tabletSummary = if (tabletMode) {
+                    stringResource(R.string.tablet_mode_active_summary, targetDpi)
+                } else {
+                    stringResource(R.string.tablet_mode_summary, targetDpi)
+                }
+                SwitchSettingItem(
+                    title = stringResource(R.string.tablet_mode),
+                    summary = tabletSummary,
+                    checked = tabletMode,
+                    onCheckedChange = onTabletModeChanged
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SwitchSettingItem(
@@ -348,6 +368,8 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // GitHub Repository Link
+
+            // GitHub Repository Link
             OutlinedCard(
                 onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/hohojia886/PixelTweaks"))
@@ -489,3 +511,5 @@ fun SwitchSettingItem(
         )
     }
 }
+
+

@@ -22,6 +22,7 @@ object PreferenceKeys {
     const val ENABLE_DT_STATUSBAR = "enable_dt_statusbar"
     const val ENABLE_EASY_UNLOCK = "enable_easy_unlock"
     const val ENABLE_EASY_UNLOCK_REBOOT = "enable_easy_unlock_reboot"
+    const val ENABLE_TABLET_MODE = "enable_tablet_mode"
     const val IS_FIRST_UNLOCK_DONE = "is_first_unlock_done"
 
     // ---- Numerical settings ------------------------------------------------

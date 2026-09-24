@@ -51,6 +51,7 @@ class BootReceiver : BroadcastReceiver() {
                     putBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
                     putBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
                     putBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true)
+                    putBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false)
                     putBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
                     putBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
                     putBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)

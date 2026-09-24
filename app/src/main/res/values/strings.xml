@@ -12,9 +12,12 @@
     <string name="category_quick_settings">Quick Settings</string>
     <string name="category_debug">Debug Logging</string>
 
-    <!-- ClearAll -->
+    <!-- ClearAll & Tablet Mode -->
     <string name="clear_all_button">Clear All Button</string>
     <string name="clear_all_button_summary">Add Clear All in Recents</string>
+    <string name="tablet_mode">Tablet Mode</string>
+    <string name="tablet_mode_summary">Force tablet layout (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Tablet layout active (%1$d DPI)</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">Double Tap Launcher</string>

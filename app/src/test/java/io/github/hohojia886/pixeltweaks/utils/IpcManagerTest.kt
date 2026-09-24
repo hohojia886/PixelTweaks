@@ -34,6 +34,7 @@ class IpcManagerTest {
         
         assertEquals(IpcManager.ACTION_SETTINGS_SYNC, broadcastIntent.action)
         assertTrue(broadcastIntent.hasExtra(PreferenceKeys.ENABLE_CLEAR_ALL))
+        assertTrue(broadcastIntent.hasExtra(PreferenceKeys.ENABLE_TABLET_MODE))
     }
 
     @Test

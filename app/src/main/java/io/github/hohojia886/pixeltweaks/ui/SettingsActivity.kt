@@ -1,9 +1,12 @@
 package io.github.hohojia886.pixeltweaks.ui
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Process
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.hohojia886.pixeltweaks.ui.components.SettingsScreen
 import io.github.hohojia886.pixeltweaks.ui.theme.PixelTweaksTheme
+import io.github.hohojia886.pixeltweaks.utils.DensityUtils
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 
@@ -37,6 +41,7 @@ class SettingsActivity : ComponentActivity() {
 
     // Interface State
     private var clearAll by mutableStateOf(true)
+    private var tabletMode by mutableStateOf(false)
     private var networkTraffic by mutableStateOf(true)
     private var trafficInterval by mutableStateOf(1)
     private var trafficFontSize by mutableStateOf(8f)
@@ -123,6 +128,13 @@ class SettingsActivity : ComponentActivity() {
                         clearAll = it
                         saveDoublePref(PreferenceKeys.ENABLE_CLEAR_ALL, it, cePrefs, dePrefs)
                         IpcManager.sendUpdateBroadcast(this, PreferenceKeys.ENABLE_CLEAR_ALL, it)
+                    },
+                    tabletMode = tabletMode,
+                    onTabletModeChanged = { enabled ->
+                        Log.i("PXTK_Density", "onTabletModeChanged triggered: enabled=$enabled")
+                        tabletMode = enabled
+                        saveDoublePref(PreferenceKeys.ENABLE_TABLET_MODE, enabled, cePrefs, dePrefs)
+                        IpcManager.sendUpdateBroadcast(this, PreferenceKeys.ENABLE_TABLET_MODE, enabled)
                     },
                     networkTraffic = networkTraffic,
                     onNetworkTrafficChanged = {
@@ -224,6 +236,7 @@ class SettingsActivity : ComponentActivity() {
             saveDoublePref(PreferenceKeys.ENABLE_QS_WIFI_FIX, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_QS_DATA_FIX, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_CLEAR_ALL, true, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_TABLET_MODE, false, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_DT_LAUNCHER, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_DT_STATUSBAR, true, cePrefs, dePrefs)
@@ -254,6 +267,7 @@ class SettingsActivity : ComponentActivity() {
         bypassSignature = dePrefs.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
 
         clearAll = dePrefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true)
+        tabletMode = dePrefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false)
         networkTraffic = dePrefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
         trafficInterval = dePrefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
         trafficFontSize = dePrefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
