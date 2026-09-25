@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Gesture
@@ -56,6 +57,29 @@ import io.github.hohojia886.pixeltweaks.utils.DensityUtils
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    // Battery Info Toggle & 16 Metrics
+    enableBatteryInfo: Boolean,
+    onEnableBatteryInfoChanged: (Boolean) -> Unit,
+    batteryStatus: String,
+    batteryVoltageMv: Int,
+    batteryCurrentMa: Int,
+    batteryPowerWatts: Float,
+    batteryCurrentChargeMah: Int,
+    batteryMaxChargeVoltageMv: Int,
+    batteryMaxChargeCurrentMa: Int,
+    batteryCycles: Int,
+    batteryRated: Int,
+    batteryEstimated: Int,
+    batteryHealthCapIndex: Int,
+    batteryOverallHealth: String,
+    batteryTemp: Float,
+    batteryResistanceAvg: Float,
+    batteryResistanceNow: Float,
+    batteryHealthImpIndex: Int,
+    batterySerialNumber: String,
+    batteryFirstUsage: String,
+    batteryAge: String,
+    batteryAafvOffset: Int,
     // System & Security
     unrestrictedScreenshots: Boolean,
     onUnrestrictedScreenshotsChanged: (Boolean) -> Unit,
@@ -319,6 +343,122 @@ fun SettingsScreen(
                 )
             }
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Section: Battery Info (Toggle & 16 Metrics - All 2-Line Layout)
+            CategoryHeader(stringResource(R.string.category_battery), Icons.Outlined.BatteryChargingFull)
+            SettingsCard {
+                SwitchSettingItem(
+                    title = stringResource(R.string.enable_battery_info),
+                    summary = stringResource(R.string.enable_battery_info_summary),
+                    checked = enableBatteryInfo,
+                    onCheckedChange = onEnableBatteryInfoChanged
+                )
+
+                if (enableBatteryInfo) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 1. Charging Status
+                    BatteryMetricItem(stringResource(R.string.battery_status), batteryStatus, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 2. Real-time Power & Current
+                    val powerStr = stringResource(R.string.battery_power_format, batteryPowerWatts, batteryCurrentMa)
+                    BatteryMetricItem(stringResource(R.string.battery_power_current), powerStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 3. Real-time Voltage
+                    val voltStr = if (batteryVoltageMv > 0) stringResource(R.string.battery_voltage_format, batteryVoltageMv / 1000.0f, batteryVoltageMv) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_voltage), voltStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 4. Current Stored Charge
+                    val chargeStr = if (batteryCurrentChargeMah > 0) stringResource(R.string.battery_capacity_format, batteryCurrentChargeMah) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_current_stored), chargeStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 5. Max Charge Limits
+                    val limitsStr = if (batteryMaxChargeVoltageMv > 0 && batteryMaxChargeCurrentMa > 0) {
+                        stringResource(R.string.battery_max_limits_format, batteryMaxChargeVoltageMv, batteryMaxChargeCurrentMa)
+                    } else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_max_limits), limitsStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 6. Cycle Count
+                    val cyclesStr = if (batteryCycles >= 0) stringResource(R.string.battery_cycles_format, batteryCycles) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_cycles), cyclesStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 7. Design Capacity
+                    val ratedStr = if (batteryRated > 0) stringResource(R.string.battery_capacity_format, batteryRated) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_rated_capacity), ratedStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 8. Full Charge Capacity
+                    val estStr = if (batteryEstimated > 0) stringResource(R.string.battery_capacity_format, batteryEstimated) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_estimated_capacity), estStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 9. Health Capacity Index
+                    val healthCapStr = if (batteryHealthCapIndex > 0) stringResource(R.string.battery_health_format, batteryHealthCapIndex) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_health_capacity_index), healthCapStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 10. Overall Health
+                    BatteryMetricItem(stringResource(R.string.battery_overall_health), batteryOverallHealth, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 11. Temperature
+                    val tempStr = if (batteryTemp > 0) stringResource(R.string.battery_temp_format, batteryTemp) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_temperature), tempStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 12. Average Resistance
+                    val resAvgStr = if (batteryResistanceAvg > 0) stringResource(R.string.battery_milli_format, batteryResistanceAvg) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_resistance_avg), resAvgStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 13. Current Resistance
+                    val resNowStr = if (batteryResistanceNow > 0) stringResource(R.string.battery_milli_format, batteryResistanceNow) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_resistance_now), resNowStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 14. Health Impedance Index
+                    val healthImpStr = if (batteryHealthImpIndex > 0) stringResource(R.string.battery_health_format, batteryHealthImpIndex) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_health_impedance_index), healthImpStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 15. Serial Number
+                    BatteryMetricItem(stringResource(R.string.battery_serial_number), batterySerialNumber, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 16. Manufacture Date & Age
+                    val ageStr = if (batteryFirstUsage != "N/A") stringResource(R.string.battery_first_usage_age_format, batteryFirstUsage, batteryAge) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_first_usage), ageStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 17. AAFV Offset
+                    val aafvStr = if (batteryAafvOffset >= 0) stringResource(R.string.battery_aafv_format, batteryAafvOffset) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_aafv_offset), aafvStr, isColumnLayout = true)
+                }
+            }
+
             // Section: Debug Logging (if DEBUG)
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(20.dp))
@@ -368,8 +508,6 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // GitHub Repository Link
-
-            // GitHub Repository Link
             OutlinedCard(
                 onClick = {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/hohojia886/PixelTweaks"))
@@ -405,6 +543,52 @@ fun SettingsScreen(
             }
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+fun BatteryMetricItem(title: String, value: String, isColumnLayout: Boolean = false) {
+    if (isColumnLayout) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodySmall,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    } else {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

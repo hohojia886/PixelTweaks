@@ -10,14 +10,17 @@
     <string name="category_interface">Interface &amp; Status Bar</string>
     <string name="category_interaction">Gestures &amp; Interactions</string>
     <string name="category_quick_settings">Quick Settings</string>
+    <string name="category_battery">Battery Info</string>
     <string name="category_debug">Debug Logging</string>
 
-    <!-- ClearAll & Tablet Mode -->
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
     <string name="clear_all_button">Clear All Button</string>
     <string name="clear_all_button_summary">Add Clear All in Recents</string>
     <string name="tablet_mode">Tablet Mode</string>
     <string name="tablet_mode_summary">Force tablet layout (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Tablet layout active (%1$d DPI)</string>
+    <string name="enable_battery_info">Show Battery Info</string>
+    <string name="enable_battery_info_summary">Show real-time battery hardware metrics (auto-refreshes every 2s, requires Root)</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">Double Tap Launcher</string>
@@ -69,4 +72,36 @@
     <string name="log_gestures_summary">Logcat tag: PXTK_DT2S</string>
     <string name="log_quick_settings">Quick Settings Logs</string>
     <string name="log_quick_settings_summary">Logcat tag: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics (Plain Language & Vernacular) -->
+    <string name="battery_status">Battery Status</string>
+    <string name="battery_power_current">Charging Power &amp; Speed</string>
+    <string name="battery_voltage">Real-time Battery Voltage</string>
+    <string name="battery_current_stored">Remaining Stored Charge</string>
+    <string name="battery_max_limits">System Max Charging Limit</string>
+
+    <string name="battery_cycles">Battery Charge Cycles</string>
+    <string name="battery_rated_capacity">Factory Design Capacity</string>
+    <string name="battery_estimated_capacity">Current Maximum Capacity</string>
+    <string name="battery_health_capacity_index">Capacity Health Score</string>
+    <string name="battery_overall_health">Overall Health Status</string>
+    <string name="battery_temperature">Battery Temperature</string>
+    <string name="battery_resistance_avg">Average Internal Resistance</string>
+    <string name="battery_resistance_now">Real-time Internal Resistance</string>
+    <string name="battery_health_impedance_index">Impedance Health Score</string>
+    <string name="battery_serial_number">Battery Serial Number</string>
+    <string name="battery_first_usage">Manufacture Date &amp; Age</string>
+    <string name="battery_aafv_offset">Aging Protection Voltage Offset</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d cycles</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
 </resources>

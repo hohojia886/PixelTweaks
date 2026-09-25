@@ -1,5 +1,6 @@
 package io.github.hohojia886.pixeltweaks.ui
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -15,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.hohojia886.pixeltweaks.ui.components.SettingsScreen
 import io.github.hohojia886.pixeltweaks.ui.theme.PixelTweaksTheme
+import io.github.hohojia886.pixeltweaks.utils.BatteryUtils
 import io.github.hohojia886.pixeltweaks.utils.DensityUtils
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -38,6 +40,30 @@ class SettingsActivity : ComponentActivity() {
     private var allowDowngradeTimer by mutableStateOf<String?>(null)
     private var bypassSignature by mutableStateOf(false)
     private var bypassSignatureTimer by mutableStateOf<String?>(null)
+
+    // Battery Info State (16 Metrics & Toggle)
+    private var enableBatteryInfo by mutableStateOf(false)
+    private var batteryStatus by mutableStateOf("N/A")
+    private var batteryVoltageMv by mutableStateOf(-1)
+    private var batteryCurrentMa by mutableStateOf(0)
+    private var batteryPowerWatts by mutableStateOf(0f)
+    private var batteryCurrentChargeMah by mutableStateOf(-1)
+    private var batteryMaxChargeVoltageMv by mutableStateOf(-1)
+    private var batteryMaxChargeCurrentMa by mutableStateOf(-1)
+
+    private var batteryCycles by mutableStateOf(-1)
+    private var batteryRated by mutableStateOf(-1)
+    private var batteryEstimated by mutableStateOf(-1)
+    private var batteryHealthCapIndex by mutableStateOf(-1)
+    private var batteryOverallHealth by mutableStateOf("N/A")
+    private var batteryTemp by mutableStateOf(-1f)
+    private var batteryResistanceAvg by mutableStateOf(-1f)
+    private var batteryResistanceNow by mutableStateOf(-1f)
+    private var batteryHealthImpIndex by mutableStateOf(-1)
+    private var batterySerialNumber by mutableStateOf("N/A")
+    private var batteryFirstUsage by mutableStateOf("N/A")
+    private var batteryAge by mutableStateOf("N/A")
+    private var batteryAafvOffset by mutableStateOf(-1)
 
     // Interface State
     private var clearAll by mutableStateOf(true)
@@ -80,6 +106,36 @@ class SettingsActivity : ComponentActivity() {
         setContent {
             PixelTweaksTheme {
                 SettingsScreen(
+                    enableBatteryInfo = enableBatteryInfo,
+                    onEnableBatteryInfoChanged = {
+                        enableBatteryInfo = it
+                        saveDoublePref(PreferenceKeys.ENABLE_BATTERY_INFO, it, cePrefs, dePrefs)
+                        if (it) {
+                            startBatteryAutoRefresh()
+                        } else {
+                            stopBatteryAutoRefresh()
+                        }
+                    },
+                    batteryStatus = batteryStatus,
+                    batteryVoltageMv = batteryVoltageMv,
+                    batteryCurrentMa = batteryCurrentMa,
+                    batteryPowerWatts = batteryPowerWatts,
+                    batteryCurrentChargeMah = batteryCurrentChargeMah,
+                    batteryMaxChargeVoltageMv = batteryMaxChargeVoltageMv,
+                    batteryMaxChargeCurrentMa = batteryMaxChargeCurrentMa,
+                    batteryCycles = batteryCycles,
+                    batteryRated = batteryRated,
+                    batteryEstimated = batteryEstimated,
+                    batteryHealthCapIndex = batteryHealthCapIndex,
+                    batteryOverallHealth = batteryOverallHealth,
+                    batteryTemp = batteryTemp,
+                    batteryResistanceAvg = batteryResistanceAvg,
+                    batteryResistanceNow = batteryResistanceNow,
+                    batteryHealthImpIndex = batteryHealthImpIndex,
+                    batterySerialNumber = batterySerialNumber,
+                    batteryFirstUsage = batteryFirstUsage,
+                    batteryAge = batteryAge,
+                    batteryAafvOffset = batteryAafvOffset,
                     unrestrictedScreenshots = unrestrictedScreenshots,
                     onUnrestrictedScreenshotsChanged = {
                         unrestrictedScreenshots = it
@@ -237,6 +293,7 @@ class SettingsActivity : ComponentActivity() {
             saveDoublePref(PreferenceKeys.ENABLE_QS_DATA_FIX, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_CLEAR_ALL, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_TABLET_MODE, false, cePrefs, dePrefs)
+            saveDoublePref(PreferenceKeys.ENABLE_BATTERY_INFO, false, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_DT_LAUNCHER, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true, cePrefs, dePrefs)
             saveDoublePref(PreferenceKeys.ENABLE_DT_STATUSBAR, true, cePrefs, dePrefs)
@@ -260,6 +317,7 @@ class SettingsActivity : ComponentActivity() {
     }
 
     private fun loadState(dePrefs: SharedPreferences) {
+        enableBatteryInfo = dePrefs.getBoolean(PreferenceKeys.ENABLE_BATTERY_INFO, false)
         unrestrictedScreenshots = dePrefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
         easyUnlock = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
         easyUnlockReboot = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
@@ -328,8 +386,18 @@ class SettingsActivity : ComponentActivity() {
         handler.post(timerRunnable!!)
     }
 
+    private var batteryTimerHandler: Handler? = null
+    private var batteryTimerRunnable: Runnable? = null
+    private val batteryRefreshIntervalMs = 2000L // Auto-refresh battery stats every 2 seconds
+
+    override fun onResume() {
+        super.onResume()
+        startBatteryAutoRefresh()
+    }
+
     override fun onPause() {
         super.onPause()
+        stopBatteryAutoRefresh()
         val deContext = createDeviceProtectedStorageContext()
         val dePrefs = deContext.getSharedPreferences(IpcManager.PREF_NAME, MODE_PRIVATE)
         IpcManager.syncAllSettings(this, dePrefs)
@@ -338,6 +406,54 @@ class SettingsActivity : ComponentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         timerRunnable?.let { handler.removeCallbacks(it) }
+        stopBatteryAutoRefresh()
+    }
+
+    private fun startBatteryAutoRefresh() {
+        if (!enableBatteryInfo) return
+        if (batteryTimerHandler == null) {
+            batteryTimerHandler = Handler(Looper.getMainLooper())
+        }
+        stopBatteryAutoRefresh()
+
+        batteryTimerRunnable = object : Runnable {
+            override fun run() {
+                Thread {
+                    val data = BatteryUtils.fetchBatteryInfoWithRoot()
+                    runOnUiThread {
+                        batteryStatus = data.status
+                        batteryVoltageMv = data.voltageMv
+                        batteryCurrentMa = data.currentMa
+                        batteryPowerWatts = data.powerWatts
+                        batteryCurrentChargeMah = data.currentChargeMah
+                        batteryMaxChargeVoltageMv = data.maxChargeVoltageMv
+                        batteryMaxChargeCurrentMa = data.maxChargeCurrentMa
+
+                        batteryCycles = data.cycles
+                        batteryRated = data.ratedMah
+                        batteryEstimated = data.estMah
+                        batteryHealthCapIndex = data.healthCapIndex
+                        batteryOverallHealth = data.overallHealth
+                        batteryTemp = data.tempCelsius
+                        batteryResistanceAvg = data.resAvgMilli
+                        batteryResistanceNow = data.resNowMilli
+                        batteryHealthImpIndex = data.healthImpIndex
+                        batterySerialNumber = data.serialNumber
+                        batteryFirstUsage = data.firstUsageDate
+                        batteryAge = data.batteryAge
+                        batteryAafvOffset = data.aafvMilli
+                    }
+                }.start()
+
+                batteryTimerHandler?.postDelayed(this, batteryRefreshIntervalMs)
+            }
+        }
+        batteryTimerHandler?.post(batteryTimerRunnable!!)
+    }
+
+    private fun stopBatteryAutoRefresh() {
+        batteryTimerRunnable?.let { batteryTimerHandler?.removeCallbacks(it) }
+        batteryTimerRunnable = null
     }
 
     private fun saveDoublePref(key: String, value: Any, ce: SharedPreferences, de: SharedPreferences) {

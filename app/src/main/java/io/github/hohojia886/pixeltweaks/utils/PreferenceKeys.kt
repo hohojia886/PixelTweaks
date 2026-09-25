@@ -11,7 +11,22 @@ object PreferenceKeys {
     const val EXTRA_KEY = "key"
     const val EXTRA_VALUE = "value"
 
+    const val EXTRA_BATTERY_CYCLES = "battery_cycles"
+    const val EXTRA_BATTERY_RATED = "battery_rated"
+    const val EXTRA_BATTERY_ESTIMATED = "battery_estimated"
+    const val EXTRA_BATTERY_HEALTH_CAP_INDEX = "battery_health_cap_index"
+    const val EXTRA_BATTERY_OVERALL_HEALTH = "battery_overall_health"
+    const val EXTRA_BATTERY_TEMP = "battery_temp"
+    const val EXTRA_BATTERY_RESISTANCE_AVG = "battery_resistance_avg"
+    const val EXTRA_BATTERY_RESISTANCE_NOW = "battery_resistance_now"
+    const val EXTRA_BATTERY_HEALTH_IMP_INDEX = "battery_health_imp_index"
+    const val EXTRA_BATTERY_SERIAL_NUMBER = "battery_serial_number"
+    const val EXTRA_BATTERY_FIRST_USAGE = "battery_first_usage"
+    const val EXTRA_BATTERY_AGE = "battery_age"
+    const val EXTRA_BATTERY_AAFV_OFFSET = "battery_aafv_offset"
+
     // ---- Feature toggles -------------------------------------------------
+    const val ENABLE_BATTERY_INFO = "enable_battery_info"
     const val ENABLE_CLEAR_ALL = "enable_clear_all"
     const val ENABLE_NETWORK_TRAFFIC = "enable_network_traffic"
     const val ENABLE_UNRESTRICTED_SCREENSHOTS = "enable_unrestricted_screenshots"

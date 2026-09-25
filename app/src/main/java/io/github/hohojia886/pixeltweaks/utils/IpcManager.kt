@@ -87,7 +87,7 @@ object IpcManager {
             val knownBooleans = listOf(
                 PreferenceKeys.ENABLE_EASY_UNLOCK, PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
                 PreferenceKeys.ENABLE_QS_WIFI_FIX, PreferenceKeys.ENABLE_QS_DATA_FIX,
-                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
+                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_BATTERY_INFO, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
                 PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
                 PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
                 PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_SECURITY, PreferenceKeys.LOG_INTERFACE,
@@ -98,6 +98,7 @@ object IpcManager {
                 PreferenceKeys.BYPASS_SIGNATURE,
                 PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
                 PreferenceKeys.ENABLE_TABLET_MODE,
+                PreferenceKeys.ENABLE_BATTERY_INFO,
                 PreferenceKeys.ENABLE_MASTER_LOG
             )
             knownBooleans.forEach { key ->

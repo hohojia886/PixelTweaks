@@ -5,6 +5,7 @@
 ---
 
 ### v1.1.0
+- 🔋 **Battery Info Suite & Real-Time Monitoring**: Added on-demand Battery Info card (requires Root) featuring 16 advanced hardware and real-time battery metrics (instant wattage W, voltage V, current mA, stored charge mAh, charge cycles, health capacity/impedance scores, temperature °C, internal resistance mΩ, serial number, manufacture date & age, and system max charging limits) with a 2s foreground auto-refresh timer and clean two-line layout.
 - 📱 **Tablet Mode & Dynamic Density**: Added Tablet Mode toggle that dynamically calculates the required display density ($\text{sw} \ge 600\text{dp}$) from screen physical resolution and applies it via LSPosed system server integration.
 - ⚡ **Performance & Synchronization Optimizations**: Optimized Compose UI recomposition performance with `remember(context)`, cached reflection methods in `PackageManagerHook`, and aligned `ENABLE_TABLET_MODE` IPC synchronization across boot and pause events.
 

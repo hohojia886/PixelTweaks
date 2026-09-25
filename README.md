@@ -43,6 +43,9 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Tablet Mode**: Dynamically calculates and applies target display density (`sw >= 600dp`) for tablet UI layout via pure LSPosed system server integration.
 - **Network Traffic Indicator**: Real-time speed monitor in status bar with intensity-aware color syncing.
 
+### 🔋 Battery Info
+- **Show Battery Info**: Feature toggle to display 16 advanced hardware and real-time battery metrics (real-time wattage W, voltage V, current mA, charge cycles, health capacity/impedance scores, temperature °C, internal resistance mΩ, manufacture date & age, serial number, and max charging limits) with 2s foreground auto-refresh (**requires Root**).
+
 ### 🐞 Debug & Logs
 - **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).
 
