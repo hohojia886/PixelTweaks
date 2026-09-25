@@ -78,11 +78,12 @@
     <string name="battery_power_current">Charging Power &amp; Speed</string>
     <string name="battery_voltage">Real-time Battery Voltage</string>
     <string name="battery_current_stored">Remaining Stored Charge</string>
-    <string name="battery_max_limits">System Max Charging Limit</string>
+    <string name="battery_max_limits">System Current Max Charging Limit</string>
 
     <string name="battery_cycles">Battery Charge Cycles</string>
     <string name="battery_rated_capacity">Factory Design Capacity</string>
     <string name="battery_estimated_capacity">Current Maximum Capacity</string>
+    <string name="battery_calculated_health">Calculated Capacity Health</string>
     <string name="battery_health_capacity_index">Capacity Health Score</string>
     <string name="battery_overall_health">Overall Health Status</string>
     <string name="battery_temperature">Battery Temperature</string>

@@ -1,23 +1,21 @@
 package io.github.hohojia886.pixeltweaks.ui
 
-import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.Process
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import io.github.hohojia886.pixeltweaks.ui.components.SettingsScreen
 import io.github.hohojia886.pixeltweaks.ui.theme.PixelTweaksTheme
 import io.github.hohojia886.pixeltweaks.utils.BatteryUtils
-import io.github.hohojia886.pixeltweaks.utils.DensityUtils
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 
@@ -41,37 +39,38 @@ class SettingsActivity : ComponentActivity() {
     private var bypassSignature by mutableStateOf(false)
     private var bypassSignatureTimer by mutableStateOf<String?>(null)
 
-    // Battery Info State (16 Metrics & Toggle)
+    // Battery Info State (18 Metrics & Toggle)
     private var enableBatteryInfo by mutableStateOf(false)
     private var batteryStatus by mutableStateOf("N/A")
-    private var batteryVoltageMv by mutableStateOf(-1)
-    private var batteryCurrentMa by mutableStateOf(0)
-    private var batteryPowerWatts by mutableStateOf(0f)
-    private var batteryCurrentChargeMah by mutableStateOf(-1)
-    private var batteryMaxChargeVoltageMv by mutableStateOf(-1)
-    private var batteryMaxChargeCurrentMa by mutableStateOf(-1)
+    private var batteryVoltageMv by mutableIntStateOf(-1)
+    private var batteryCurrentMa by mutableIntStateOf(0)
+    private var batteryPowerWatts by mutableFloatStateOf(0f)
+    private var batteryCurrentChargeMah by mutableIntStateOf(-1)
+    private var batteryMaxChargeVoltageMv by mutableIntStateOf(-1)
+    private var batteryMaxChargeCurrentMa by mutableIntStateOf(-1)
 
-    private var batteryCycles by mutableStateOf(-1)
-    private var batteryRated by mutableStateOf(-1)
-    private var batteryEstimated by mutableStateOf(-1)
-    private var batteryHealthCapIndex by mutableStateOf(-1)
+    private var batteryCycles by mutableIntStateOf(-1)
+    private var batteryRated by mutableIntStateOf(-1)
+    private var batteryEstimated by mutableIntStateOf(-1)
+    private var batteryCalculatedHealth by mutableIntStateOf(-1)
+    private var batteryHealthCapIndex by mutableIntStateOf(-1)
     private var batteryOverallHealth by mutableStateOf("N/A")
-    private var batteryTemp by mutableStateOf(-1f)
-    private var batteryResistanceAvg by mutableStateOf(-1f)
-    private var batteryResistanceNow by mutableStateOf(-1f)
-    private var batteryHealthImpIndex by mutableStateOf(-1)
+    private var batteryTemp by mutableFloatStateOf(-1f)
+    private var batteryResistanceAvg by mutableFloatStateOf(-1f)
+    private var batteryResistanceNow by mutableFloatStateOf(-1f)
+    private var batteryHealthImpIndex by mutableIntStateOf(-1)
     private var batterySerialNumber by mutableStateOf("N/A")
     private var batteryFirstUsage by mutableStateOf("N/A")
     private var batteryAge by mutableStateOf("N/A")
-    private var batteryAafvOffset by mutableStateOf(-1)
+    private var batteryAafvOffset by mutableIntStateOf(-1)
 
     // Interface State
     private var clearAll by mutableStateOf(true)
     private var tabletMode by mutableStateOf(false)
     private var networkTraffic by mutableStateOf(true)
-    private var trafficInterval by mutableStateOf(1)
-    private var trafficFontSize by mutableStateOf(8f)
-    private var trafficThreshold by mutableStateOf(1)
+    private var trafficInterval by mutableIntStateOf(1)
+    private var trafficFontSize by mutableFloatStateOf(8f)
+    private var trafficThreshold by mutableIntStateOf(1)
 
     // Gestures State
     private var dtLauncher by mutableStateOf(true)
@@ -126,6 +125,7 @@ class SettingsActivity : ComponentActivity() {
                     batteryCycles = batteryCycles,
                     batteryRated = batteryRated,
                     batteryEstimated = batteryEstimated,
+                    batteryCalculatedHealth = batteryCalculatedHealth,
                     batteryHealthCapIndex = batteryHealthCapIndex,
                     batteryOverallHealth = batteryOverallHealth,
                     batteryTemp = batteryTemp,
@@ -432,6 +432,7 @@ class SettingsActivity : ComponentActivity() {
                         batteryCycles = data.cycles
                         batteryRated = data.ratedMah
                         batteryEstimated = data.estMah
+                        batteryCalculatedHealth = data.calculatedHealthCap
                         batteryHealthCapIndex = data.healthCapIndex
                         batteryOverallHealth = data.overallHealth
                         batteryTemp = data.tempCelsius
@@ -442,6 +443,7 @@ class SettingsActivity : ComponentActivity() {
                         batteryFirstUsage = data.firstUsageDate
                         batteryAge = data.batteryAge
                         batteryAafvOffset = data.aafvMilli
+                        Log.i("PXTK_Battery", "[SettingsActivity Root] Fetched 18 Battery Metrics: Status=$batteryStatus, Power=${batteryPowerWatts}W, Voltage=${batteryVoltageMv}mV, Cycles=$batteryCycles, Rated=$batteryRated")
                     }
                 }.start()
 

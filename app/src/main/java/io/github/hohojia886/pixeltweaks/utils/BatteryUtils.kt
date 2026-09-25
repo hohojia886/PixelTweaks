@@ -2,6 +2,7 @@ package io.github.hohojia886.pixeltweaks.utils
 
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.round
 
 data class BatteryData(
     val status: String = "N/A",
@@ -14,6 +15,7 @@ data class BatteryData(
     val cycles: Int = -1,
     val ratedMah: Int = -1,
     val estMah: Int = -1,
+    val calculatedHealthCap: Int = -1,
     val healthCapIndex: Int = -1,
     val overallHealth: String = "N/A",
     val tempCelsius: Float = -1f,
@@ -105,6 +107,10 @@ object BatteryUtils {
 
             val ratedMah = if (ratedMicroAh > 10000) ratedMicroAh / 1000 else ratedMicroAh
             val estMah = if (estMicroAh > 10000) estMicroAh / 1000 else estMicroAh
+            val calculatedHealthCap = if (ratedMah > 0 && estMah > 0) {
+                round((estMah * 100.0) / ratedMah).toInt().coerceIn(0, 100)
+            } else -1
+
             val tempCelsius = if (tempTenths > 0) tempTenths / 10.0f else -1f
             val resAvgMilli = if (resAvgMicro > 0) resAvgMicro / 1000.0f else -1f
             val resNowMilli = if (resNowMicro > 0) resNowMicro / 1000.0f else -1f
@@ -123,6 +129,7 @@ object BatteryUtils {
                 cycles = cycles,
                 ratedMah = ratedMah,
                 estMah = estMah,
+                calculatedHealthCap = calculatedHealthCap,
                 healthCapIndex = healthCapIndex,
                 overallHealth = overallHealth,
                 tempCelsius = tempCelsius,

@@ -44,7 +44,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Network Traffic Indicator**: Real-time speed monitor in status bar with intensity-aware color syncing.
 
 ### 🔋 Battery Info
-- **Show Battery Info**: Feature toggle to display 16 advanced hardware and real-time battery metrics (real-time wattage W, voltage V, current mA, charge cycles, health capacity/impedance scores, temperature °C, internal resistance mΩ, manufacture date & age, serial number, and max charging limits) with 2s foreground auto-refresh (**requires Root**).
+- **Show Battery Info**: Feature toggle to display 18 advanced hardware and real-time battery metrics (real-time wattage W, voltage V, current mA, charge cycles, calculated & chip capacity health scores, temperature °C, internal resistance mΩ, manufacture date & age, serial number, and current max charging limits) with 2s foreground auto-refresh (**requires Root**).
 
 ### 🐞 Debug & Logs
 - **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).

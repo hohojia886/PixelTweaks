@@ -57,7 +57,7 @@ import io.github.hohojia886.pixeltweaks.utils.DensityUtils
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    // Battery Info Toggle & 16 Metrics
+    // Battery Info Toggle & 18 Metrics
     enableBatteryInfo: Boolean,
     onEnableBatteryInfoChanged: (Boolean) -> Unit,
     batteryStatus: String,
@@ -70,6 +70,7 @@ fun SettingsScreen(
     batteryCycles: Int,
     batteryRated: Int,
     batteryEstimated: Int,
+    batteryCalculatedHealth: Int,
     batteryHealthCapIndex: Int,
     batteryOverallHealth: String,
     batteryTemp: Float,
@@ -345,7 +346,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section: Battery Info (Toggle & 16 Metrics - All 2-Line Layout)
+            // Section: Battery Info (Toggle & 18 Metrics - All 2-Line Layout)
             CategoryHeader(stringResource(R.string.category_battery), Icons.Outlined.BatteryChargingFull)
             SettingsCard {
                 SwitchSettingItem(
@@ -407,53 +408,59 @@ fun SettingsScreen(
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 9. Health Capacity Index
+                    // 9. Calculated Capacity Health
+                    val calcHealthStr = if (batteryCalculatedHealth > 0) stringResource(R.string.battery_health_format, batteryCalculatedHealth) else stringResource(R.string.battery_unknown)
+                    BatteryMetricItem(stringResource(R.string.battery_calculated_health), calcHealthStr, isColumnLayout = true)
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    // 10. Health Capacity Index
                     val healthCapStr = if (batteryHealthCapIndex > 0) stringResource(R.string.battery_health_format, batteryHealthCapIndex) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_health_capacity_index), healthCapStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 10. Overall Health
+                    // 11. Overall Health
                     BatteryMetricItem(stringResource(R.string.battery_overall_health), batteryOverallHealth, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 11. Temperature
+                    // 12. Temperature
                     val tempStr = if (batteryTemp > 0) stringResource(R.string.battery_temp_format, batteryTemp) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_temperature), tempStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 12. Average Resistance
+                    // 13. Average Resistance
                     val resAvgStr = if (batteryResistanceAvg > 0) stringResource(R.string.battery_milli_format, batteryResistanceAvg) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_resistance_avg), resAvgStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 13. Current Resistance
+                    // 14. Current Resistance
                     val resNowStr = if (batteryResistanceNow > 0) stringResource(R.string.battery_milli_format, batteryResistanceNow) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_resistance_now), resNowStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 14. Health Impedance Index
+                    // 15. Health Impedance Index
                     val healthImpStr = if (batteryHealthImpIndex > 0) stringResource(R.string.battery_health_format, batteryHealthImpIndex) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_health_impedance_index), healthImpStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 15. Serial Number
+                    // 16. Serial Number
                     BatteryMetricItem(stringResource(R.string.battery_serial_number), batterySerialNumber, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 16. Manufacture Date & Age
+                    // 17. Manufacture Date & Age
                     val ageStr = if (batteryFirstUsage != "N/A") stringResource(R.string.battery_first_usage_age_format, batteryFirstUsage, batteryAge) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_first_usage), ageStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 17. AAFV Offset
+                    // 18. AAFV Offset
                     val aafvStr = if (batteryAafvOffset >= 0) stringResource(R.string.battery_aafv_format, batteryAafvOffset) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_aafv_offset), aafvStr, isColumnLayout = true)
                 }

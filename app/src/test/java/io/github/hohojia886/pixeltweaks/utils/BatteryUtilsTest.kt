@@ -1,6 +1,7 @@
 package io.github.hohojia886.pixeltweaks.utils
 
 import org.junit.Test
+import kotlin.math.round
 import kotlin.test.assertEquals
 
 class BatteryUtilsTest {
@@ -43,6 +44,15 @@ class BatteryUtilsTest {
         assertEquals(4185, voltageMv)
         assertEquals(1500, currentMa)
         assertEquals(6.2775f, powerWatts, 0.01f)
+    }
+
+    @Test
+    fun testCalculatedCapacityHealth() {
+        val ratedMah = 5035
+        val estMah = 4700
+        val calculatedHealth = round((estMah * 100.0) / ratedMah).toInt()
+
+        assertEquals(93, calculatedHealth)
     }
 
     @Test
