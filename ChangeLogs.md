@@ -4,6 +4,11 @@
 
 ---
 
+### v1.2.0
+- 🏗️ **Full MVVM & Unidirectional Data Flow (UDF) Architecture**: Major architectural refactoring decoupling the UI layer (`SettingsActivity`, `SettingsScreen`) from business logic and data persistence (`SettingsViewModel`, `SettingsRepository`). Reduced Activity from 400+ lines down to a clean 40-line View.
+- ⚡ **Coroutine-Based Timers & StateFlow**: Replaced legacy `Handler`/`Thread` timers with lifecycle-aware Kotlin Coroutines (`viewModelScope.launch`) and unified state management into a single immutable `StateFlow<SettingsUiState>`.
+- 📁 **Clean Package Restructuring**: Reorganized the project into distinct layers (`presentation/`, `data/repository/`, `ui/`).
+
 ### v1.1.0
 - 🔋 **Battery Info Suite & Real-Time Monitoring**: Added on-demand Battery Info card (requires Root) featuring 18 advanced hardware and real-time battery metrics (instant wattage W, voltage V, current mA, stored charge mAh, charge cycles, calculated & chip capacity health scores, temperature °C, internal resistance mΩ, serial number, manufacture date & age, and current max charging limits) with a 2s foreground auto-refresh timer and clean two-line layout.
 - 📱 **Tablet Mode & Dynamic Density**: Added Tablet Mode toggle that dynamically calculates the required display density ($\text{sw} \ge 600\text{dp}$) from screen physical resolution and applies it via LSPosed system server integration.

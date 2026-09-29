@@ -1,6 +1,14 @@
 # PixelTweaks
 
-**版本：** v1.1.0 (穩定版)  
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-17%20(API%2037)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
+  <img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" />
+  <img src="https://img.shields.io/badge/Compose-Material%203-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Compose" />
+  <img src="https://img.shields.io/badge/Architecture-MVVM%20%2B%20UDF-FF6F00?style=for-the-badge&logo=android&logoColor=white" alt="Architecture" />
+  <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
+</p>
+
+**版本：** v1.2.0 (穩定版)  
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
@@ -22,7 +30,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.1.0)
+## ✨ 功能特點 (v1.2.0)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **雙擊桌面熄屏**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -51,6 +59,13 @@
 ### 🐞 偵錯與日誌 (Debug & Logs)
 - **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有功能模組（**僅限 Debug Build**）。
 
+## 🏗️ 專案架構 (v1.2.0)
+
+PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
+- **`presentation/`**：`SettingsUiState` (不可變 State)、`SettingsEvent` (Sealed Event 意圖)、`SettingsViewModel` (StateFlow 與協程定時器)。
+- **`data/repository/`**：`SettingsRepository` (負責 CE/DE SharedPreferences 持久化與 IPC 廣播)。
+- **`ui/`**：`SettingsActivity` 與 `SettingsScreen` (純粹 Compose View 視圖層)。
+
 ## 📝 更新日誌 (Changelog)
 
 請參閱 [CHANGELOG_ZHT.md](CHANGELOG_ZHT.md) 檢視完整的版本更新歷史紀錄與詳細變更說明。
@@ -62,7 +77,7 @@
 - **作用域**：System Framework, Pixel Launcher, System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-v1.1.0-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-v1.2.0-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
 3. 開啟 **PixelTweaks** App 一次以初始化設定（消除 Android 的 `STOPPED` 狀態）。
 4. 重新啟動您的裝置。

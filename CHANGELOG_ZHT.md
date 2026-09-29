@@ -4,6 +4,11 @@
 
 ---
 
+### v1.2.0
+- 🏗️ **完整 MVVM 與單向資料流 (UDF) 架構重構**：重大架構重構，將 UI 介面層 (`SettingsActivity`, `SettingsScreen`) 與商業邏輯/資料層 (`SettingsViewModel`, `SettingsRepository`) 完全解耦。Activity 程式碼由 400 多行巨幅精簡為 40 行的極簡 View。
+- ⚡ **Kotlin 協程定時器與 StateFlow**：以生命週期安全的 Kotlin Coroutines (`viewModelScope.launch`) 徹底淘汰舊有 `Handler`/`Thread` 定時器，並將所有狀態收斂為單一不可變的 `StateFlow<SettingsUiState>`。
+- 📁 **Clean Architecture 套件目錄重構**：將專案清晰劃分為 `presentation/`、`data/repository/` 與 `ui/` 三層套件結構。
+
 ### v1.1.0
 - 🔋 **進階電池資訊與即時監控**：新增按需開啟的電池資訊卡片（需 Root 權限），提供 18 項進階硬體與即時數據（即時功率 W、電壓 V、電流 mA、剩餘 mAh、充電次數、計算預估容量健康度、晶片容量/阻抗健康度評分、溫度 °C、內阻 mΩ、生產序號、製造日期與年齡、當前最高充電限制），支援前台 2 秒自動定時刷新與整齊的兩行式排版。
 - 📱 **Tablet 模式與動態 DPI 計算**：新增 Tablet 模式切換開關，根據裝置螢幕物理解析度動態計算目標 DPI ($sw \ge 600dp$)，並透過純 LSPosed 系統層 `system_server` 實現免 Root 切換。

@@ -1,6 +1,14 @@
 # PixelTweaks
 
-**Version:** v1.1.0 (Stable Release)  
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-17%20(API%2037)-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android" />
+  <img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" />
+  <img src="https://img.shields.io/badge/Compose-Material%203-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white" alt="Compose" />
+  <img src="https://img.shields.io/badge/Architecture-MVVM%20%2B%20UDF-FF6F00?style=for-the-badge&logo=android&logoColor=white" alt="Architecture" />
+  <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
+</p>
+
+**Version:** v1.2.0 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -20,7 +28,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.1.0)
+## ✨ Features (v1.2.0)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -49,6 +57,13 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ### 🐞 Debug & Logs
 - **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).
 
+## 🏗️ Architecture (v1.2.0)
+
+PixelTweaks is built with modern Android **MVVM + Unidirectional Data Flow (UDF)** architecture:
+- **`presentation/`**: `SettingsUiState` (Immutable State), `SettingsEvent` (Sealed Interface Intents), `SettingsViewModel` (StateFlow & Coroutine Timers).
+- **`data/repository/`**: `SettingsRepository` (Handles CE/DE SharedPreferences & IPC Broadcasts).
+- **`ui/`**: `SettingsActivity` & `SettingsScreen` (Pure Compose View Layer).
+
 ## 📝 Changelog
 
 See [ChangeLogs.md](ChangeLogs.md) for the complete version release history and detailed changelogs.
@@ -60,7 +75,7 @@ See [ChangeLogs.md](ChangeLogs.md) for the complete version release history and 
 - **Static Scope Enforcement**: System Framework, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-v1.1.0-<buildType>.apk`.
+1. Build or download `pixel-tweaks-v1.2.0-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
 4. Reboot your device.
