@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Module is actief</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Taal</string>
+    <string name="language_settings_summary">Weergavetaal van app wijzigen</string>
+    <string name="lang_system_default">Systeemstandaard</string>
+    <string name="github_repository">GitHub-repository</string>
+    <string name="github_repository_summary">Broncode en releases bekijken</string>
+
+    <!-- Categories -->
+    <string name="category_security">Systeem &amp; Beveiliging</string>
+    <string name="category_interface">Interface &amp; Statusbalk</string>
+    <string name="category_interaction">Gebaren &amp; Interacties</string>
+    <string name="category_quick_settings">Snelle instellingen</string>
+    <string name="category_battery">Batterij-informatie</string>
+    <string name="category_debug">Fout opsporen-logs</string>
+    <string name="category_others">Overige</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Knop Alles wisken</string>
+    <string name="clear_all_button_summary">Alles wisken toevoegen aan overzicht</string>
+    <string name="tablet_mode">Tabletmodus</string>
+    <string name="tablet_mode_summary">Tablet-lay-out forceren (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Tablet-lay-out actief (%1$d DPI)</string>
+    <string name="enable_battery_info">Batterij-info tonen</string>
+    <string name="enable_battery_info_summary">Realtime batterijgegevens tonen (ververst elke 2s, vereist Root)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Dubbeltikken op launcher</string>
+    <string name="dt_launcher_summary">Dubbeltikken op lege plek in launcher voor schermafbeelding uit</string>
+    <string name="dt_lockscreen">Dubbeltikken op vergrendelscherm</string>
+    <string name="dt_lockscreen_summary">Dubbeltikken op vergrendelscherm voor schermafbeelding uit</string>
+    <string name="dt_statusbar">Dubbeltikken op statusbalk</string>
+    <string name="dt_statusbar_summary">Dubbeltikken op statusbalk voor schermafbeelding uit</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Eenvoudig ontgrendelen</string>
+    <string name="easy_unlock_summary">Automatisch ontgrendelen bij juiste PIN</string>
+    <string name="easy_unlock_reboot">Herstartbeperking omzeilen</string>
+    <string name="easy_unlock_reboot_summary">Automatisch ontgrendelen na herstart toestaan</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Wi-Fi geforceerd uitschakelen</string>
+    <string name="qs_wifi_fix_summary">Wi-Fi volledig uitschakelen bij schakelen</string>
+    <string name="qs_data_fix">Direct Schakelen Mobiele Data</string>
+    <string name="qs_data_fix_summary">Data schakelen zonder bevestigingsvenster</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Schermafbeeldingen zonder beperking</string>
+    <string name="unrestricted_screenshots_summary">Schermafbeeldingen in beschermde apps toestaan</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">App-downgrade toestaan</string>
+    <string name="allow_downgrade_summary">Oudere versies van apps installeren (vervalt na 3 min)</string>
+    <string name="bypass_signature">Handtekeningverificatie omzeilen</string>
+    <string name="bypass_signature_summary">Apps met andere handtekening installeren (vervalt na 3 min)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">Netwerkverkeersindicator</string>
+    <string name="network_traffic_summary">Realtime snelheid in statusbalk tonen</string>
+    <string name="traffic_interval_format">Ververstellingsinterval: %1$ds</string>
+    <string name="traffic_font_format">Lettergrootte: %1$dsp</string>
+    <string name="traffic_threshold_always">Drempelwaarde: Altijd tonen</string>
+    <string name="traffic_threshold_mb">Drempelwaarde: 1MB/s</string>
+    <string name="traffic_threshold_kb">Drempelwaarde: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Hoofd-logging</string>
+    <string name="master_log_summary">Logcat-tag: PXTK_</string>
+    <string name="log_security">Systeem- &amp; Beveiligingslogs</string>
+    <string name="log_security_summary">Logcat-tags: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Interface-logs</string>
+    <string name="log_interface_summary">Logcat-tags: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">Gebaren-logs</string>
+    <string name="log_gestures_summary">Logcat-tag: PXTK_DT2S</string>
+    <string name="log_quick_settings">Snelle instellingen-logs</string>
+    <string name="log_quick_settings_summary">Logcat-tag: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Batterijstatus</string>
+    <string name="battery_power_current">Laadvermogen &amp; snelheid</string>
+    <string name="battery_voltage">Realtime batterijspanning</string>
+    <string name="battery_current_stored">Resterende opgeslagen lading</string>
+    <string name="battery_max_limits">Systeem maximale laadlimiet</string>
+
+    <string name="battery_cycles">Laadcycli</string>
+    <string name="battery_rated_capacity">Fabrieksontwerpcapaciteit</string>
+    <string name="battery_estimated_capacity">Huidige maximale capaciteit</string>
+    <string name="battery_calculated_health">Berekende capaciteitsgezondheid</string>
+    <string name="battery_health_capacity_index">Capaciteitsgezondheidsscore</string>
+    <string name="battery_overall_health">Algemene gezondheidsstatus</string>
+    <string name="battery_temperature">Batterijtemperatuur</string>
+    <string name="battery_resistance_avg">Gemiddelde interne weerstand</string>
+    <string name="battery_resistance_now">Realtime interne weerstand</string>
+    <string name="battery_health_impedance_index">Impedantie-gezondheidsscore</string>
+    <string name="battery_serial_number">Serienummer van batterij</string>
+    <string name="battery_first_usage">Productiedatum &amp; leeftijd</string>
+    <string name="battery_aafv_offset">Spannings-offset voor verouderingsbescherming</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d cycli</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

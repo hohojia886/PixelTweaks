@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Modul je aktivní</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Jazyk</string>
+    <string name="language_settings_summary">Změnit zobrazovaný jazyk aplikace</string>
+    <string name="lang_system_default">Výchozí nastavení systému</string>
+    <string name="github_repository">Repositář GitHub</string>
+    <string name="github_repository_summary">Zobrazit zdrojový kód a vydání</string>
+
+    <!-- Categories -->
+    <string name="category_security">Systém a zabezpečení</string>
+    <string name="category_interface">Rozhraní a stavový řádek</string>
+    <string name="category_interaction">Gesta a interakce</string>
+    <string name="category_quick_settings">Rychlé nastavení</string>
+    <string name="category_battery">Informace o baterii</string>
+    <string name="category_debug">Protokoly ladění</string>
+    <string name="category_others">Ostatní</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Tlačítko Vymazat vše</string>
+    <string name="clear_all_button_summary">Přidat Vymazat vše do nedávných aplikací</string>
+    <string name="tablet_mode">Režim tabletu</string>
+    <string name="tablet_mode_summary">Vynutit rozvržení tabletu (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Rozvržení tabletu aktivní (%1$d DPI)</string>
+    <string name="enable_battery_info">Zobrazit informace o baterii</string>
+    <string name="enable_battery_info_summary">Zobrazit živá data baterie (obnovuje se každé 2s, vyžaduje Root)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Dvojité klepnutí na ploše</string>
+    <string name="dt_launcher_summary">Dvojitým klepnutím na plochu uspíte zařízení</string>
+    <string name="dt_lockscreen">Dvojité klepnutí na zamykací obrazovce</string>
+    <string name="dt_lockscreen_summary">Dvojitým klepnutím na zamykací obrazovku uspíte zařízení</string>
+    <string name="dt_statusbar">Dvojité klepnutí na stavovém řádku</string>
+    <string name="dt_statusbar_summary">Dvojitým klepnutím na stavový řádek uspíte zařízení</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Snadné odemknutí</string>
+    <string name="easy_unlock_summary">Automaticky odemknout při správném PINu</string>
+    <string name="easy_unlock_reboot">Obejít omezení po restartu</string>
+    <string name="easy_unlock_reboot_summary">Povolit automatické odemknutí i po restartu</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Vynutit vypnutí Wi-Fi</string>
+    <string name="qs_wifi_fix_summary">Při přepnutí zcela vypnout Wi-Fi</string>
+    <string name="qs_data_fix">Přímé přepnutí mobilních dat</string>
+    <string name="qs_data_fix_summary">Přepínat data bez potvrzovacího dialogu</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Neomezené snímky obrazovky</string>
+    <string name="unrestricted_screenshots_summary">Povolit snímky v chráněných aplikacích</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">Povolit downgrade aplikací</string>
+    <string name="allow_downgrade_summary">Instalovat starší verze aplikací (vyprší za 3 minuty)</string>
+    <string name="bypass_signature">Obejít ověření podpisu</string>
+    <string name="bypass_signature_summary">Instalovat aplikace s jiným podpisem (vyprší za 3 minuty)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">Ukazatel síťového provozu</string>
+    <string name="network_traffic_summary">Zobrazit aktuální rychlost ve stavovém řádku</string>
+    <string name="traffic_interval_format">Interval obnovení: %1$ds</string>
+    <string name="traffic_font_format">Velikost písma: %1$dsp</string>
+    <string name="traffic_threshold_always">Prahová hodnota: Zobrazit vždy</string>
+    <string name="traffic_threshold_mb">Prahová hodnota: 1MB/s</string>
+    <string name="traffic_threshold_kb">Prahová hodnota: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Hlavní protokolování</string>
+    <string name="master_log_summary">Logcat značka: PXTK_</string>
+    <string name="log_security">Protokoly systému a zabezpečení</string>
+    <string name="log_security_summary">Logcat značky: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Protokoly rozhraní</string>
+    <string name="log_interface_summary">Logcat značky: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">Protokoly gest</string>
+    <string name="log_gestures_summary">Logcat značka: PXTK_DT2S</string>
+    <string name="log_quick_settings">Protokoly rychlého nastavení</string>
+    <string name="log_quick_settings_summary">Logcat značka: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Stav baterie</string>
+    <string name="battery_power_current">Nabíjecí výkon a rychlost</string>
+    <string name="battery_voltage">Aktuální napětí baterie</string>
+    <string name="battery_current_stored">Zbývající uložený náboj</string>
+    <string name="battery_max_limits">Maximální limit nabíjení systému</string>
+
+    <string name="battery_cycles">Počet cyklů nabíjení</string>
+    <string name="battery_rated_capacity">Kapacita navržená výrobcem</string>
+    <string name="battery_estimated_capacity">Aktuální maximální kapacita</string>
+    <string name="battery_calculated_health">Vypočítané zdraví kapacity</string>
+    <string name="battery_health_capacity_index">Skóre zdraví kapacity</string>
+    <string name="battery_overall_health">Celkový stav zdraví</string>
+    <string name="battery_temperature">Teplota baterie</string>
+    <string name="battery_resistance_avg">Průměrný vnitřní odpor</string>
+    <string name="battery_resistance_now">Aktuální vnitřní odpor</string>
+    <string name="battery_health_impedance_index">Skóre impedančního zdraví</string>
+    <string name="battery_serial_number">Sériové číslo baterie</string>
+    <string name="battery_first_usage">Datum výroby a stáří</string>
+    <string name="battery_aafv_offset">Posun napětí ochrany před stárnutím</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d cyklů</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

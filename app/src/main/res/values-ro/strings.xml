@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Modulul este activ</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Limbă</string>
+    <string name="language_settings_summary">Schimbă limba de afișare a aplicației</string>
+    <string name="lang_system_default">Implicit sistem</string>
+    <string name="github_repository">Depozit GitHub</string>
+    <string name="github_repository_summary">Vezi codul sursă și versiunile</string>
+
+    <!-- Categories -->
+    <string name="category_security">Sistem &amp; Securitate</string>
+    <string name="category_interface">Interfață &amp; Bară de stare</string>
+    <string name="category_interaction">Gesturi &amp; Interacțiuni</string>
+    <string name="category_quick_settings">Setări rapide</string>
+    <string name="category_battery">Informații baterie</string>
+    <string name="category_debug">Jurnale de depanare</string>
+    <string name="category_others">Altele</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Buton Șterge tot</string>
+    <string name="clear_all_button_summary">Adaugă Șterge tot în aplicații recente</string>
+    <string name="tablet_mode">Mod tabletă</string>
+    <string name="tablet_mode_summary">Afișează aspect de tabletă (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Aspect de tabletă activ (%1$d DPI)</string>
+    <string name="enable_battery_info">Afișează informații baterie</string>
+    <string name="enable_battery_info_summary">Afișează date baterie în timp real (reîmprospătare la 2s, necesită Root)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Atingere dublă pe ecran principal</string>
+    <string name="dt_launcher_summary">Atingere dublă pe spațiul liber pentru a opri ecranul</string>
+    <string name="dt_lockscreen">Atingere dublă pe ecran de blocare</string>
+    <string name="dt_lockscreen_summary">Atingere dublă pe ecranul de blocare pentru a-l opri</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Deblocare ușoară</string>
+    <string name="easy_unlock_summary">Deblocare automată la introducerea PIN-ului corect</string>
+    <string name="easy_unlock_reboot">Ocolește restricția după repornire</string>
+    <string name="easy_unlock_reboot_summary">Permite deblocarea automată după repornire</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Oprește Wi-Fi forțat</string>
+    <string name="qs_wifi_fix_summary">Oprește complet Wi-Fi la comutare</string>
+    <string name="qs_data_fix">Comutare directă date mobile</string>
+    <string name="qs_data_fix_summary">Comută datele fără dialog de confirmare</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Capturi de ecran fără restricții</string>
+    <string name="unrestricted_screenshots_summary">Permite capturi în aplicații protejate</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">Permite degradarea aplicațiilor</string>
+    <string name="allow_downgrade_summary">Instalează versiuni vechi de aplicații (expiră în 3 min)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">Indicator trafic rețea</string>
+    <string name="network_traffic_summary">Afișează viteza în timp real în bara de stare</string>
+    <string name="traffic_interval_format">Interval reîmprospătare: %1$ds</string>
+    <string name="traffic_font_format">Dimensiune font: %1$dsp</string>
+    <string name="traffic_threshold_always">Prag: Afișează mereu</string>
+    <string name="traffic_threshold_mb">Prag: 1MB/s</string>
+    <string name="traffic_threshold_kb">Prag: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Jurnalizare principală</string>
+    <string name="master_log_summary">Etichetă Logcat: PXTK_</string>
+    <string name="log_security">Jurnale sistem &amp; securitate</string>
+    <string name="log_security_summary">Etichete: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Jurnale interfață</string>
+    <string name="log_interface_summary">Etichete: PXTK_ClearAll, PXTK_Traffic</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Stare baterie</string>
+    <string name="battery_power_current">Putere &amp; viteză de încărcare</string>
+    <string name="battery_voltage">Tensiune în timp real</string>
+
+    <string name="battery_cycles">Cicluri de încărcare</string>
+    <string name="battery_rated_capacity">Capacitate nominală din fabrică</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d cicluri</string>
+
+    <string name="dt_statusbar">Atingere dublă pe bara de stare</string>
+    <string name="dt_statusbar_summary">Atingere dublă pe bara de stare pentru a opri ecranul</string>
+    <string name="bypass_signature">Ocolește verificarea semnăturii</string>
+    <string name="bypass_signature_summary">Instalează aplicații cu semnătură diferită (expiră în 3 min)</string>
+    <string name="log_gestures">Jurnale gesturi</string>
+    <string name="log_gestures_summary">Etichetă Logcat: PXTK_DT2S</string>
+    <string name="log_quick_settings">Jurnale setări rapide</string>
+    <string name="log_quick_settings_summary">Etichetă Logcat: PXTK_QuickSettings</string>
+    <string name="battery_current_stored">Sarcina rămasă stocată</string>
+    <string name="battery_max_limits">Limbă maximă de încărcare sistem</string>
+    <string name="battery_estimated_capacity">Capacitate maximă actuală</string>
+    <string name="battery_calculated_health">Sănătate capacitate calculată</string>
+    <string name="battery_health_capacity_index">Scor sănătate capacitate</string>
+    <string name="battery_overall_health">Stare generală de sănătate</string>
+    <string name="battery_temperature">Temperatură baterie</string>
+    <string name="battery_resistance_avg">Rezistență internă medie</string>
+    <string name="battery_resistance_now">Rezistență internă în timp real</string>
+    <string name="battery_health_impedance_index">Scor sănătate impedanță</string>
+    <string name="battery_serial_number">Număr de serie baterie</string>
+    <string name="battery_first_usage">Dată fabricație &amp; vârstă</string>
+    <string name="battery_aafv_offset">Decalaj tensiune protecție îmbătrânire</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

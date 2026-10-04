@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**版本：** v1.2.0 (穩定版)  
+**版本：** v1.2.1 (穩定版)  
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
@@ -30,7 +30,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.2.0)
+## ✨ 功能特點 (v1.2.1)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **雙擊桌面熄屏**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -56,10 +56,13 @@
 ### 🔋 電池資訊 (Battery Info)
 - **顯示電池資訊**：手動開關，展出 18 項進階硬體與即時電池數據（包含即時瓦數 W、電壓 V、電流 mA、充電次數、計算預估容量健康度、晶片容量與阻抗健康度評分、溫度 °C、內阻 mΩ、生產日期與年齡、電池序號及當前最高充電限制），支援前台 2 秒自動定時刷新（**需 Root 權限**）。
 
+### 🌐 多國語言切換
+- **多國語系支援**：採用 Android 13+ 原生 Per-App Language 機制，支援全球 18 種 Pixel 販售市場語系與可滾動的單選對話框選單。
+
 ### 🐞 偵錯與日誌 (Debug & Logs)
 - **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有功能模組（**僅限 Debug Build**）。
 
-## 🏗️ 專案架構 (v1.2.0)
+## 🏗️ 專案架構 (v1.2.1)
 
 PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **`presentation/`**：`SettingsUiState` (不可變 State)、`SettingsEvent` (Sealed Event 意圖)、`SettingsViewModel` (StateFlow 與協程定時器)。
@@ -77,7 +80,7 @@ PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **作用域**：System Framework, Pixel Launcher, System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-v1.2.0-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-v1.2.1-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
 3. 開啟 **PixelTweaks** App 一次以初始化設定（消除 Android 的 `STOPPED` 狀態）。
 4. 重新啟動您的裝置。

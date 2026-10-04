@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">El módulo está activo</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Idioma</string>
+    <string name="language_settings_summary">Cambiar el idioma de la aplicación</string>
+    <string name="lang_system_default">Predeterminado del sistema</string>
+    <string name="github_repository">Repositorio de GitHub</string>
+    <string name="github_repository_summary">Ver código fuente y versiones</string>
+
+    <!-- Categories -->
+    <string name="category_security">Sistema y seguridad</string>
+    <string name="category_interface">Interfaz y barra de estado</string>
+    <string name="category_interaction">Gestos e interacciones</string>
+    <string name="category_quick_settings">Ajustes rápidos</string>
+    <string name="category_battery">Información de batería</string>
+    <string name="category_debug">Registros de depuración</string>
+    <string name="category_others">Otros</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Boton Borrar todo</string>
+    <string name="clear_all_button_summary">Añadir Borrar todo en recientes</string>
+    <string name="tablet_mode">Modo Tableta</string>
+    <string name="tablet_mode_summary">Forzar diseño de tableta (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Diseño de tableta activo (%1$d DPI)</string>
+    <string name="enable_battery_info">Mostrar datos de batería</string>
+    <string name="enable_battery_info_summary">Mostrar datos de hardware en tiempo real (actualización cada 2s, requiere Root)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Doble toque en inicio</string>
+    <string name="dt_launcher_summary">Doble toque en espacio libre del inicio para apagar</string>
+    <string name="dt_lockscreen">Doble toque en bloqueo</string>
+    <string name="dt_lockscreen_summary">Doble toque en pantalla de bloqueo para apagar</string>
+    <string name="dt_statusbar">Doble toque en barra de estado</string>
+    <string name="dt_statusbar_summary">Doble toque en barra de estado para apagar</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Desbloqueo fácil</string>
+    <string name="easy_unlock_summary">Desbloquear automáticamente al ingresar PIN correcto</string>
+    <string name="easy_unlock_reboot">Omitir restricción tras reinicio</string>
+    <string name="easy_unlock_reboot_summary">Permitir desbloqueo automático tras reiniciar</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Forzar apagar Wi-Fi</string>
+    <string name="qs_wifi_fix_summary">Desactivar Wi-Fi completamente al conmutar</string>
+    <string name="qs_data_fix">Conmutar datos móviles directo</string>
+    <string name="qs_data_fix_summary">Conmutar datos sin diálogo de confirmación</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Capturas sin restricción</string>
+    <string name="unrestricted_screenshots_summary">Permitir capturas y grabaciones en apps protegidas</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">Permitir degradar apps</string>
+    <string name="allow_downgrade_summary">Instalar versiones antiguas sobre existentes (auto-desactiva en 3 min)</string>
+    <string name="bypass_signature">Omitir verificación de firma</string>
+    <string name="bypass_signature_summary">Instalar apps con firma diferente (auto-desactiva en 3 min)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">Indicador de tráfico de red</string>
+    <string name="network_traffic_summary">Mostrar velocidad de red en tiempo real</string>
+    <string name="traffic_interval_format">Intervalo: %1$ds</string>
+    <string name="traffic_font_format">Tamaño de fuente: %1$dsp</string>
+    <string name="traffic_threshold_always">Umbral: Mostrar siempre</string>
+    <string name="traffic_threshold_mb">Umbral: 1MB/s</string>
+    <string name="traffic_threshold_kb">Umbral: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Registro maestro</string>
+    <string name="master_log_summary">Etiqueta Logcat: PXTK_</string>
+    <string name="log_security">Registros de sistema y seguridad</string>
+    <string name="log_security_summary">Etiquetas: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Registros de interfaz</string>
+    <string name="log_interface_summary">Etiquetas: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">Registros de gestos</string>
+    <string name="log_gestures_summary">Etiquetas: PXTK_DT2S</string>
+    <string name="log_quick_settings">Registros de ajustes rápidos</string>
+    <string name="log_quick_settings_summary">Etiquetas: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Estado de la batería</string>
+    <string name="battery_power_current">Potencia y corriente de carga</string>
+    <string name="battery_voltage">Voltaje en tiempo real</string>
+    <string name="battery_current_stored">Carga almacenada restante</string>
+    <string name="battery_max_limits">Límite máximo de carga del sistema</string>
+
+    <string name="battery_cycles">Ciclos de carga</string>
+    <string name="battery_rated_capacity">Capacidad de diseño</string>
+    <string name="battery_estimated_capacity">Capacidad máxima actual</string>
+    <string name="battery_calculated_health">Salud de capacidad estimada</string>
+    <string name="battery_health_capacity_index">Puntuación de salud de capacidad</string>
+    <string name="battery_overall_health">Estado de salud general</string>
+    <string name="battery_temperature">Temperatura de la batería</string>
+    <string name="battery_resistance_avg">Resistencia interna promedio</string>
+    <string name="battery_resistance_now">Resistencia interna en tiempo real</string>
+    <string name="battery_health_impedance_index">Puntuación de impedancia</string>
+    <string name="battery_serial_number">Número de serie de batería</string>
+    <string name="battery_first_usage">Fecha de fabricación y antigüedad</string>
+    <string name="battery_aafv_offset">Desplazamiento de voltaje de protección</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d ciclos</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

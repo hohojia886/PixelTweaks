@@ -38,6 +38,7 @@ class SettingsRepository(private val context: Context) {
             savePreference(PreferenceKeys.ENABLE_CLEAR_ALL, true)
             savePreference(PreferenceKeys.ENABLE_TABLET_MODE, false)
             savePreference(PreferenceKeys.ENABLE_BATTERY_INFO, false)
+            savePreference(PreferenceKeys.APP_LANGUAGE, "")
             savePreference(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
             savePreference(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
             savePreference(PreferenceKeys.ENABLE_DT_STATUSBAR, true)
@@ -62,6 +63,7 @@ class SettingsRepository(private val context: Context) {
 
     fun loadInitialState(): SettingsUiState {
         return SettingsUiState(
+            currentLanguageTag = dePrefs.getString(PreferenceKeys.APP_LANGUAGE, "") ?: "",
             enableBatteryInfo = dePrefs.getBoolean(PreferenceKeys.ENABLE_BATTERY_INFO, false),
             unrestrictedScreenshots = dePrefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true),
             easyUnlock = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true),

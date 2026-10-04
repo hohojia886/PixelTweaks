@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Moduł jest aktywny</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Język</string>
+    <string name="language_settings_summary">Zmień język wyświetlania aplikacji</string>
+    <string name="lang_system_default">Domyślny systemu</string>
+    <string name="github_repository">Repozytorium GitHub</string>
+    <string name="github_repository_summary">Wyświetl kod źródłowy i wydania</string>
+
+    <!-- Categories -->
+    <string name="category_security">System i bezpieczeństwo</string>
+    <string name="category_interface">Interfejs i pasek stanu</string>
+    <string name="category_interaction">Gesty i interakcje</string>
+    <string name="category_quick_settings">Szybkie ustawienia</string>
+    <string name="category_battery">Informacje o baterii</string>
+    <string name="category_debug">Logi debugowania</string>
+    <string name="category_others">Inne</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Przycisk Wyczyść wszystko</string>
+    <string name="clear_all_button_summary">Dodaj Wyczyść wszystko w ostatnich aplikacjach</string>
+    <string name="tablet_mode">Tryb tabletu</string>
+    <string name="tablet_mode_summary">Wymuś układ tabletu (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Układ tabletu aktywne (%1$d DPI)</string>
+    <string name="enable_battery_info">Pokaż informacje o baterii</string>
+    <string name="enable_battery_info_summary">Pokaż dane baterii w czasie rzeczywistym (odświeżanie co 2s, wymaga Root)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Dwukrotne dotknięcie w ekranie głównym</string>
+    <string name="dt_launcher_summary">Dwukrotnie dotknij pustego miejsca, aby uśpić</string>
+    <string name="dt_lockscreen">Dwukrotne dotknięcie na ekranie blokady</string>
+    <string name="dt_lockscreen_summary">Dwukrotnie dotknij ekranu blokady, aby uśpić</string>
+    <string name="dt_statusbar">Dwukrotne dotknięcie na pasku stanu</string>
+    <string name="dt_statusbar_summary">Dwukrotnie dotknij paska stanu, aby uśpić</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Łatwe odblokowanie</string>
+    <string name="easy_unlock_summary">Automatycznie odblokuj po wprowadzeniu prawidłowego PINu</string>
+    <string name="easy_unlock_reboot">Omiń ograniczenie po ponownym uruchomieniu</string>
+    <string name="easy_unlock_reboot_summary">Zezwalaj na automatyczne odblokowanie po ponownym uruchomieniu</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Wymuś wyłączenie Wi-Fi</string>
+    <string name="qs_wifi_fix_summary">Całkowicie wyłącz Wi-Fi podczas przełączania</string>
+    <string name="qs_data_fix">Bezpośrednie przełączanie danych komórkowych</string>
+    <string name="qs_data_fix_summary">Przełączaj dane bez okna potwierdzenia</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Zrzuty ekranu bez ograniczeń</string>
+    <string name="unrestricted_screenshots_summary">Zezwalaj na zrzuty ekranu w chronionych aplikacjach</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">Zezwalaj na obniżenie wersji aplikacji</string>
+    <string name="allow_downgrade_summary">Innstalui starsze wersje aplikacji (wygasa za 3 minuty)</string>
+    <string name="bypass_signature">Omiń weryfikację podpisu</string>
+    <string name="bypass_signature_summary">Instaluj aplikacje z innym podpisem (wygasa za 3 minuty)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">Wskaźnik ruchu sieciowego</string>
+    <string name="network_traffic_summary">Pokaż prędkość w czasie rzeczywistym na pasku stanu</string>
+    <string name="traffic_interval_format">Interwał odświeżania: %1$ds</string>
+    <string name="traffic_font_format">Rozmiar czcionki: %1$dsp</string>
+    <string name="traffic_threshold_always">Próg: Zawsze pokazuj</string>
+    <string name="traffic_threshold_mb">Próg: 1MB/s</string>
+    <string name="traffic_threshold_kb">Próg: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Główne logowanie</string>
+    <string name="master_log_summary">Tag Logcat: PXTK_</string>
+    <string name="log_security">Logi systemu i bezpieczeństwa</string>
+    <string name="log_security_summary">Tagi Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Logi interfejsu</string>
+    <string name="log_interface_summary">Tagi Logcat: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">Logi gestów</string>
+    <string name="log_gestures_summary">Tag Logcat: PXTK_DT2S</string>
+    <string name="log_quick_settings">Logi szybkich ustawień</string>
+    <string name="log_quick_settings_summary">Tag Logcat: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Stan baterii</string>
+    <string name="battery_power_current">Moc i prędkość ładowania</string>
+    <string name="battery_voltage">Napięcie w czasie rzeczywistym</string>
+    <string name="battery_current_stored">Pozostały zgromadzony ładunek</string>
+    <string name="battery_max_limits">Maksymalny limit ładowania systemu</string>
+
+    <string name="battery_cycles">Cykle ładowania</string>
+    <string name="battery_rated_capacity">Fabryczna pojemność znamionowa</string>
+    <string name="battery_estimated_capacity">Aktualna maksymalna pojemność</string>
+    <string name="battery_calculated_health">Obliczona kondycja pojemności</string>
+    <string name="battery_health_capacity_index">Wynik kondycji pojemności</string>
+    <string name="battery_overall_health">Ogólny stan zdrowia</string>
+    <string name="battery_temperature">Temperatura baterii</string>
+    <string name="battery_resistance_avg">Średnia rezystancja wewnętrzna</string>
+    <string name="battery_resistance_now">Chwilowa rezystancja wewnętrzna</string>
+    <string name="battery_health_impedance_index">Wynik kondycji impedancji</string>
+    <string name="battery_serial_number">Numer seryjny baterii</string>
+    <string name="battery_first_usage">Data produkcji i wiek</string>
+    <string name="battery_aafv_offset">Przesunięcie napięcia ochrony przed starzeniem</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d cykli</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

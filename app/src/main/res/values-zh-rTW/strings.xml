@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">模組已啟用</string>
+    <string name="countdown_format">%1$s (%2$d秒)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">語言設定</string>
+    <string name="language_settings_summary">切換 App 顯示語言</string>
+    <string name="lang_system_default">系統預設</string>
+    <string name="github_repository">GitHub 專案庫</string>
+    <string name="github_repository_summary">檢視開放原始碼與發行版本</string>
+
+    <!-- Categories -->
+    <string name="category_security">系統與安全</string>
+    <string name="category_interface">介面與狀態列</string>
+    <string name="category_interaction">手勢與互動</string>
+    <string name="category_quick_settings">快捷設定</string>
+    <string name="category_battery">電池資訊</string>
+    <string name="category_debug">除錯日誌</string>
+    <string name="category_others">其他</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">清除全部按鈕</string>
+    <string name="clear_all_button_summary">在近期任務畫面新增清除全部</string>
+    <string name="tablet_mode">Tablet 模式</string>
+    <string name="tablet_mode_summary">強制切換平板版型 (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">平板版型生效中 (%1$d DPI)</string>
+    <string name="enable_battery_info">顯示電池資訊</string>
+    <string name="enable_battery_info_summary">顯示即時電池硬體數據（前台每 2 秒自動刷新，需 Root）</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">桌面雙擊熄屏</string>
+    <string name="dt_launcher_summary">雙擊桌面空白處熄屏</string>
+    <string name="dt_lockscreen">鎖定畫面雙擊熄屏</string>
+    <string name="dt_lockscreen_summary">雙擊鎖定畫面區域熄屏</string>
+    <string name="dt_statusbar">狀態列雙擊熄屏</string>
+    <string name="dt_statusbar_summary">雙擊狀態列區域熄屏</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">輕鬆解鎖</string>
+    <string name="easy_unlock_summary">PIN 碼輸入正確後自動解鎖</string>
+    <string name="easy_unlock_reboot">重開機繞過限制</string>
+    <string name="easy_unlock_reboot_summary">重開機後允許自動解鎖</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">強制關閉 Wi-Fi</string>
+    <string name="qs_wifi_fix_summary">切換時完全關閉 Wi-Fi</string>
+    <string name="qs_data_fix">行動數據直接切換</string>
+    <string name="qs_data_fix_summary">切換數據時免確認對話框</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">解除截圖限制</string>
+    <string name="unrestricted_screenshots_summary">允許在受限制應用程式中截圖與錄影</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">允許應用降級</string>
+    <string name="allow_downgrade_summary">允許覆蓋安裝舊版本應用（3分鐘自動關閉）</string>
+    <string name="bypass_signature">繞過簽名驗證</string>
+    <string name="bypass_signature_summary">允許安裝不同簽名的應用（3分鐘自動關閉）</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">網路流量指示器</string>
+    <string name="network_traffic_summary">在狀態列顯示即時網速</string>
+    <string name="traffic_interval_format">刷新間隔: %1$d秒</string>
+    <string name="traffic_font_format">字型大小: %1$dsp</string>
+    <string name="traffic_threshold_always">門檻: 總是顯示</string>
+    <string name="traffic_threshold_mb">門檻: 1MB/s</string>
+    <string name="traffic_threshold_kb">門檻: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">主日誌開關</string>
+    <string name="master_log_summary">Logcat 標籤: PXTK_</string>
+    <string name="log_security">系統與安全日誌</string>
+    <string name="log_security_summary">Logcat 標籤: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">介面與狀態列日誌</string>
+    <string name="log_interface_summary">Logcat 標籤: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">手勢與互動日誌</string>
+    <string name="log_gestures_summary">Logcat 標籤: PXTK_DT2S</string>
+    <string name="log_quick_settings">快捷設定日誌</string>
+    <string name="log_quick_settings_summary">Logcat 標籤: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">電池狀態</string>
+    <string name="battery_power_current">充電功率與速度</string>
+    <string name="battery_voltage">即時電池電壓</string>
+    <string name="battery_current_stored">即時剩餘電量</string>
+    <string name="battery_max_limits">系統當前最高充電限制</string>
+
+    <string name="battery_cycles">電池充電次數</string>
+    <string name="battery_rated_capacity">出廠設計容量</string>
+    <string name="battery_estimated_capacity">目前最大容量</string>
+    <string name="battery_calculated_health">計算預估容量健康度</string>
+    <string name="battery_health_capacity_index">容量健康度評分</string>
+    <string name="battery_overall_health">整體健康狀態</string>
+    <string name="battery_temperature">電池溫度</string>
+    <string name="battery_resistance_avg">平均內部阻抗</string>
+    <string name="battery_resistance_now">即時內部阻抗</string>
+    <string name="battery_health_impedance_index">阻抗健康度評分</string>
+    <string name="battery_serial_number">電池生產序號</string>
+    <string name="battery_first_usage">生產日期與年齡</string>
+    <string name="battery_aafv_offset">老化保護降壓偏移量</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d 次</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

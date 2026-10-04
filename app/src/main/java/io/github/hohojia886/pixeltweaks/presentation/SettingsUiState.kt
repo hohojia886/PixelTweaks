@@ -6,6 +6,9 @@ package io.github.hohojia886.pixeltweaks.presentation
  * into an immutable data class for Unidirectional Data Flow (UDF) rendering.
  */
 data class SettingsUiState(
+    // App Display Language ("" = System Default)
+    val currentLanguageTag: String = "",
+
     // System & Security State
     val unrestrictedScreenshots: Boolean = true,
     val easyUnlock: Boolean = true,

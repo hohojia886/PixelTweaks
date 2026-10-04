@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Modul diaktifkan</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Bahasa</string>
+    <string name="language_settings_summary">Tukar bahasa paparan aplikasi</string>
+    <string name="lang_system_default">Lalai Sistem</string>
+    <string name="github_repository">Repositori GitHub</string>
+    <string name="github_repository_summary">Lihat kod sumber dan keluaran</string>
+
+    <!-- Categories -->
+    <string name="category_security">Sistem &amp; Keselamatan</string>
+    <string name="category_interface">Antara Muka &amp; Bar Status</string>
+    <string name="category_interaction">Isyarat &amp; Interaksi</string>
+    <string name="category_quick_settings">Tetapan Pantas</string>
+    <string name="category_battery">Maklumat Bateri</string>
+    <string name="category_debug">Log Penyahpepijatan</string>
+    <string name="category_others">Lain-lain</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Butang Padam Semua</string>
+    <string name="clear_all_button_summary">Tambah Padam Semua pada paparan terkini</string>
+    <string name="tablet_mode">Mod Tablet</string>
+    <string name="tablet_mode_summary">Paksa susun atur tablet (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Susun atur tablet aktif (%1$d DPI)</string>
+    <string name="enable_battery_info">Tunjukkan Maklumat Bateri</string>
+    <string name="enable_battery_info_summary">Tunjukkan data bateri masa nyata (segar semula setiap 2s, memerlukan Root)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Dwi-Ketik Pelancar</string>
+    <string name="dt_launcher_summary">Dwi-ketik ruang kosong pelancar untuk tidur</string>
+    <string name="dt_lockscreen">Dwi-Ketik Skrin Kunci</string>
+    <string name="dt_lockscreen_summary">Dwi-ketik skrin kunci untuk tidur</string>
+    <string name="dt_statusbar">Dwi-Ketik Bar Status</string>
+    <string name="dt_statusbar_summary">Dwi-ketik bar status untuk tidur</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Buka Kunci Mudah</string>
+    <string name="easy_unlock_summary">Buka kunci automatik apabila PIN betul</string>
+    <string name="easy_unlock_reboot">Pintas Sekatan Mula Semula</string>
+    <string name="easy_unlock_reboot_summary">Benarkan buka kunci automatik selepas mula semula</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Paksa Matikan Wi-Fi</string>
+    <string name="qs_wifi_fix_summary">Matikan Wi-Fi sepenuhnya semasa menukar</string>
+    <string name="qs_data_fix">Penukaran Data Mudah Alih Terus</string>
+    <string name="qs_data_fix_summary">Tukar data tanpa dialog pengesahan</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Tangkapan Skrin Tanpa Sekatan</string>
+    <string name="unrestricted_screenshots_summary">Benarkan tangkapan skrin dalam aplikasi dilindungi</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">Benarkan Penurunan Versi Aplikasi</string>
+    <string name="allow_downgrade_summary">Pasang versi aplikasi lama (tamat dalam 3 minit)</string>
+    <string name="bypass_signature">Pintas Pengesahan Tandatangan</string>
+    <string name="bypass_signature_summary">Pasang aplikasi dengan tandatangan berbeza (tamat dalam 3 minit)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">Penunjuk Trafik Rangkaian</string>
+    <string name="network_traffic_summary">Tunjukkan kelajuan masa nyata pada bar status</string>
+    <string name="traffic_interval_format">Selang Segar Semula: %1$ds</string>
+    <string name="traffic_font_format">Saiz Font: %1$dsp</string>
+    <string name="traffic_threshold_always">Ambang: Tunjukkan Sentiasa</string>
+    <string name="traffic_threshold_mb">Ambang: 1MB/s</string>
+    <string name="traffic_threshold_kb">Ambang: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Log Utama</string>
+    <string name="master_log_summary">Tag Logcat: PXTK_</string>
+    <string name="log_security">Log Sistem &amp; Keselamatan</string>
+    <string name="log_security_summary">Tag Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Log Antara Muka</string>
+    <string name="log_interface_summary">Tag Logcat: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">Log Isyarat</string>
+    <string name="log_gestures_summary">Tag Logcat: PXTK_DT2S</string>
+    <string name="log_quick_settings">Log Tetapan Pantas</string>
+    <string name="log_quick_settings_summary">Tag Logcat: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Status Bateri</string>
+    <string name="battery_power_current">Kuasa &amp; Kelajuan Pengecasan</string>
+    <string name="battery_voltage">Voltan Masa Nyata</string>
+    <string name="battery_current_stored">Cas Tersimpan Baki</string>
+    <string name="battery_max_limits">Had Pengecasan Maksimum Sistem</string>
+
+    <string name="battery_cycles">Kitaran Pengecasan Bateri</string>
+    <string name="battery_rated_capacity">Kapasiti Reka Bentuk Kilang</string>
+    <string name="battery_estimated_capacity">Kapasiti Maksimum Semasa</string>
+    <string name="battery_calculated_health">Kesihatan Kapasiti Dikira</string>
+    <string name="battery_health_capacity_index">Skor Kesihatan Kapasiti</string>
+    <string name="battery_overall_health">Status Kesihatan Keseluruhan</string>
+    <string name="battery_temperature">Suhu Bateri</string>
+    <string name="battery_resistance_avg">Rintangan Dalaman Purata</string>
+    <string name="battery_resistance_now">Rintangan Dalaman Masa Nyata</string>
+    <string name="battery_health_impedance_index">Skor Kesihatan Impedans</string>
+    <string name="battery_serial_number">Nombor Siri Bateri</string>
+    <string name="battery_first_usage">Tarikh Pembuatan &amp; Umur</string>
+    <string name="battery_aafv_offset">Anjakan Voltan Perlindungan Penuaan</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d kitaran</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

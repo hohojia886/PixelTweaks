@@ -5,6 +5,13 @@
     <string name="module_active">Module is active</string>
     <string name="countdown_format">%1$s (%2$ds)</string>
 
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Language</string>
+    <string name="language_settings_summary">Change app display language</string>
+    <string name="lang_system_default">System Default</string>
+    <string name="github_repository">GitHub Repository</string>
+    <string name="github_repository_summary">View source code &amp; releases</string>
+
     <!-- Categories -->
     <string name="category_security">System &amp; Security</string>
     <string name="category_interface">Interface &amp; Status Bar</string>
@@ -12,6 +19,7 @@
     <string name="category_quick_settings">Quick Settings</string>
     <string name="category_battery">Battery Info</string>
     <string name="category_debug">Debug Logging</string>
+    <string name="category_others">Others</string>
 
     <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
     <string name="clear_all_button">Clear All Button</string>

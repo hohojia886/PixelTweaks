@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">모듈이 활성화되었습니다</string>
+    <string name="countdown_format">%1$s (%2$d초)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">언어 설정</string>
+    <string name="language_settings_summary">앱 표시 언어 변경</string>
+    <string name="lang_system_default">시스템 기본값</string>
+    <string name="github_repository">GitHub 리포지토리</string>
+    <string name="github_repository_summary">소스 코드 및 릴리스 보기</string>
+
+    <!-- Categories -->
+    <string name="category_security">시스템 및 보안</string>
+    <string name="category_interface">인터페이스 및 상태 표시줄</string>
+    <string name="category_interaction">제스처 및 상호작용</string>
+    <string name="category_quick_settings">빠른 설정</string>
+    <string name="category_battery">배터리 정보</string>
+    <string name="category_debug">디버그 로그</string>
+    <string name="category_others">기타</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">모두 지우기 버튼</string>
+    <string name="clear_all_button_summary">최근 앱 화면에 모두 지우기 추가</string>
+    <string name="tablet_mode">태블릿 모드</string>
+    <string name="tablet_mode_summary">태블릿 레이아웃 강제 적용 (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">태블릿 레이아웃 적용 중 (%1$d DPI)</string>
+    <string name="enable_battery_info">배터리 정보 표시</string>
+    <string name="enable_battery_info_summary">실시간 배터리 데이터 표시 (2초마다 자동 새로고침, Root 필요)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">홈 화면 더블탭 끄기</string>
+    <string name="dt_launcher_summary">홈 화면 빈 공간 더블탭하여 화면 끄기</string>
+    <string name="dt_lockscreen">잠금 화면 더블탭 끄기</string>
+    <string name="dt_lockscreen_summary">잠금 화면 더블탭하여 화면 끄기</string>
+    <string name="dt_statusbar">상태 표시줄 더블탭 끄기</string>
+    <string name="dt_statusbar_summary">상태 표시줄 더블탭하여 화면 끄기</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">간편 잠금해제</string>
+    <string name="easy_unlock_summary">PIN 일치 시 자동 잠금해제</string>
+    <string name="easy_unlock_reboot">재부팅 제한 우회</string>
+    <string name="easy_unlock_reboot_summary">재부팅 후에도 자동 잠금해제 허용</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Wi-Fi 강제 끄기</string>
+    <string name="qs_wifi_fix_summary">전환 시 Wi-Fi 완전 차단</string>
+    <string name="qs_data_fix">모바일 데이터 직접 전환</string>
+    <string name="qs_data_fix_summary">확인 창 없이 데이터 전환</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">스크린샷 제한 해제</string>
+    <string name="unrestricted_screenshots_summary">제한된 앱에서 스크린샷 및 녹화 허용</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">앱 다운그레이드 허용</string>
+    <string name="allow_downgrade_summary">구버전 앱 덮어쓰기 설치 허용 (3분 후 자동 종료)</string>
+    <string name="bypass_signature">서명 검증 우회</string>
+    <string name="bypass_signature_summary">서명이 다른 앱 설치 허용 (3분 후 자동 종료)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">네트워크 속도 표시기</string>
+    <string name="network_traffic_summary">상태 표시줄에 실시간 속도 표시</string>
+    <string name="traffic_interval_format">새로고침 간격: %1$d초</string>
+    <string name="traffic_font_format">글꼴 크기: %1$dsp</string>
+    <string name="traffic_threshold_always">임계값: 항상 표시</string>
+    <string name="traffic_threshold_mb">임계값: 1MB/s</string>
+    <string name="traffic_threshold_kb">임계값: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">마스터 로그</string>
+    <string name="master_log_summary">Logcat 태그: PXTK_</string>
+    <string name="log_security">시스템 및 보안 로그</string>
+    <string name="log_security_summary">Logcat 태그: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">인터페이스 로그</string>
+    <string name="log_interface_summary">Logcat 태그: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">제스처 로그</string>
+    <string name="log_gestures_summary">Logcat 태그: PXTK_DT2S</string>
+    <string name="log_quick_settings">빠른 설정 로그</string>
+    <string name="log_quick_settings_summary">Logcat 태그: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">배터리 상태</string>
+    <string name="battery_power_current">충전 전력 및 속도</string>
+    <string name="battery_voltage">실시간 전압</string>
+    <string name="battery_current_stored">실시간 잔여 용량</string>
+    <string name="battery_max_limits">시스템 최대 충전 제한</string>
+
+    <string name="battery_cycles">충전 사이클 횟수</string>
+    <string name="battery_rated_capacity">출하 설계 용량</string>
+    <string name="battery_estimated_capacity">현재 최대 용량</string>
+    <string name="battery_calculated_health">추정 용량 수명</string>
+    <string name="battery_health_capacity_index">용량 성능 점수</string>
+    <string name="battery_overall_health">전반적인 배터리 상태</string>
+    <string name="battery_temperature">배터리 온도</string>
+    <string name="battery_resistance_avg">평균 내부 저항</string>
+    <string name="battery_resistance_now">실시간 내부 저항</string>
+    <string name="battery_health_impedance_index">임피던스 성능 점수</string>
+    <string name="battery_serial_number">배터리 시리얼 번호</string>
+    <string name="battery_first_usage">제조 일자 및 사용 기간</string>
+    <string name="battery_aafv_offset">열화 보호 전압 오프셋</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d 회</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

@@ -4,6 +4,11 @@
 
 ---
 
+### v1.2.1
+- 🌐 **Global Multi-Language Selection (18 Languages)**: Added Android 13+ native Per-App Language Selection supporting 18 global languages across Pixel device sales markets with a scrollable radio-button selection dialog and merged "Others" category card.
+- 🔋 **Screen OFF Battery Auto-Pause Protection**: Added dynamic `ACTION_SCREEN_OFF` / `ACTION_SCREEN_ON` broadcast listeners to automatically cancel the 2s Root battery refresh Coroutine loop when the screen is turned off or locked, achieving zero background power drain.
+- 🎨 **UI Alignment & Color Consistency**: Replaced `OutlinedCard` with Material 3 filled `surfaceContainerHigh` cards to ensure 100% color alignment across light, dark, and dynamic wallpaper themes.
+
 ### v1.2.0
 - 🏗️ **Full MVVM & Unidirectional Data Flow (UDF) Architecture**: Major architectural refactoring decoupling the UI layer (`SettingsActivity`, `SettingsScreen`) from business logic and data persistence (`SettingsViewModel`, `SettingsRepository`). Reduced Activity from 400+ lines down to a clean 40-line View.
 - ⚡ **Coroutine-Based Timers & StateFlow**: Replaced legacy `Handler`/`Thread` timers with lifecycle-aware Kotlin Coroutines (`viewModelScope.launch`) and unified state management into a single immutable `StateFlow<SettingsUiState>`.

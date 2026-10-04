@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">モジュールが有効です</string>
+    <string name="countdown_format">%1$s (%2$d秒)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">言語設定</string>
+    <string name="language_settings_summary">アプリの表示言語を変更</string>
+    <string name="lang_system_default">システムデフォルト</string>
+    <string name="github_repository">GitHub リポジトリ</string>
+    <string name="github_repository_summary">ソースコードとリリースを表示</string>
+
+    <!-- Categories -->
+    <string name="category_security">システムとセキュリティ</string>
+    <string name="category_interface">UIとステータスバー</string>
+    <string name="category_interaction">ジェスチャーと操作</string>
+    <string name="category_quick_settings">クイック設定</string>
+    <string name="category_battery">バッテリー情報</string>
+    <string name="category_debug">デバッグログ</string>
+    <string name="category_others">その他</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">すべてクリアボタン</string>
+    <string name="clear_all_button_summary">最近のアプリ画面にすべてクリアを追加</string>
+    <string name="tablet_mode">タブレットモード</string>
+    <string name="tablet_mode_summary">タブレットレイアウトを強制表示 (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">タブレットレイアウト適用中 (%1$d DPI)</string>
+    <string name="enable_battery_info">バッテリー情報を表示</string>
+    <string name="enable_battery_info_summary">リアルタイムバッテリー情報を表示（フォアグラウンドで2秒ごとに更新、Root必須）</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">ホーム画面ダブルタップ消灯</string>
+    <string name="dt_launcher_summary">ホーム画面の空白部分をダブルタップして消灯</string>
+    <string name="dt_lockscreen">ロック画面ダブルタップ消灯</string>
+    <string name="dt_lockscreen_summary">ロック画面をダブルタップして消灯</string>
+    <string name="dt_statusbar">ステータスバーダブルタップ消灯</string>
+    <string name="dt_statusbar_summary">ステータスバーをダブルタップして消灯</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">簡単ロック解除</string>
+    <string name="easy_unlock_summary">PINが一致した時に自動解除</string>
+    <string name="easy_unlock_reboot">再起動後の制限を回避</string>
+    <string name="easy_unlock_reboot_summary">再起動後も自動ロック解除を許可</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Wi-Fiを強制OFF</string>
+    <string name="qs_wifi_fix_summary">切り替え時にWi-Fiを完全にオフにする</string>
+    <string name="qs_data_fix">モバイルデータダイレクト切替</string>
+    <string name="qs_data_fix_summary">確認ダイアログなしでデータを切り替え</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">スクリーンショット制限解除</string>
+    <string name="unrestricted_screenshots_summary">制限されたアプリでの撮影・録画を許可</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">アプリダウングレードを許可</string>
+    <string name="allow_downgrade_summary">旧バージョンの上書きインストールを許可（3分後に自動OFF）</string>
+    <string name="bypass_signature">署名検証を回避</string>
+    <string name="bypass_signature_summary">異なる署名のアプリインストールを許可（3分後に自動OFF）</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">通信速度インジケーター</string>
+    <string name="network_traffic_summary">ステータスバーにリアルタイム速度を表示</string>
+    <string name="traffic_interval_format">更新間隔: %1$d秒</string>
+    <string name="traffic_font_format">フォントサイズ: %1$dsp</string>
+    <string name="traffic_threshold_always">閾値: 常に表示</string>
+    <string name="traffic_threshold_mb">閾値: 1MB/s</string>
+    <string name="traffic_threshold_kb">閾値: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">マスターログ</string>
+    <string name="master_log_summary">Logcat タグ: PXTK_</string>
+    <string name="log_security">システム＆セキュリティログ</string>
+    <string name="log_security_summary">Logcat タグ: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">UI＆ステータスバーログ</string>
+    <string name="log_interface_summary">Logcat タグ: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">ジェスチャー＆操作ログ</string>
+    <string name="log_gestures_summary">Logcat タグ: PXTK_DT2S</string>
+    <string name="log_quick_settings">クイック設定ログ</string>
+    <string name="log_quick_settings_summary">Logcat タグ: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">バッテリー状態</string>
+    <string name="battery_power_current">充電電力と速度</string>
+    <string name="battery_voltage">リアルタイム電圧</string>
+    <string name="battery_current_stored">リアルタイム残量</string>
+    <string name="battery_max_limits">システム上限充電制限</string>
+
+    <string name="battery_cycles">充電サイクル数</string>
+    <string name="battery_rated_capacity">設計容量</string>
+    <string name="battery_estimated_capacity">現在の最大容量</string>
+    <string name="battery_calculated_health">推定容量健康度</string>
+    <string name="battery_health_capacity_index">容量健康度スコア</string>
+    <string name="battery_overall_health">全体的な健康状態</string>
+    <string name="battery_temperature">バッテリー温度</string>
+    <string name="battery_resistance_avg">平均内部抵抗</string>
+    <string name="battery_resistance_now">リアルタイム内部抵抗</string>
+    <string name="battery_health_impedance_index">インピーダンス健康度スコア</string>
+    <string name="battery_serial_number">製造シリアル番号</string>
+    <string name="battery_first_usage">製造日と使用期間</string>
+    <string name="battery_aafv_offset">劣化保護電圧オフセット</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d 回</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

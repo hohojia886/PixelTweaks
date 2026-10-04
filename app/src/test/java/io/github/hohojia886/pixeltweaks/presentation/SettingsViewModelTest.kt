@@ -39,6 +39,8 @@ class SettingsViewModelTest {
         assertFalse(state.tabletMode)
         assertFalse(state.enableBatteryInfo)
         assertTrue(state.unrestrictedScreenshots)
+        assertFalse(state.allowDowngrade)
+        assertFalse(state.bypassSignature)
     }
 
     @Test
@@ -64,5 +66,38 @@ class SettingsViewModelTest {
         viewModel.onEvent(SettingsEvent.ChangeTrafficInterval(3))
 
         assertEquals(3, viewModel.uiState.value.trafficInterval)
+    }
+
+    @Test
+    fun testEventToggleAllowDowngradeUpdatesStateAndTimestamp() {
+        viewModel.onEvent(SettingsEvent.ToggleAllowDowngrade(true))
+
+        assertTrue(viewModel.uiState.value.allowDowngrade)
+        assertTrue(repository.getDowngradeTimestamp() > 0L)
+
+        viewModel.onEvent(SettingsEvent.ToggleAllowDowngrade(false))
+
+        assertFalse(viewModel.uiState.value.allowDowngrade)
+    }
+
+    @Test
+    fun testEventToggleBypassSignatureUpdatesStateAndTimestamp() {
+        viewModel.onEvent(SettingsEvent.ToggleBypassSignature(true))
+
+        assertTrue(viewModel.uiState.value.bypassSignature)
+        assertTrue(repository.getSignatureTimestamp() > 0L)
+
+        viewModel.onEvent(SettingsEvent.ToggleBypassSignature(false))
+
+        assertFalse(viewModel.uiState.value.bypassSignature)
+    }
+
+    @Test
+    fun testScreenOnOffEventsHandledWithoutCrashing() {
+        viewModel.onEvent(SettingsEvent.ToggleBatteryInfo(true))
+        viewModel.onEvent(SettingsEvent.OnScreenOff)
+        viewModel.onEvent(SettingsEvent.OnScreenOn)
+
+        assertTrue(viewModel.uiState.value.enableBatteryInfo)
     }
 }

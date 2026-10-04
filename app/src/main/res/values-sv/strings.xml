@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Modulen är aktiv</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Språk</string>
+    <string name="language_settings_summary">Ändra visningsspråk för appen</string>
+    <string name="lang_system_default">Systemstandard</string>
+    <string name="github_repository">GitHub-arkiv</string>
+    <string name="github_repository_summary">Visa källkod och releaser</string>
+
+    <!-- Categories -->
+    <string name="category_security">System &amp; Säkerhet</string>
+    <string name="category_interface">Gränssnitt &amp; Statusfält</string>
+    <string name="category_interaction">Gester &amp; Interaktioner</string>
+    <string name="category_quick_settings">Snabbinställningar</string>
+    <string name="category_battery">Batteriinformation</string>
+    <string name="category_debug">Felsökningsloggar</string>
+    <string name="category_others">Övrigt</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Knappen Rensa alla</string>
+    <string name="clear_all_button_summary">Lägg till Rensa alla i senaste appar</string>
+    <string name="tablet_mode">Surfplatteläge</string>
+    <string name="tablet_mode_summary">Tvinga surfplattelayout (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Surfplattelayout aktiv (%1$d DPI)</string>
+    <string name="enable_battery_info">Visa batteriinformation</string>
+    <string name="enable_battery_info_summary">Visa batteridata i realtid (uppdateras var 2:a sek, kräver Root)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Dubbelklicka på startskärm</string>
+    <string name="dt_launcher_summary">Dubbelklicka på tom yta för att släcka skärmen</string>
+    <string name="dt_lockscreen">Dubbelklicka på låsskärm</string>
+    <string name="dt_lockscreen_summary">Dubbelklicka på låsskärmen för att släcka skärmen</string>
+    <string name="dt_statusbar">Dubbelklicka på statusfältet</string>
+    <string name="dt_statusbar_summary">Dubbelklicka på statusfältet för att släcka skärmen</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Enkel upplåsning</string>
+    <string name="easy_unlock_summary">Lås upp automatiskt vid rätt PIN</string>
+    <string name="easy_unlock_reboot">Kringgå omstartsrestriktion</string>
+    <string name="easy_unlock_reboot_summary">Tillåt automatisk upplåsning efter omstart</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Tvinga stänga av Wi-Fi</string>
+    <string name="qs_wifi_fix_summary">Stäng av Wi-Fi helt vid växling</string>
+    <string name="qs_data_fix">Direktväxling för mobildata</string>
+    <string name="qs_data_fix_summary">Växla data utan bekräftelsedialog</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Obegränsade skärmdumpar</string>
+    <string name="unrestricted_screenshots_summary">Tillåt skärmdumpar i skyddade appar</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">Tillåt nedgradering av appar</string>
+    <string name="allow_downgrade_summary">Installera äldre appversioner (går ut om 3 min)</string>
+    <string name="bypass_signature">Kringgå signaturverifiering</string>
+    <string name="bypass_signature_summary">Installera appar med annan signatur (går ut om 3 min)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">Nätverkstrafikindikator</string>
+    <string name="network_traffic_summary">Visa realtidshastighet i statusfältet</string>
+    <string name="traffic_interval_format">Uppdateringsintervall: %1$ds</string>
+    <string name="traffic_font_format">Teckenstorlek: %1$dsp</string>
+    <string name="traffic_threshold_always">Tröskelvärde: Visa alltid</string>
+    <string name="traffic_threshold_mb">Tröskelvärde: 1MB/s</string>
+    <string name="traffic_threshold_kb">Tröskelvärde: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Huvudloggning</string>
+    <string name="master_log_summary">Logcat-tagg: PXTK_</string>
+    <string name="log_security">System- &amp; Säkerhetsloggar</string>
+    <string name="log_security_summary">Logcat-taggar: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Gränssnittsloggar</string>
+    <string name="log_interface_summary">Logcat-taggar: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">Gesterloggar</string>
+    <string name="log_gestures_summary">Logcat-tagg: PXTK_DT2S</string>
+    <string name="log_quick_settings">Snabbinställningsloggar</string>
+    <string name="log_quick_settings_summary">Logcat-tagg: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Batteristatus</string>
+    <string name="battery_power_current">Laddeffekt &amp; hastighet</string>
+    <string name="battery_voltage">Realtidsspänning</string>
+    <string name="battery_current_stored">Återstående lagrad laddning</string>
+    <string name="battery_max_limits">Systemets maximala laddningsgräns</string>
+
+    <string name="battery_cycles">Laddningscykler</string>
+    <string name="battery_rated_capacity">Fabriksdesignad kapacitet</string>
+    <string name="battery_estimated_capacity">Aktuell maximal kapacitet</string>
+    <string name="battery_calculated_health">Beräknad kapacitetshälsa</string>
+    <string name="battery_health_capacity_index">Kapacitetshälsopoäng</string>
+    <string name="battery_overall_health">Övergripande hälsostatus</string>
+    <string name="battery_temperature">Batteritemperatur</string>
+    <string name="battery_resistance_avg">Genomsnittligt inre motstånd</string>
+    <string name="battery_resistance_now">Realtids inre motstånd</string>
+    <string name="battery_health_impedance_index">Impedanshälsopoäng</string>
+    <string name="battery_serial_number">Batteriserienummer</string>
+    <string name="battery_first_usage">Tillverkningsdatum &amp; ålder</string>
+    <string name="battery_aafv_offset">Spänningsförskjutning för åldringsskydd</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d cykler</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

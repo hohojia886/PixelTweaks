@@ -4,6 +4,11 @@
 
 ---
 
+### v1.2.1
+- 🌐 **全球 18 種多國語言切換**：採用 Android 13+ 原生 Per-App Language 機制，支援全球 18 種 Pixel 販售市場語系、可滾動單選對話框與合併「其他」選單卡片。
+- 🔋 **螢幕熄滅 (Screen OFF) 自動暫停電池刷新**：新增動態 `ACTION_SCREEN_OFF` / `ACTION_SCREEN_ON` 廣播監聽，當螢幕鎖屏熄滅時自動關閉 2 秒 Root 刷新定時器，達成零背景耗電。
+- 🎨 **UI 視覺樣式與顏色對齊**：將外框卡片替換為 Material 3 填滿容器卡片 (`surfaceContainerHigh`)，確保在亮色、深色與動態桌布主題下 100% 顏色對齊。
+
 ### v1.2.0
 - 🏗️ **完整 MVVM 與單向資料流 (UDF) 架構重構**：重大架構重構，將 UI 介面層 (`SettingsActivity`, `SettingsScreen`) 與商業邏輯/資料層 (`SettingsViewModel`, `SettingsRepository`) 完全解耦。Activity 程式碼由 400 多行巨幅精簡為 40 行的極簡 View。
 - ⚡ **Kotlin 協程定時器與 StateFlow**：以生命週期安全的 Kotlin Coroutines (`viewModelScope.launch`) 徹底淘汰舊有 `Handler`/`Thread` 定時器，並將所有狀態收斂為單一不可變的 `StateFlow<SettingsUiState>`。

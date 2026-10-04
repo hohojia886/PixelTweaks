@@ -1,6 +1,8 @@
 package io.github.hohojia886.pixeltweaks.presentation
 
 import android.util.Log
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.hohojia886.pixeltweaks.data.repository.SettingsRepository
@@ -34,8 +36,27 @@ class SettingsViewModel(
     private var batteryJob: Job? = null
     private var securityTimerJob: Job? = null
 
+    init {
+        val currentLocales = AppCompatDelegate.getApplicationLocales()
+        val currentTag = if (!currentLocales.isEmpty) currentLocales.get(0)?.toLanguageTag() ?: "" else ""
+        if (currentTag.isNotEmpty()) {
+            _uiState.update { it.copy(currentLanguageTag = currentTag) }
+        }
+    }
+
     fun onEvent(event: SettingsEvent) {
         when (event) {
+            is SettingsEvent.ChangeLanguage -> {
+                _uiState.update { it.copy(currentLanguageTag = event.languageTag) }
+                repository.savePreference(PreferenceKeys.APP_LANGUAGE, event.languageTag)
+                val localeList = if (event.languageTag.isEmpty()) {
+                    LocaleListCompat.getEmptyLocaleList()
+                } else {
+                    LocaleListCompat.forLanguageTags(event.languageTag)
+                }
+                AppCompatDelegate.setApplicationLocales(localeList)
+            }
+
             is SettingsEvent.ToggleBatteryInfo -> {
                 _uiState.update { it.copy(enableBatteryInfo = event.enabled) }
                 repository.savePreference(PreferenceKeys.ENABLE_BATTERY_INFO, event.enabled)
@@ -191,12 +212,23 @@ class SettingsViewModel(
             is SettingsEvent.OnResume -> {
                 startBatteryAutoRefresh()
                 startSecurityTimers()
+                repository.syncAll()
             }
 
             is SettingsEvent.OnPause -> {
                 stopBatteryAutoRefresh()
                 stopSecurityTimers()
                 repository.syncAll()
+            }
+
+            is SettingsEvent.OnScreenOff -> {
+                Log.i("PXTK_Battery", "[SettingsViewModel] Screen OFF -> Pausing battery refresh")
+                stopBatteryAutoRefresh()
+            }
+
+            is SettingsEvent.OnScreenOn -> {
+                Log.i("PXTK_Battery", "[SettingsViewModel] Screen ON -> Resuming battery refresh")
+                startBatteryAutoRefresh()
             }
         }
     }

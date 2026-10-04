@@ -5,6 +5,9 @@ package io.github.hohojia886.pixeltweaks.presentation
  * in Unidirectional Data Flow (UDF) architecture.
  */
 sealed interface SettingsEvent {
+    // Language Event
+    data class ChangeLanguage(val languageTag: String) : SettingsEvent
+
     // Battery Info Events
     data class ToggleBatteryInfo(val enabled: Boolean) : SettingsEvent
     data object RefreshBatteryInfo : SettingsEvent
@@ -40,7 +43,9 @@ sealed interface SettingsEvent {
     data class ToggleLogGestures(val enabled: Boolean) : SettingsEvent
     data class ToggleLogQuickSettings(val enabled: Boolean) : SettingsEvent
 
-    // Lifecycle Events
+    // Lifecycle & Screen Events
     data object OnResume : SettingsEvent
     data object OnPause : SettingsEvent
+    data object OnScreenOff : SettingsEvent
+    data object OnScreenOn : SettingsEvent
 }

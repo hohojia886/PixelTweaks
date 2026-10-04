@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">मॉड्यूल सक्रिय है</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">भाषा</string>
+    <string name="language_settings_summary">ऐप की भाषा बदलें</string>
+    <string name="lang_system_default">सिस्टम डिफ़ॉल्ट</string>
+    <string name="github_repository">GitHub रिपॉजिटरी</string>
+    <string name="github_repository_summary">सोर्स कोड और रिलीज़ देखें</string>
+
+    <!-- Categories -->
+    <string name="category_security">सिस्टम और सुरक्षा</string>
+    <string name="category_interface">इंटरफ़ेस और स्टेटस बार</string>
+    <string name="category_interaction">जेस्चर और इंटरैक्शन</string>
+    <string name="category_quick_settings">त्वरित सेटिंग्स</string>
+    <string name="category_battery">बैटरी जानकारी</string>
+    <string name="category_debug">डीबग लॉग</string>
+    <string name="category_others">अन्य</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">सभी साफ़ करें बटन</string>
+    <string name="clear_all_button_summary">हाल के ऐप्स में \'सभी साफ़ करें\' जोड़ें</string>
+    <string name="tablet_mode">टैबलेट मोड</string>
+    <string name="tablet_mode_summary">टैबलेट लेआउट लागू करें (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">टैबलेट लेआउट सक्रिय (%1$d DPI)</string>
+    <string name="enable_battery_info">बैटरी जानकारी दिखाएं</string>
+    <string name="enable_battery_info_summary">रीयल-टाइम बैटरी डेटा दिखाएं (हर 2 सेकंड में स्वतः रीफ़्रेश, Root आवश्यक)</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">लॉन्चर पर डबल टैप</string>
+    <string name="dt_launcher_summary">स्क्रीन बंद करने के लिए खाली स्थान पर डबल टैप करें</string>
+    <string name="dt_lockscreen">लॉक स्क्रीन पर डबल टैप</string>
+    <string name="dt_lockscreen_summary">स्क्रीन बंद करने के लिए लॉक स्क्रीन पर डबल टैप करें</string>
+    <string name="dt_statusbar">स्टेटस बार पर डबल टैप</string>
+    <string name="dt_statusbar_summary">स्क्रीन बंद करने के लिए स्टेटस बार पर डबल टैप करें</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">आसान अनलॉक</string>
+    <string name="easy_unlock_summary">सही पिन दर्ज करने पर स्वतः अनलॉक करें</string>
+    <string name="easy_unlock_reboot">रीस्टार्ट प्रतिबंध बाईपास</string>
+    <string name="easy_unlock_reboot_summary">रीस्टार्ट के बाद भी स्वतः अनलॉक की अनुमति दें</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Wi-Fi ज़बरदस्ती बंद करें</string>
+    <string name="qs_wifi_fix_summary">स्विच करने पर Wi-Fi पूरी तरह से बंद करें</string>
+    <string name="qs_data_fix">मोबाइल डेटा सीधा स्विच</string>
+    <string name="qs_data_fix_summary">बिना पुष्टि संवाद के डेटा स्विच करें</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">अप्रतिबंधित स्क्रीनशॉट</string>
+    <string name="unrestricted_screenshots_summary">सुरक्षित ऐप में स्क्रीनशॉट और रिकॉर्डिंग की अनुमति दें</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">ऐप डाउनग्रेड की अनुमति दें</string>
+    <string name="allow_downgrade_summary">पुराने ऐप संस्करण इंस्टॉल करें (3 मिनट में समाप्त)</string>
+    <string name="bypass_signature">हस्ताक्षर सत्यापन बाईपास करें</string>
+    <string name="bypass_signature_summary">विभिन्न हस्ताक्षर वाले ऐप इंस्टॉल करें (3 मिनट में समाप्त)</string>
+
+    <!-- Traffic -->
+    <string name="network_traffic">नेटवर्क ट्रैफ़िक संकेतक</string>
+    <string name="network_traffic_summary">स्टेटस बार में रीयल-टाइम गति दिखाएं</string>
+    <string name="traffic_interval_format">रीफ़्रेश अंतराल: %1$ds</string>
+    <string name="traffic_font_format">फ़ॉन्ट आकार: %1$dsp</string>
+    <string name="traffic_threshold_always">सीमा: हमेशा दिखाएं</string>
+    <string name="traffic_threshold_mb">सीमा: 1MB/s</string>
+    <string name="traffic_threshold_kb">सीमा: %1$d KB/s</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">मुख्य लॉगिंग</string>
+    <string name="master_log_summary">Logcat टैग: PXTK_</string>
+    <string name="log_security">सिस्टम और सुरक्षा लॉग</string>
+    <string name="log_security_summary">Logcat टैग: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">इंटरफ़ेस लॉग</string>
+    <string name="log_interface_summary">Logcat टैग: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_gestures">जेस्चर लॉग</string>
+    <string name="log_gestures_summary">Logcat टैग: PXTK_DT2S</string>
+    <string name="log_quick_settings">त्वरित सेटिंग्स लॉग</string>
+    <string name="log_quick_settings_summary">Logcat टैग: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">बैटरी स्थिति</string>
+    <string name="battery_power_current">चार्जिंग पावर और गति</string>
+    <string name="battery_voltage">रीयल-टाइम वोल्टेज</string>
+    <string name="battery_current_stored">शेष संग्रहीत चार्ज</string>
+    <string name="battery_max_limits">सिस्टम अधिकतम चार्जिंग सीमा</string>
+
+    <string name="battery_cycles">चार्ज चक्र संख्या</string>
+    <string name="battery_rated_capacity">फ़ैक्टरी डिज़ाइन क्षमता</string>
+    <string name="battery_estimated_capacity">वर्तमान अधिकतम क्षमता</string>
+    <string name="battery_calculated_health">अनुमानित क्षमता स्वास्थ्य</string>
+    <string name="battery_health_capacity_index">क्षमता स्वास्थ्य स्कोर</string>
+    <string name="battery_overall_health">समग्र स्वास्थ्य स्थिति</string>
+    <string name="battery_temperature">बैटरी तापमान</string>
+    <string name="battery_resistance_avg">औसत आंतरिक प्रतिरोध</string>
+    <string name="battery_resistance_now">रीयल-टाइम आंतरिक प्रतिरोध</string>
+    <string name="battery_health_impedance_index">प्रतिबाधा स्वास्थ्य स्कोर</string>
+    <string name="battery_serial_number">बैटरी सीरियल नंबर</string>
+    <string name="battery_first_usage">निर्माण तिथि और आयु</string>
+    <string name="battery_aafv_offset">एंटी-एजिंग वोल्टेज अफ़सेट</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d बार</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

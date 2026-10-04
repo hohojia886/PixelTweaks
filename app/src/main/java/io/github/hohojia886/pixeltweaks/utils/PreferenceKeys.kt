@@ -26,6 +26,7 @@ object PreferenceKeys {
     const val EXTRA_BATTERY_AAFV_OFFSET = "battery_aafv_offset"
 
     // ---- Feature toggles -------------------------------------------------
+    const val APP_LANGUAGE = "app_language"
     const val ENABLE_BATTERY_INFO = "enable_battery_info"
     const val ENABLE_CLEAR_ALL = "enable_clear_all"
     const val ENABLE_NETWORK_TRAFFIC = "enable_network_traffic"
