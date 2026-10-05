@@ -2,6 +2,7 @@ package io.github.hohojia886.pixeltweaks
 
 import android.os.Process
 import io.github.hohojia886.pixeltweaks.hooks.PixelHook
+import io.github.hohojia886.pixeltweaks.hooks.battery.EnergyRingHook
 import io.github.hohojia886.pixeltweaks.hooks.gestures.DoubleTapToSleepHook
 import io.github.hohojia886.pixeltweaks.hooks.`interface`.ClearAllButtonHook
 import io.github.hohojia886.pixeltweaks.hooks.`interface`.NetworkTrafficHook
@@ -111,6 +112,15 @@ private object NetworkTrafficEntry : PixelHook {
     }
 }
 
+// 8. EnergyRing: Camera cutout energy ring in SystemUI
+private object EnergyRingEntry : PixelHook {
+    override val name = "EnergyRing"
+    override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
+        EnergyRingHook.hook(module, classLoader, param.packageName)
+    }
+}
+
 class MainHook : XposedModule() {
 
     private var isSystemServerProcess = false // Tracks if current process is the system_server
@@ -124,7 +134,8 @@ class MainHook : XposedModule() {
         ScreenshotSystemUIEntry,
         ScreenshotAppEntry,
         PackageManagerEntry,
-        NetworkTrafficEntry
+        NetworkTrafficEntry,
+        EnergyRingEntry
     )
 
     // Lifecycle: Initializes logging and identifies process type upon module load

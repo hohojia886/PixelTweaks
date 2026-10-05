@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">Rozvržení tabletu aktivní (%1$d DPI)</string>
     <string name="enable_battery_info">Zobrazit informace o baterii</string>
     <string name="enable_battery_info_summary">Zobrazit živá data baterie (obnovuje se každé 2s, vyžaduje Root)</string>
+    <string name="camera_energy_ring">Energetický kroužek předního fotoaparátu</string>
+    <string name="camera_energy_ring_summary">Zobrazit dynamický kroužek kolem výřezu fotoaparátu pro stav baterie a nabíjení</string>
+    <string name="ring_only_charging">Zobrazit pouze při nabíjení</string>
+    <string name="ring_only_charging_summary">Zobrazit energetický kroužek pouze při připojení k nabíječce</string>
+    <string name="ring_radius_offset_format">Úprava poloměru kroužku: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">Tloušťka čáry kroužku: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">Dvojité klepnutí na ploše</string>

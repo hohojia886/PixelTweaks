@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.hohojia886.pixeltweaks.data.repository.SettingsRepository
 import io.github.hohojia886.pixeltweaks.utils.BatteryUtils
+import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -67,6 +68,30 @@ class SettingsViewModel(
                 }
             }
 
+            is SettingsEvent.ToggleCameraEnergyRing -> {
+                _uiState.update { it.copy(cameraEnergyRing = event.enabled) }
+                repository.savePreference(PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, event.enabled)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, event.enabled)
+            }
+
+            is SettingsEvent.ToggleRingOnlyCharging -> {
+                _uiState.update { it.copy(ringOnlyCharging = event.enabled) }
+                repository.savePreference(PreferenceKeys.RING_ONLY_CHARGING, event.enabled)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.RING_ONLY_CHARGING, event.enabled)
+            }
+
+            is SettingsEvent.ChangeRingRadiusOffset -> {
+                _uiState.update { it.copy(ringRadiusOffset = event.offset) }
+                repository.savePreference(PreferenceKeys.RING_RADIUS_OFFSET, event.offset)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.RING_RADIUS_OFFSET, event.offset)
+            }
+
+            is SettingsEvent.ChangeRingStrokeWidth -> {
+                _uiState.update { it.copy(ringStrokeWidth = event.width) }
+                repository.savePreference(PreferenceKeys.RING_STROKE_WIDTH, event.width)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.RING_STROKE_WIDTH, event.width)
+            }
+
             is SettingsEvent.RefreshBatteryInfo -> {
                 fetchBatteryInfo()
             }
@@ -119,7 +144,7 @@ class SettingsViewModel(
             }
 
             is SettingsEvent.ToggleTabletMode -> {
-                Log.i("PXTK_Density", "onTabletModeChanged triggered: enabled=${event.enabled}")
+                Logger.i("Density", "SettingsViewModel", "onTabletModeChanged triggered: enabled=${event.enabled}")
                 _uiState.update { it.copy(tabletMode = event.enabled) }
                 repository.savePreference(PreferenceKeys.ENABLE_TABLET_MODE, event.enabled)
                 repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_TABLET_MODE, event.enabled)
@@ -222,12 +247,12 @@ class SettingsViewModel(
             }
 
             is SettingsEvent.OnScreenOff -> {
-                Log.i("PXTK_Battery", "[SettingsViewModel] Screen OFF -> Pausing battery refresh")
+                Logger.i("Battery", "SettingsViewModel", "Screen OFF -> Pausing battery refresh")
                 stopBatteryAutoRefresh()
             }
 
             is SettingsEvent.OnScreenOn -> {
-                Log.i("PXTK_Battery", "[SettingsViewModel] Screen ON -> Resuming battery refresh")
+                Logger.i("Battery", "SettingsViewModel", "Screen ON -> Resuming battery refresh")
                 startBatteryAutoRefresh()
             }
         }

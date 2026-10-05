@@ -28,6 +28,7 @@ object PreferenceKeys {
     // ---- Feature toggles -------------------------------------------------
     const val APP_LANGUAGE = "app_language"
     const val ENABLE_BATTERY_INFO = "enable_battery_info"
+    const val ENABLE_CAMERA_ENERGY_RING = "enable_camera_energy_ring"
     const val ENABLE_CLEAR_ALL = "enable_clear_all"
     const val ENABLE_NETWORK_TRAFFIC = "enable_network_traffic"
     const val ENABLE_UNRESTRICTED_SCREENSHOTS = "enable_unrestricted_screenshots"
@@ -46,6 +47,9 @@ object PreferenceKeys {
     const val NETWORK_TRAFFIC_FONT_SIZE = "network_traffic_font_size"
     const val NETWORK_TRAFFIC_THRESHOLD = "network_traffic_threshold"
     const val EXPECTED_PASS_LEN = "expected_pass_len"
+    const val RING_RADIUS_OFFSET = "ring_radius_offset"
+    const val RING_STROKE_WIDTH = "ring_stroke_width"
+    const val RING_ONLY_CHARGING = "ring_only_charging"
 
     // ---- Security bypasses -------------------------------------------------
     const val ALLOW_DOWNGRADE = "allow_downgrade"

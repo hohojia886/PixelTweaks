@@ -1,10 +1,11 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi")
+
 package io.github.hohojia886.pixeltweaks.hooks.security
 
 import android.content.Context
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
-import android.util.Log
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -24,7 +25,7 @@ object PackageManagerHook {
 
     @Volatile private var isDowngradeEnabled = false // Toggle for downgrade bypass
     @Volatile private var isSignatureBypassEnabled = false // Toggle for signature bypass
-    
+
     @Volatile private var downgradeTimestamp = 0L // Start time of downgrade bypass
     @Volatile private var signatureTimestamp = 0L // Start time of signature bypass
     @Volatile private var isHooked = false // Prevent duplicate hooking
@@ -33,7 +34,7 @@ object PackageManagerHook {
     // Entry point: Initializes settings and applies core system hijacks
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         if (isHooked) return
-        
+
         refreshSettings(module, classLoader)
 
         if (applyHijacks(module, classLoader)) {
@@ -42,7 +43,6 @@ object PackageManagerHook {
             syncSettings(module, classLoader)
         }
     }
-
 
     private fun refreshSettings(module: XposedModule, classLoader: ClassLoader?) {
         runCatching {
@@ -111,14 +111,14 @@ object PackageManagerHook {
             val realClassLoader = binder.javaClass.classLoader
 
             // A. PackageInstallerService: Injects flags (0x82) to permit version downgrades
-            val piClass = realClassLoader.loadClass("com.android.server.pm.PackageInstallerService")
-            piClass.declaredMethods.filter { it.name == "createSession" }.forEach { m ->
+            val piClass = realClassLoader?.loadClass("com.android.server.pm.PackageInstallerService")
+            piClass?.declaredMethods?.filter { it.name == "createSession" }?.forEach { m ->
                 module.hookBefore(m) { chain ->
                     if (isFeatureActive(isDowngradeEnabled, downgradeTimestamp)) {
                         val params = chain.args[0]
                         runCatching {
                             val f = params.javaClass.getDeclaredField("installFlags").apply { isAccessible = true }
-                            f.setInt(params, f.getInt(params) or 0x00000082) 
+                            f.setInt(params, f.getInt(params) or 0x00000082)
                             Logger.i(TAG, "Active", "Injected Downgrade flags (0x82)")
                         }
                     }
@@ -132,9 +132,9 @@ object PackageManagerHook {
                 "com.android.server.pm.PackageManagerService"
             ).forEach { className ->
                 runCatching {
-                    val clazz = realClassLoader.loadClass(className)
-                    clazz.declaredMethods.filter { 
-                        it.name == "checkDowngrade" || it.name == "isDowngradePermitted" 
+                    val clazz = realClassLoader?.loadClass(className) ?: return@runCatching
+                    clazz.declaredMethods.filter {
+                        it.name == "checkDowngrade" || it.name == "isDowngradePermitted"
                     }.forEach { m ->
                         module.hook(m).intercept { chain ->
                             if (isFeatureActive(isDowngradeEnabled, downgradeTimestamp)) {
@@ -142,7 +142,7 @@ object PackageManagerHook {
                                 if (m.returnType == Boolean::class.javaPrimitiveType || m.returnType == Boolean::class.java) {
                                     return@intercept true
                                 }
-                                return@intercept null 
+                                return@intercept null
                             }
                             chain.proceed()
                         }
@@ -156,11 +156,11 @@ object PackageManagerHook {
                 "com.android.server.pm.Computer"
             ).forEach { className ->
                 runCatching {
-                    val clazz = realClassLoader.loadClass(className)
+                    val clazz = realClassLoader?.loadClass(className) ?: return@runCatching
                     clazz.declaredMethods.filter { it.name == "checkSignatures" }.forEach { m ->
                         module.hook(m).intercept { chain ->
                             val isActive = isFeatureActive(isSignatureBypassEnabled, signatureTimestamp)
-                            
+
                             if (isActive != lastSignatureActiveState) {
                                 lastSignatureActiveState = isActive
                                 Logger.i(TAG, "Status", "Signature Bypass state changed to: ${if (isActive) "ACTIVE" else "INACTIVE"}")
@@ -177,8 +177,8 @@ object PackageManagerHook {
 
             // D. SigningDetails: Low-level safety net to ignore signature verification failures
             val detailsClass = classLoader.loadClass("android.content.pm.SigningDetails")
-            detailsClass.declaredMethods.filter { 
-                it.name == "checkCapability" || it.name == "hasAncestorOrSelf" 
+            detailsClass.declaredMethods.filter {
+                it.name == "checkCapability" || it.name == "hasAncestorOrSelf"
             }.forEach { m ->
                 module.hook(m).intercept { chain ->
                     if (isFeatureActive(isSignatureBypassEnabled, signatureTimestamp)) {
@@ -223,7 +223,7 @@ object PackageManagerHook {
                     }
                     if (cachedSetDpiMethod != null) {
                         cachedSetDpiMethod!!.invoke(wms, 0, targetDpi, -2) // 0 = Display.DEFAULT_DISPLAY, -2 = USER_CURRENT
-                        Log.i("PXTK_Density", "[SystemServer] Successfully called setForcedDisplayDensityForUser(0, $targetDpi, USER_CURRENT)")
+                        Logger.i("Density", "SystemServer", "Successfully called setForcedDisplayDensityForUser(0, $targetDpi, USER_CURRENT)")
                         return
                     }
                 } else {
@@ -232,7 +232,7 @@ object PackageManagerHook {
                     }
                     if (cachedClearDpiMethod != null) {
                         cachedClearDpiMethod!!.invoke(wms, 0, -2) // 0 = Display.DEFAULT_DISPLAY, -2 = USER_CURRENT
-                        Log.i("PXTK_Density", "[SystemServer] Successfully called clearForcedDisplayDensityForUser(0, USER_CURRENT)")
+                        Logger.i("Density", "SystemServer", "Successfully called clearForcedDisplayDensityForUser(0, USER_CURRENT)")
                         return
                     }
                 }
@@ -243,13 +243,13 @@ object PackageManagerHook {
                 val minPx = minOf(dm.widthPixels, dm.heightPixels)
                 val targetDpi = (minPx * 160) / 600
                 Settings.Secure.putInt(context.contentResolver, "display_density_forced", targetDpi)
-                Log.i("PXTK_Density", "[SystemServer] Fallback: Set display_density_forced = $targetDpi")
+                Logger.i("Density", "SystemServer", "Fallback: Set display_density_forced = $targetDpi")
             } else {
                 Settings.Secure.putString(context.contentResolver, "display_density_forced", null)
-                Log.i("PXTK_Density", "[SystemServer] Fallback: Cleared display_density_forced")
+                Logger.i("Density", "SystemServer", "Fallback: Cleared display_density_forced")
             }
         }.onFailure { e ->
-            Log.e("PXTK_Density", "[SystemServer] Failed to update display density in SystemServer", e)
+            Logger.e("Density", "SystemServer", "Failed to update display density in SystemServer", e)
         }
     }
 }

@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">टैबलेट लेआउट सक्रिय (%1$d DPI)</string>
     <string name="enable_battery_info">बैटरी जानकारी दिखाएं</string>
     <string name="enable_battery_info_summary">रीयल-टाइम बैटरी डेटा दिखाएं (हर 2 सेकंड में स्वतः रीफ़्रेश, Root आवश्यक)</string>
+    <string name="camera_energy_ring">फ्रंट कैमरा एनर्जी रिंग</string>
+    <string name="camera_energy_ring_summary">बैटरी स्तर और चार्जिंग के लिए फ्रंट कैमरा होल के चारों ओर गतिशील रिंग दिखाएं</string>
+    <string name="ring_only_charging">केवल चार्जिंग के दौरान दिखाएं</string>
+    <string name="ring_only_charging_summary">केवल तब एनर्जी रिंग दिखाएं जब डिवाइस प्लग इन हो</string>
+    <string name="ring_radius_offset_format">रिंग त्रिज्या समायोजन: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">रिंग लाइन की मोटाई: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">लॉन्चर पर डबल टैप</string>

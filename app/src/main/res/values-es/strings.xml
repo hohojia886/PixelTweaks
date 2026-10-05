@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">Diseño de tableta activo (%1$d DPI)</string>
     <string name="enable_battery_info">Mostrar datos de batería</string>
     <string name="enable_battery_info_summary">Mostrar datos de hardware en tiempo real (actualización cada 2s, requiere Root)</string>
+    <string name="camera_energy_ring">Anillo de energía para la cámara frontal</string>
+    <string name="camera_energy_ring_summary">Muestra un anillo dinámico alrededor de la cámara frontal con el nivel de batería y carga</string>
+    <string name="ring_only_charging">Mostrar solo al cargar</string>
+    <string name="ring_only_charging_summary">Mostrar el anillo de energía solo cuando el dispositivo esté conectado</string>
+    <string name="ring_radius_offset_format">Ajuste del radio del anillo: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">Grosor de línea del anillo: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">Doble toque en inicio</string>

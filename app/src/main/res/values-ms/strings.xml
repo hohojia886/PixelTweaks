@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">Susun atur tablet aktif (%1$d DPI)</string>
     <string name="enable_battery_info">Tunjukkan Maklumat Bateri</string>
     <string name="enable_battery_info_summary">Tunjukkan data bateri masa nyata (segar semula setiap 2s, memerlukan Root)</string>
+    <string name="camera_energy_ring">Cincin Tenaga Kamera Hadapan</string>
+    <string name="camera_energy_ring_summary">Paparkan cincin dinamik di sekeliling kamera hadapan untuk tahap bateri dan pengecasan</string>
+    <string name="ring_only_charging">Tunjukkan Sahaja Semasa Mengecas</string>
+    <string name="ring_only_charging_summary">Hanya paparkan cincin tenaga apabila peranti disambungkan ke pengecas</string>
+    <string name="ring_radius_offset_format">Pelarasan Jejari Cincin: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">Ketebalan Garis Cincin: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">Dwi-Ketik Pelancar</string>

@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">平板版型生效中 (%1$d DPI)</string>
     <string name="enable_battery_info">顯示電池資訊</string>
     <string name="enable_battery_info_summary">顯示即時電池硬體數據（前台每 2 秒自動刷新，需 Root）</string>
+    <string name="camera_energy_ring">前鏡頭環形電量光環</string>
+    <string name="camera_energy_ring_summary">圍繞前鏡頭挖孔顯示動態環形電量與充電動畫</string>
+    <string name="ring_only_charging">僅在充電時顯示</string>
+    <string name="ring_only_charging_summary">僅在插入充電器充電時顯示前鏡頭電量光環</string>
+    <string name="ring_radius_offset_format">光環大小微調: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">光環線條粗細: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">桌面雙擊熄屏</string>

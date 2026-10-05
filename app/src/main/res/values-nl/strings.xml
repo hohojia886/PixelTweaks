@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">Tablet-lay-out actief (%1$d DPI)</string>
     <string name="enable_battery_info">Batterij-info tonen</string>
     <string name="enable_battery_info_summary">Realtime batterijgegevens tonen (ververst elke 2s, vereist Root)</string>
+    <string name="camera_energy_ring">Energie-ring voor camera-uitsparing</string>
+    <string name="camera_energy_ring_summary">Dynamische ring rond de camera aan de voorkant tonen voor batterijniveau en opladen</string>
+    <string name="ring_only_charging">Alleen tonen tijdens opladen</string>
+    <string name="ring_only_charging_summary">De energie-ring alleen tonen wanneer het apparaat wordt opgeladen</string>
+    <string name="ring_radius_offset_format">Straal van ring aanpassen: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">Lijndikte van ring: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">Dubbeltikken op launcher</string>

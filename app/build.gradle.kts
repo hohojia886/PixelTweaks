@@ -9,8 +9,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val appVersionName = "1.2.1"
-val appVersionCode = 13
+val appVersionName = "1.2.2"
+val appVersionCode = 14
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")

@@ -87,7 +87,7 @@ object IpcManager {
             val knownBooleans = listOf(
                 PreferenceKeys.ENABLE_EASY_UNLOCK, PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
                 PreferenceKeys.ENABLE_QS_WIFI_FIX, PreferenceKeys.ENABLE_QS_DATA_FIX,
-                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_BATTERY_INFO, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
+                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_BATTERY_INFO, PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, PreferenceKeys.RING_ONLY_CHARGING, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
                 PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
                 PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
                 PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_SECURITY, PreferenceKeys.LOG_INTERFACE,
@@ -99,6 +99,8 @@ object IpcManager {
                 PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
                 PreferenceKeys.ENABLE_TABLET_MODE,
                 PreferenceKeys.ENABLE_BATTERY_INFO,
+                PreferenceKeys.ENABLE_CAMERA_ENERGY_RING,
+                PreferenceKeys.RING_ONLY_CHARGING,
                 PreferenceKeys.ENABLE_MASTER_LOG
             )
             knownBooleans.forEach { key ->
@@ -148,9 +150,14 @@ object IpcManager {
     @SuppressLint("WrongConstant")
     fun syncAllSettings(context: Context, prefs: SharedPreferences) {
         val intent = Intent(ACTION_SETTINGS_SYNC).apply {
-            // ClearAll & Tablet Mode
+            // ClearAll, Tablet Mode & Battery Info
             putExtra(PreferenceKeys.ENABLE_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true))
             putExtra(PreferenceKeys.ENABLE_TABLET_MODE, prefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false))
+            putExtra(PreferenceKeys.ENABLE_BATTERY_INFO, prefs.getBoolean(PreferenceKeys.ENABLE_BATTERY_INFO, false))
+            putExtra(PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, prefs.getBoolean(PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, false))
+            putExtra(PreferenceKeys.RING_RADIUS_OFFSET, prefs.getFloat(PreferenceKeys.RING_RADIUS_OFFSET, 0f))
+            putExtra(PreferenceKeys.RING_STROKE_WIDTH, prefs.getFloat(PreferenceKeys.RING_STROKE_WIDTH, 2.0f))
+            putExtra(PreferenceKeys.RING_ONLY_CHARGING, prefs.getBoolean(PreferenceKeys.RING_ONLY_CHARGING, false))
 
             // DT2S
             putExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true))

@@ -4,6 +4,11 @@
 
 ---
 
+### v1.2.2
+- 🔋 **Camera Hole Energy Ring**: Added dynamic battery level & charging status energy ring rendered around front camera cutout (`DisplayCutout`) with color thresholds (<=20% Yellow, <=10% Red, >20% Cyan/Green), charging HSV pulse animation, and 2.0dp default stroke width. Pauses animations & draws when screen turns OFF (`ACTION_SCREEN_OFF`) for zero background power drain.
+- ⚙️ **Camera Energy Ring Customization & Controls**: Added feature toggle and fine-tuning sliders for Ring Radius Offset (`-2.0dp` ~ `+2.0dp`) and Ring Stroke Width (`1.0dp` ~ `3.0dp`) with discrete 5-step snapping and "Show Only While Charging" toggle.
+- 🐞 **Debug Master Logging Leak Fix**: Enforced Master Log toggle checks across all SystemServer and ViewModel logging calls to ensure complete log privacy when Debug Master switch is OFF.
+
 ### v1.2.1
 - 🌐 **Global Multi-Language Selection (18 Languages)**: Added Android 13+ native Per-App Language Selection supporting 18 global languages across Pixel device sales markets with a scrollable radio-button selection dialog and merged "Others" category card.
 - 🔋 **Screen OFF Battery Auto-Pause Protection**: Added dynamic `ACTION_SCREEN_OFF` / `ACTION_SCREEN_ON` broadcast listeners to automatically cancel the 2s Root battery refresh Coroutine loop when the screen is turned off or locked, achieving zero background power drain.

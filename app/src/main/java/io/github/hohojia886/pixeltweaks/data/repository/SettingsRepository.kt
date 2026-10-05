@@ -38,6 +38,10 @@ class SettingsRepository(private val context: Context) {
             savePreference(PreferenceKeys.ENABLE_CLEAR_ALL, true)
             savePreference(PreferenceKeys.ENABLE_TABLET_MODE, false)
             savePreference(PreferenceKeys.ENABLE_BATTERY_INFO, false)
+            savePreference(PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, false)
+            savePreference(PreferenceKeys.RING_RADIUS_OFFSET, 0f)
+            savePreference(PreferenceKeys.RING_STROKE_WIDTH, 2.0f)
+            savePreference(PreferenceKeys.RING_ONLY_CHARGING, false)
             savePreference(PreferenceKeys.APP_LANGUAGE, "")
             savePreference(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
             savePreference(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
@@ -65,6 +69,10 @@ class SettingsRepository(private val context: Context) {
         return SettingsUiState(
             currentLanguageTag = dePrefs.getString(PreferenceKeys.APP_LANGUAGE, "") ?: "",
             enableBatteryInfo = dePrefs.getBoolean(PreferenceKeys.ENABLE_BATTERY_INFO, false),
+            cameraEnergyRing = dePrefs.getBoolean(PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, false),
+            ringRadiusOffset = dePrefs.getFloat(PreferenceKeys.RING_RADIUS_OFFSET, 0f),
+            ringStrokeWidth = dePrefs.getFloat(PreferenceKeys.RING_STROKE_WIDTH, 2.0f),
+            ringOnlyCharging = dePrefs.getBoolean(PreferenceKeys.RING_ONLY_CHARGING, false),
             unrestrictedScreenshots = dePrefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true),
             easyUnlock = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true),
             easyUnlockReboot = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false),

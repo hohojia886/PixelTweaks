@@ -18,8 +18,12 @@ data class SettingsUiState(
     val bypassSignature: Boolean = false,
     val bypassSignatureTimer: String? = null,
 
-    // Battery Info State (Toggle + 18 Metrics)
+    // Battery Info State (Toggle + 18 Metrics + Energy Ring Sliders)
     val enableBatteryInfo: Boolean = false,
+    val cameraEnergyRing: Boolean = false,
+    val ringOnlyCharging: Boolean = false,
+    val ringRadiusOffset: Float = 0f,
+    val ringStrokeWidth: Float = 2.0f,
     val batteryStatus: String = "N/A",
     val batteryVoltageMv: Int = -1,
     val batteryCurrentMa: Int = 0,

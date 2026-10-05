@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">Układ tabletu aktywne (%1$d DPI)</string>
     <string name="enable_battery_info">Pokaż informacje o baterii</string>
     <string name="enable_battery_info_summary">Pokaż dane baterii w czasie rzeczywistym (odświeżanie co 2s, wymaga Root)</string>
+    <string name="camera_energy_ring">Pierścień energii przedniego aparatu</string>
+    <string name="camera_energy_ring_summary">Wyświetlaj dynamiczny pierścień wokół aparatu dla poziomu baterii i ładowania</string>
+    <string name="ring_only_charging">Pokaż tylko podczas ładowania</string>
+    <string name="ring_only_charging_summary">Pokaż pierścień energii tylko wtedy, gdy urządzenie jest podłączone do ładowarki</string>
+    <string name="ring_radius_offset_format">Dopasowanie promienia pierścienia: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">Grubość linii pierścienia: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">Dwukrotne dotknięcie w ekranie głównym</string>

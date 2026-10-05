@@ -292,6 +292,62 @@ fun SettingsScreen(
             CategoryHeader(stringResource(R.string.category_battery), Icons.Outlined.BatteryChargingFull)
             SettingsCard {
                 SwitchSettingItem(
+                    title = stringResource(R.string.camera_energy_ring),
+                    summary = stringResource(R.string.camera_energy_ring_summary),
+                    checked = uiState.cameraEnergyRing,
+                    onCheckedChange = { onEvent(SettingsEvent.ToggleCameraEnergyRing(it)) }
+                )
+                AnimatedVisibility(visible = uiState.cameraEnergyRing) {
+                    Column {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        SwitchSettingItem(
+                            title = stringResource(R.string.ring_only_charging),
+                            summary = stringResource(R.string.ring_only_charging_summary),
+                            checked = uiState.ringOnlyCharging,
+                            onCheckedChange = { onEvent(SettingsEvent.ToggleRingOnlyCharging(it)) }
+                        )
+                        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(bottom = 12.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+
+                        // 1. Radius Offset Slider
+                        val radiusValues = listOf(-2.0f, -1.0f, 0.0f, 1.0f, 2.0f)
+                        val radiusIndex = radiusValues.minByOrNull { Math.abs(it - uiState.ringRadiusOffset) }?.let { radiusValues.indexOf(it) } ?: 2
+                        Text(
+                            text = context.getString(R.string.ring_radius_offset_format, uiState.ringRadiusOffset),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Slider(
+                            value = radiusIndex.toFloat(),
+                            onValueChange = { onEvent(SettingsEvent.ChangeRingRadiusOffset(radiusValues[it.toInt().coerceIn(0, 4)])) },
+                            valueRange = 0f..4f,
+                            steps = 3
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // 2. Stroke Width Slider
+                        val strokeValues = listOf(1.0f, 1.5f, 2.0f, 2.5f, 3.0f)
+                        val strokeIndex = strokeValues.minByOrNull { Math.abs(it - uiState.ringStrokeWidth) }?.let { strokeValues.indexOf(it) } ?: 2
+                        Text(
+                            text = context.getString(R.string.ring_stroke_width_format, uiState.ringStrokeWidth),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Slider(
+                            value = strokeIndex.toFloat(),
+                            onValueChange = { onEvent(SettingsEvent.ChangeRingStrokeWidth(strokeValues[it.toInt().coerceIn(0, 4)])) },
+                            valueRange = 0f..4f,
+                            steps = 3
+                        )
+                    }
+                }
+            }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                SwitchSettingItem(
                     title = stringResource(R.string.enable_battery_info),
                     summary = stringResource(R.string.enable_battery_info_summary),
                     checked = uiState.enableBatteryInfo,

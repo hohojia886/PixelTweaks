@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">タブレットレイアウト適用中 (%1$d DPI)</string>
     <string name="enable_battery_info">バッテリー情報を表示</string>
     <string name="enable_battery_info_summary">リアルタイムバッテリー情報を表示（フォアグラウンドで2秒ごとに更新、Root必須）</string>
+    <string name="camera_energy_ring">インカメラエナジーリング</string>
+    <string name="camera_energy_ring_summary">インカメラのパンチホール周囲にバッテリー残量と充電状態の動的リングを表示</string>
+    <string name="ring_only_charging">充電中のみ表示</string>
+    <string name="ring_only_charging_summary">端末が充電器に接続されている時のみエナジーリングを表示</string>
+    <string name="ring_radius_offset_format">リングサイズ微調整: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">リング線の太さ: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">ホーム画面ダブルタップ消灯</string>

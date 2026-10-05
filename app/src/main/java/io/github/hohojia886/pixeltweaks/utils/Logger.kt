@@ -59,7 +59,9 @@ object Logger {
             logGestures = bundle.getBoolean(PreferenceKeys.LOG_GESTURES, prefs?.getBoolean(PreferenceKeys.LOG_GESTURES, true) ?: true)
             logQuickSettings = bundle.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, prefs?.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true) ?: true)
             
-            logger.i("PXTK_Hook", "[Logger] Settings synced. Master=$isMasterEnabled (PID: ${Process.myPid()})")
+            if (isMasterEnabled) {
+                logger.i("PXTK_Hook", "[Logger] Settings synced. Master=$isMasterEnabled (PID: ${Process.myPid()})")
+            }
         }
     }
 

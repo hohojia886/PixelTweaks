@@ -29,6 +29,12 @@
     <string name="tablet_mode_active_summary">டேப்லெட் அமைப்பு செயலில் உள்ளது (%1$d DPI)</string>
     <string name="enable_battery_info">பேட்டரி தகவலைக் காட்டு</string>
     <string name="enable_battery_info_summary">நேரடி பேட்டரி தகவலைக் காட்டு (2 வினாடிக்கு ஒருமுறை புதுப்பிக்கப்படும், Root தேவை)</string>
+    <string name="camera_energy_ring">முன் கேமரா ஆற்றல் வளையம்</string>
+    <string name="camera_energy_ring_summary">பேட்டரி நிலை மற்றும் சார்ஜிங்கிற்கு முன் கேமரா துளையைச் சுற்றி ஆற்றல் வளையத்தைக் காட்டு</string>
+    <string name="ring_only_charging">சார்ஜ் செய்யும் போது மட்டும் காட்டு</string>
+    <string name="ring_only_charging_summary">சாதனம் சார்ஜரில் இணைக்கப்பட்டிருக்கும் போது மட்டும் ஆற்றல் வளையத்தைக் காட்டு</string>
+    <string name="ring_radius_offset_format">வளைய ஆரம் சரிசெய்தல்: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">வளைய கோட்டின் தடிமன்: %1$.1f dp</string>
 
     <!-- DT2S -->
     <string name="dt_launcher">துவக்கியில் இருமுறை தட்டவும்</string>
