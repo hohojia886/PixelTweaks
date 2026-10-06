@@ -156,6 +156,12 @@ class SettingsViewModel(
                 repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, event.enabled)
             }
 
+            is SettingsEvent.ToggleStatusbarBatteryPercent -> {
+                _uiState.update { it.copy(statusbarBatteryPercent = event.enabled) }
+                repository.savePreference(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, event.enabled)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, event.enabled)
+            }
+
             is SettingsEvent.ChangeTrafficInterval -> {
                 _uiState.update { it.copy(trafficInterval = event.interval) }
                 repository.savePreference(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, event.interval)

@@ -31,6 +31,7 @@ object PreferenceKeys {
     const val ENABLE_CAMERA_ENERGY_RING = "enable_camera_energy_ring"
     const val ENABLE_CLEAR_ALL = "enable_clear_all"
     const val ENABLE_NETWORK_TRAFFIC = "enable_network_traffic"
+    const val ENABLE_STATUSBAR_BATTERY_PERCENT = "enable_statusbar_battery_percent"
     const val ENABLE_UNRESTRICTED_SCREENSHOTS = "enable_unrestricted_screenshots"
     const val ENABLE_QS_WIFI_FIX = "enable_qs_wifi_fix"
     const val ENABLE_QS_DATA_FIX = "enable_qs_data_fix"

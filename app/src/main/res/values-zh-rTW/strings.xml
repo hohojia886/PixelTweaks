@@ -27,6 +27,8 @@
     <string name="tablet_mode">Tablet 模式</string>
     <string name="tablet_mode_summary">強制切換平板版型 (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">平板版型生效中 (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">狀態欄最右側電量百分比</string>
+    <string name="statusbar_battery_percent_summary">於狀態欄最右側以純文字顯示電量百分比 (如 100%)</string>
     <string name="enable_battery_info">顯示電池資訊</string>
     <string name="enable_battery_info_summary">顯示即時電池硬體數據（前台每 2 秒自動刷新，需 Root）</string>
     <string name="camera_energy_ring">前鏡頭環形電量光環</string>
@@ -81,7 +83,7 @@
     <string name="log_security">系統與安全日誌</string>
     <string name="log_security_summary">Logcat 標籤: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">介面與狀態列日誌</string>
-    <string name="log_interface_summary">Logcat 標籤: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat 標籤: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">手勢與互動日誌</string>
     <string name="log_gestures_summary">Logcat 標籤: PXTK_DT2S</string>
     <string name="log_quick_settings">快捷設定日誌</string>

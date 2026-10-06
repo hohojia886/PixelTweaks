@@ -9,8 +9,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val appVersionName = "1.2.2"
-val appVersionCode = 14
+val appVersionName = "1.2.3"
+val appVersionCode = 15
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -107,7 +107,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.13.0")
 
     // Jetpack Compose & Material 3
-    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
+    val composeBom = platform("androidx.compose:compose-bom:2025.02.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
@@ -136,9 +136,15 @@ dependencies {
 tasks.register<Zip>("backupProject") {
     description = "Creates a zip backup of project source code"
     group = "backup"
+
+    val backupDirStr = localProperties.getProperty("backup.dir")
+        ?: localProperties.getProperty("backup.path")
+        ?: System.getenv("BACKUP_DIR")
+        ?: "${rootProject.rootDir}/Backups"
+
     val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
     archiveFileName.set("PixelTweaks2_$timestamp.zip")
-    destinationDirectory.set(file("C:/Users/Administrator/Documents/GitHub/Backups"))
+    destinationDirectory.set(file(backupDirStr))
 
     from(project.rootDir) {
         exclude("**/build/**")
@@ -149,6 +155,7 @@ tasks.register<Zip>("backupProject") {
         exclude("**/.artifacts/**")
         exclude("**/local.properties")
         exclude("**/tmp/**")
+        exclude("**/app/keystore/**")
     }
 }
 

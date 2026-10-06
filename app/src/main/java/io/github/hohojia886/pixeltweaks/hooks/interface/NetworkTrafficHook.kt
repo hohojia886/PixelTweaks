@@ -22,6 +22,7 @@ import android.widget.TextView
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
+import io.github.hohojia886.pixeltweaks.utils.StatusBarTintManager
 import io.github.hohojia886.pixeltweaks.utils.hookAfter
 import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
@@ -204,28 +205,9 @@ object NetworkTrafficHook {
                 Logger.e(TAG, "Error", "onAttachedToWindow method not found on Clock class hierarchy")
             }
 
-            // Dark Mode Sync: Intercepts color changes to keep text visible against backgrounds
-            val dispatcherClasses = listOf(
-                "com.android.systemui.plugins.DarkIconDispatcher",
-                "com.android.systemui.statusbar.phone.DarkIconDispatcherImpl"
-            )
-            
-            for (clsName in dispatcherClasses) {
-                try {
-                    val dispatcherClass = classLoader.loadClass(clsName)
-                    dispatcherClass.declaredMethods.filter { it.name == "applyDark" }.forEach { m ->
-                        module.hookBefore(m) { chain ->
-                            if (chain.args.size >= 3) {
-                                val tint = chain.args[2] as? Int
-                                if (tint != null && tint != 0) {
-                                    applyTint(tint)
-                                }
-                            }
-                        }
-                    }
-                    Logger.i(TAG, "Success", "Hooked color dispatcher: $clsName")
-                    break
-                } catch (_: Throwable) {}
+            // Centralized Dark Mode Sync via StatusBarTintManager
+            StatusBarTintManager.register(module, classLoader) { tint ->
+                applyTint(tint)
             }
 
             runCatching {
@@ -340,7 +322,6 @@ object NetworkTrafficHook {
 
     // Updates the text color of all active traffic views to match the status bar
     private fun applyTint(tint: Int) {
-        if (currentTint == tint) return
         currentTint = tint
         uiHandler.post { iterateViews { it.updateColor(currentTint) } }
     }
@@ -432,6 +413,7 @@ object NetworkTrafficHook {
 
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
+            updateColor(StatusBarTintManager.getCurrentTint())
             startPolling()
         }
         

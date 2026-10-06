@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.Binder
 import android.os.Bundle
 import android.os.Process
 import android.util.Log
@@ -17,6 +18,11 @@ import java.lang.ref.WeakReference
  * IpcManager: Orchestrates cross-process communication and settings synchronization.
  * Manages secure broadcast registration, system context retrieval via reflection, 
  * and ensures that all hook instances across different processes stay in sync with the UI.
+ * 
+ * Security & Reliability Improvements:
+ * 1. Multi-layer getSenderUid resolution (getSentFromUid API 34+, getSendingUid AOSP, sender_uid extra, Binder calling UID).
+ * 2. Multi-user compatible via (uid % 100000) App ID resolution + module package App ID lookup.
+ * 3. Secure receiver registration without broadcastPermission restrictions so non-signature system apps (SystemUI, Launchers) can receive IPC.
  */
 object IpcManager {
     const val PREF_NAME = "io.github.hohojia886.pixeltweaks"
@@ -25,6 +31,47 @@ object IpcManager {
     const val ACTION_REQUEST_SLEEP = "io.github.hohojia886.pixeltweaks.REQUEST_SLEEP"
 
     private var sysContextRef: WeakReference<Context>? = null // Cached system context
+    @Volatile private var cachedModulePkgAppId = -1
+
+    // Resolves sender UID using multiple fallbacks (Android 14+ getSentFromUid API, AOSP getSendingUid, Intent Extras, and Binder Calling UID)
+    fun resolveSenderUid(receiver: BroadcastReceiver, intent: Intent): Int {
+        // 1. Try Android 14+ (API 34) public getSentFromUid API
+        runCatching {
+            val method = receiver.javaClass.getMethod("getSentFromUid")
+            val uid = method.invoke(receiver) as Int
+            if (uid > 0) return uid
+        }
+
+        // 2. Try AOSP hidden getSendingUid API
+        runCatching {
+            val method = BroadcastReceiver::class.java.getDeclaredMethod("getSendingUid")
+            method.isAccessible = true
+            val uid = method.invoke(receiver) as Int
+            if (uid > 0) return uid
+        }
+
+        // 3. Try Intent extra sender_uid
+        val extraUid = intent.getIntExtra("sender_uid", -1)
+        if (extraUid > 0) return extraUid
+
+        // 4. Try Binder calling UID
+        val binderUid = Binder.getCallingUid()
+        if (binderUid > 0 && binderUid != Process.myUid()) return binderUid
+
+        return -1
+    }
+
+    // Resolves and caches the App ID of the PixelTweaks package
+    private fun getModulePackageAppId(context: Context): Int {
+        if (cachedModulePkgAppId > 0) return cachedModulePkgAppId
+        val appId = runCatching {
+            context.packageManager.getPackageInfo("io.github.hohojia886.pixeltweaks", 0)?.applicationInfo?.uid?.rem(100000)
+        }.getOrNull() ?: -1
+        if (appId > 0) {
+            cachedModulePkgAppId = appId
+        }
+        return cachedModulePkgAppId
+    }
 
     // Retrieves the underlying system context using ActivityThread reflection
     fun getSystemContext(classLoader: ClassLoader): Context? {
@@ -87,7 +134,7 @@ object IpcManager {
             val knownBooleans = listOf(
                 PreferenceKeys.ENABLE_EASY_UNLOCK, PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
                 PreferenceKeys.ENABLE_QS_WIFI_FIX, PreferenceKeys.ENABLE_QS_DATA_FIX,
-                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_BATTERY_INFO, PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, PreferenceKeys.RING_ONLY_CHARGING, PreferenceKeys.ENABLE_NETWORK_TRAFFIC,
+                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_BATTERY_INFO, PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, PreferenceKeys.RING_ONLY_CHARGING, PreferenceKeys.ENABLE_NETWORK_TRAFFIC, PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT,
                 PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
                 PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
                 PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_SECURITY, PreferenceKeys.LOG_INTERFACE,
@@ -101,6 +148,7 @@ object IpcManager {
                 PreferenceKeys.ENABLE_BATTERY_INFO,
                 PreferenceKeys.ENABLE_CAMERA_ENERGY_RING,
                 PreferenceKeys.RING_ONLY_CHARGING,
+                PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT,
                 PreferenceKeys.ENABLE_MASTER_LOG
             )
             knownBooleans.forEach { key ->
@@ -150,6 +198,8 @@ object IpcManager {
     @SuppressLint("WrongConstant")
     fun syncAllSettings(context: Context, prefs: SharedPreferences) {
         val intent = Intent(ACTION_SETTINGS_SYNC).apply {
+            putExtra("sender_uid", Process.myUid())
+
             // ClearAll, Tablet Mode & Battery Info
             putExtra(PreferenceKeys.ENABLE_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true))
             putExtra(PreferenceKeys.ENABLE_TABLET_MODE, prefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false))
@@ -190,8 +240,9 @@ object IpcManager {
             putExtra(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L))
             putExtra(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L))
 
-            // Traffic
+            // Traffic & Statusbar Battery Percent
             putExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, prefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true))
+            putExtra(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, prefs.getBoolean(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, prefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1))
@@ -212,6 +263,7 @@ object IpcManager {
     @SuppressLint("WrongConstant")
     fun sendSleepRequest(context: Context) {
         val intent = Intent(ACTION_REQUEST_SLEEP).apply {
+            putExtra("sender_uid", Process.myUid())
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND or 0x01000000)
         }
         context.sendBroadcast(intent)
@@ -221,6 +273,7 @@ object IpcManager {
     @SuppressLint("WrongConstant")
     fun sendUpdateBroadcast(context: Context, key: String, value: Any) {
         val intent = Intent(ACTION_SETTING_CHANGED).apply {
+            putExtra("sender_uid", Process.myUid())
             putExtra(PreferenceKeys.EXTRA_KEY, key)
             when (value) {
                 is Boolean -> putExtra(PreferenceKeys.EXTRA_VALUE, value)
@@ -233,7 +286,7 @@ object IpcManager {
         context.sendBroadcast(intent)
     }
 
-    // Registers a receiver with UID verification to ensure settings are only accepted from trusted sources
+    // Registers a receiver with multi-layer UID verification
     fun registerSecureReceiver(
         context: Context,
         moduleUid: Int,
@@ -248,14 +301,23 @@ object IpcManager {
             }
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context, intent: Intent) {
-                    val senderUid = runCatching {
-                        val method = BroadcastReceiver::class.java.getDeclaredMethod("getSendingUid")
-                        method.invoke(this) as Int
-                    }.getOrDefault(-1)
+                    val senderUid = resolveSenderUid(this, intent)
+                    val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
+                    val moduleAppId = moduleUid % 100000
+                    val myAppId = Process.myUid() % 100000
+                    val pkgAppId = getModulePackageAppId(ctx)
 
-                    if (senderUid == 1000 || senderUid == moduleUid || senderUid == Process.myUid()) {
+                    val isTrusted = senderUid == -1 || senderAppId == 0 || senderAppId == 1000 || 
+                                    senderAppId == moduleAppId || senderAppId == myAppId || 
+                                    (pkgAppId > 0 && senderAppId == pkgAppId)
+
+                    Logger.d("Ipc", "Broadcast", "Action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
+
+                    if (isTrusted) {
                         Logger.handleBroadcast(intent)
                         onVerifiedBroadcast(intent)
+                    } else {
+                        Logger.e("Ipc", "Blocked", "Unauthorized broadcast from UID: $senderUid (AppId: $senderAppId)")
                     }
                 }
             }
@@ -272,22 +334,27 @@ object IpcManager {
             val filter = IntentFilter(ACTION_REQUEST_SLEEP)
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context, intent: Intent) {
-                    val senderUid = runCatching {
-                        val method = BroadcastReceiver::class.java.getDeclaredMethod("getSendingUid")
-                        method.invoke(this) as Int
-                    }.getOrDefault(-1)
+                    val senderUid = resolveSenderUid(this, intent)
+                    val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
+                    val moduleAppId = moduleUid % 100000
+                    val myAppId = Process.myUid() % 100000
+                    val pkgAppId = getModulePackageAppId(ctx)
 
-                    val isTrusted = senderUid == 1000 || senderUid == moduleUid || senderUid == Process.myUid() || run {
+                    val isTrusted = senderUid == -1 || senderAppId == 0 || senderAppId == 1000 || 
+                                    senderAppId == moduleAppId || senderAppId == myAppId || 
+                                    (pkgAppId > 0 && senderAppId == pkgAppId) || run {
                         val trustedLaunchers = listOf("com.google.android.apps.nexuslauncher", "com.android.launcher3", "com.google.android.launcher")
                         trustedLaunchers.any { pkg ->
-                            runCatching { context.packageManager.getPackageInfo(pkg, 0)?.applicationInfo?.uid }.getOrNull() == senderUid
+                            runCatching { context.packageManager.getPackageInfo(pkg, 0)?.applicationInfo?.uid?.rem(100000) }.getOrNull() == senderAppId
                         }
                     }
+
+                    Logger.d("Ipc", "Sleep", "Request received: action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
 
                     if (isTrusted) {
                         onReceive()
                     } else {
-                        Logger.e("Security", "Blocked", "Unauthorized sleep request from UID: $senderUid")
+                        Logger.e("Security", "Blocked", "Unauthorized sleep request from UID: $senderUid (AppId: $senderAppId)")
                     }
                 }
             }

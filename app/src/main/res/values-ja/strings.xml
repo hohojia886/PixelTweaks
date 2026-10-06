@@ -27,6 +27,8 @@
     <string name="tablet_mode">タブレットモード</string>
     <string name="tablet_mode_summary">タブレットレイアウトを強制表示 (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">タブレットレイアウト適用中 (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">ステータスバー最右端バッテリー残量表示</string>
+    <string name="statusbar_battery_percent_summary">ステータスバーの最右端にテキストでバッテリー残量を表示 (例: 100%)</string>
     <string name="enable_battery_info">バッテリー情報を表示</string>
     <string name="enable_battery_info_summary">リアルタイムバッテリー情報を表示（フォアグラウンドで2秒ごとに更新、Root必須）</string>
     <string name="camera_energy_ring">インカメラエナジーリング</string>
@@ -81,7 +83,7 @@
     <string name="log_security">システム＆セキュリティログ</string>
     <string name="log_security_summary">Logcat タグ: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">UI＆ステータスバーログ</string>
-    <string name="log_interface_summary">Logcat タグ: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat タグ: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">ジェスチャー＆操作ログ</string>
     <string name="log_gestures_summary">Logcat タグ: PXTK_DT2S</string>
     <string name="log_quick_settings">クイック設定ログ</string>

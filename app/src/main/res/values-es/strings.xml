@@ -27,6 +27,8 @@
     <string name="tablet_mode">Modo Tableta</string>
     <string name="tablet_mode_summary">Forzar diseño de tableta (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Diseño de tableta activo (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Porcentaje de batería en el extremo derecho</string>
+    <string name="statusbar_battery_percent_summary">Muestra el porcentaje de batería en texto al extremo derecho de la barra de estado</string>
     <string name="enable_battery_info">Mostrar datos de batería</string>
     <string name="enable_battery_info_summary">Mostrar datos de hardware en tiempo real (actualización cada 2s, requiere Root)</string>
     <string name="camera_energy_ring">Anillo de energía para la cámara frontal</string>
@@ -81,7 +83,7 @@
     <string name="log_security">Registros de sistema y seguridad</string>
     <string name="log_security_summary">Etiquetas: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Registros de interfaz</string>
-    <string name="log_interface_summary">Etiquetas: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Etiquetas: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Registros de gestos</string>
     <string name="log_gestures_summary">Etiquetas: PXTK_DT2S</string>
     <string name="log_quick_settings">Registros de ajustes rápidos</string>

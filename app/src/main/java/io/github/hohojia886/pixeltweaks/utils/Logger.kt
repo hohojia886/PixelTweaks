@@ -110,11 +110,25 @@ object Logger {
         }
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun d(tag: String, msg: String) {
+        if (isMasterEnabled && isSubEnabled(tag)) {
+            runCatching { logger.d("PXTK_$tag", msg) }
+        }
+    }
+
     // Debug: Only logs if Master and Sub-toggle are both enabled
     @Suppress("NOTHING_TO_INLINE")
     inline fun d(tag: String, status: String, msg: String) {
         if (isMasterEnabled && isSubEnabled(tag)) {
             runCatching { logger.d("PXTK_$tag", "[$status] $msg") }
+        }
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun i(tag: String, msg: String) {
+        if (isMasterEnabled && isSubEnabled(tag)) {
+            runCatching { logger.i("PXTK_$tag", msg) }
         }
     }
 
@@ -126,11 +140,25 @@ object Logger {
         }
     }
 
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun e(tag: String, msg: String, tr: Throwable? = null) {
+        if (isMasterEnabled || tag == "Hook") {
+            runCatching { logger.e("PXTK_$tag", msg, tr) }
+        }
+    }
+
     // Error: Critical hook failures are always logged, others respect the master switch
     @Suppress("NOTHING_TO_INLINE")
     inline fun e(tag: String, status: String, msg: String, tr: Throwable? = null) {
         if (isMasterEnabled || tag == "Hook") {
             runCatching { logger.e("PXTK_$tag", "[$status] $msg", tr) }
+        }
+    }
+
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun w(tag: String, msg: String) {
+        if (isMasterEnabled && isSubEnabled(tag)) {
+            runCatching { logger.w("PXTK_$tag", msg) }
         }
     }
 
@@ -146,7 +174,7 @@ object Logger {
     fun isSubEnabled(tag: String): Boolean {
         return when (tag) {
             "Security", "EasyUnlock", "Screenshot" -> logSecurity
-            "ClearAll", "Traffic" -> logInterface
+            "ClearAll", "Traffic", "Battery" -> logInterface
             "DT2S" -> logGestures
             "QuickSettings" -> logQuickSettings
             else -> true

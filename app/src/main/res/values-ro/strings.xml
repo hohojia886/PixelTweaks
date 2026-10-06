@@ -27,6 +27,8 @@
     <string name="tablet_mode">Mod tabletă</string>
     <string name="tablet_mode_summary">Afișează aspect de tabletă (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Aspect de tabletă activ (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Procentaj baterie în extrema dreaptă a barei de stare</string>
+    <string name="statusbar_battery_percent_summary">Afișează procentajul bateriei ca text în extrema dreaptă a barei de stare</string>
     <string name="enable_battery_info">Afișează informații baterie</string>
     <string name="enable_battery_info_summary">Afișează date baterie în timp real (reîmprospătare la 2s, necesită Root)</string>
     <string name="camera_energy_ring">Inel de energie pentru camera frontală</string>
@@ -77,7 +79,7 @@
     <string name="log_security">Jurnale sistem &amp; securitate</string>
     <string name="log_security_summary">Etichete: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Jurnale interfață</string>
-    <string name="log_interface_summary">Etichete: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Etichete: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
 
     <!-- Battery Info Metrics -->
     <string name="battery_status">Stare baterie</string>

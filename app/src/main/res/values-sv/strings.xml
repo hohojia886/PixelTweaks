@@ -27,6 +27,8 @@
     <string name="tablet_mode">Surfplatteläge</string>
     <string name="tablet_mode_summary">Tvinga surfplattelayout (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Surfplattelayout aktiv (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Batteriprocent längst till höger i statusfältet</string>
+    <string name="statusbar_battery_percent_summary">Visa batteriprocent som text längst till höger i statusfältet</string>
     <string name="enable_battery_info">Visa batteriinformation</string>
     <string name="enable_battery_info_summary">Visa batteridata i realtid (uppdateras var 2:a sek, kräver Root)</string>
     <string name="camera_energy_ring">Energiring för den främre kameran</string>
@@ -81,7 +83,7 @@
     <string name="log_security">System- &amp; Säkerhetsloggar</string>
     <string name="log_security_summary">Logcat-taggar: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Gränssnittsloggar</string>
-    <string name="log_interface_summary">Logcat-taggar: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat-taggar: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Gesterloggar</string>
     <string name="log_gestures_summary">Logcat-tagg: PXTK_DT2S</string>
     <string name="log_quick_settings">Snabbinställningsloggar</string>

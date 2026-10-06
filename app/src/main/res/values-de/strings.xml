@@ -27,6 +27,8 @@
     <string name="tablet_mode">Tablet-Modus</string>
     <string name="tablet_mode_summary">Tablet-Layout erzwingen (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Tablet-Layout aktiv (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Akkustand ganz rechts in der Statusleiste</string>
+    <string name="statusbar_battery_percent_summary">Akkustand als Text ganz rechts in der Statusleiste anzeigen (z. B. 100%)</string>
     <string name="enable_battery_info">Akku-Info anzeigen</string>
     <string name="enable_battery_info_summary">Echtzeit-Akkudaten anzeigen (alle 2s aktualisiert, erfordert Root)</string>
     <string name="camera_energy_ring">Kamera-Punchhole-Energiering</string>
@@ -81,7 +83,7 @@
     <string name="log_security">System- &amp; Sicherheitsprotokolle</string>
     <string name="log_security_summary">Logcat-Tags: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Oberflächen-Protokolle</string>
-    <string name="log_interface_summary">Logcat-Tags: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat-Tags: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Gesten-Protokolle</string>
     <string name="log_gestures_summary">Logcat-Tag: PXTK_DT2S</string>
     <string name="log_quick_settings">Schnelleinstellungs-Protokolle</string>

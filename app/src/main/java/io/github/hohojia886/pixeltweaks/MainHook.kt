@@ -4,6 +4,7 @@ import android.os.Process
 import io.github.hohojia886.pixeltweaks.hooks.PixelHook
 import io.github.hohojia886.pixeltweaks.hooks.battery.EnergyRingHook
 import io.github.hohojia886.pixeltweaks.hooks.gestures.DoubleTapToSleepHook
+import io.github.hohojia886.pixeltweaks.hooks.`interface`.BatteryPercentHook
 import io.github.hohojia886.pixeltweaks.hooks.`interface`.ClearAllButtonHook
 import io.github.hohojia886.pixeltweaks.hooks.`interface`.NetworkTrafficHook
 import io.github.hohojia886.pixeltweaks.hooks.quicksettings.QuickSettingsHook
@@ -121,6 +122,15 @@ private object EnergyRingEntry : PixelHook {
     }
 }
 
+// 9. BatteryPercent: Text battery percentage at far-right of status bar in SystemUI
+private object BatteryPercentEntry : PixelHook {
+    override val name = "BatteryPercent"
+    override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
+        BatteryPercentHook.hook(module, classLoader)
+    }
+}
+
 class MainHook : XposedModule() {
 
     private var isSystemServerProcess = false // Tracks if current process is the system_server
@@ -135,7 +145,8 @@ class MainHook : XposedModule() {
         ScreenshotAppEntry,
         PackageManagerEntry,
         NetworkTrafficEntry,
-        EnergyRingEntry
+        EnergyRingEntry,
+        BatteryPercentEntry
     )
 
     // Lifecycle: Initializes logging and identifies process type upon module load

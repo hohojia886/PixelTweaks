@@ -27,6 +27,8 @@
     <string name="tablet_mode">Mode Tablette</string>
     <string name="tablet_mode_summary">Forcer la disposition tablette (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Disposition tablette active (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Pourcentage batterie à l\'extrême droite</string>
+    <string name="statusbar_battery_percent_summary">Afficher le pourcentage de batterie en texte tout à droite de la barre d\'état</string>
     <string name="enable_battery_info">Afficher les infos batterie</string>
     <string name="enable_battery_info_summary">Afficher les données en temps réel (rafraîchissement 2s, requis Root)</string>
     <string name="camera_energy_ring">Anneau d\'énergie de la caméra frontale</string>
@@ -81,7 +83,7 @@
     <string name="log_security">Journaux système &amp; sécurité</string>
     <string name="log_security_summary">Balises Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Journaux d\'interface</string>
-    <string name="log_interface_summary">Balises Logcat: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Balises Logcat: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Journaux de gestes</string>
     <string name="log_gestures_summary">Balise Logcat: PXTK_DT2S</string>
     <string name="log_quick_settings">Journaux de paramètres rapides</string>

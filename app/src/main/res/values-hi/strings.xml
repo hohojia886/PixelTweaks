@@ -27,6 +27,8 @@
     <string name="tablet_mode">टैबलेट मोड</string>
     <string name="tablet_mode_summary">टैबलेट लेआउट लागू करें (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">टैबलेट लेआउट सक्रिय (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">स्टेटस बार के सबसे दाईं ओर बैटरी %</string>
+    <string name="statusbar_battery_percent_summary">स्टेटस बार के सबसे दाईं ओर टेक्स्ट बैटरी प्रतिशत दिखाएं (जैसे 100%)</string>
     <string name="enable_battery_info">बैटरी जानकारी दिखाएं</string>
     <string name="enable_battery_info_summary">रीयल-टाइम बैटरी डेटा दिखाएं (हर 2 सेकंड में स्वतः रीफ़्रेश, Root आवश्यक)</string>
     <string name="camera_energy_ring">फ्रंट कैमरा एनर्जी रिंग</string>
@@ -81,7 +83,7 @@
     <string name="log_security">सिस्टम और सुरक्षा लॉग</string>
     <string name="log_security_summary">Logcat टैग: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">इंटरफ़ेस लॉग</string>
-    <string name="log_interface_summary">Logcat टैग: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat टैग: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">जेस्चर लॉग</string>
     <string name="log_gestures_summary">Logcat टैग: PXTK_DT2S</string>
     <string name="log_quick_settings">त्वरित सेटिंग्स लॉग</string>

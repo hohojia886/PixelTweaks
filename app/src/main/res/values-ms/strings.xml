@@ -27,6 +27,8 @@
     <string name="tablet_mode">Mod Tablet</string>
     <string name="tablet_mode_summary">Paksa susun atur tablet (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Susun atur tablet aktif (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Peratusan Bateri Paling Kanan Bar Status</string>
+    <string name="statusbar_battery_percent_summary">Paparkan peratusan bateri dalam bentuk teks di paling kanan bar status</string>
     <string name="enable_battery_info">Tunjukkan Maklumat Bateri</string>
     <string name="enable_battery_info_summary">Tunjukkan data bateri masa nyata (segar semula setiap 2s, memerlukan Root)</string>
     <string name="camera_energy_ring">Cincin Tenaga Kamera Hadapan</string>
@@ -81,7 +83,7 @@
     <string name="log_security">Log Sistem &amp; Keselamatan</string>
     <string name="log_security_summary">Tag Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Log Antara Muka</string>
-    <string name="log_interface_summary">Tag Logcat: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Tag Logcat: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Log Isyarat</string>
     <string name="log_gestures_summary">Tag Logcat: PXTK_DT2S</string>
     <string name="log_quick_settings">Log Tetapan Pantas</string>

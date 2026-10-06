@@ -4,6 +4,11 @@
 
 ---
 
+### v1.2.3
+- 🛡️ **Cross-Process Communication & Storage Security Hardening**: Upgraded IPC communication and storage bridge mechanisms with thread-safe multi-user App ID matching and strict access control, ensuring robust real-time settings synchronization and hardware metric reading.
+- 🔒 **Security Policy & Authorization Scoping**: Strengthened anti-tamper protections for policy bypasses using monotonic runtime timers (`SystemClock.elapsedRealtime`) and strictly scoped advanced privilege bypasses to active installation operations.
+- 🔋 **Status Bar Battery Suppression & Typography Alignment**: Precisely targeted Android 17 status bar components to suppress stock battery icons while seamlessly matching native clock typography and spacing.
+
 ### v1.2.2
 - 🔋 **Camera Hole Energy Ring**: Added dynamic battery level & charging status energy ring rendered around front camera cutout (`DisplayCutout`) with color thresholds (<=20% Yellow, <=10% Red, >20% Cyan/Green), charging HSV pulse animation, and 2.0dp default stroke width. Pauses animations & draws when screen turns OFF (`ACTION_SCREEN_OFF`) for zero background power drain.
 - ⚙️ **Camera Energy Ring Customization & Controls**: Added feature toggle and fine-tuning sliders for Ring Radius Offset (`-2.0dp` ~ `+2.0dp`) and Ring Stroke Width (`1.0dp` ~ `3.0dp`) with discrete 5-step snapping and "Show Only While Charging" toggle.

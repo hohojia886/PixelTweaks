@@ -28,6 +28,7 @@ class SettingsRepository(private val context: Context) {
     private fun initDefaultsIfNeeded() {
         if (!cePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC) && !dePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC)) {
             savePreference(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
+            savePreference(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false)
             savePreference(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
             savePreference(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
             savePreference(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
@@ -81,6 +82,7 @@ class SettingsRepository(private val context: Context) {
             clearAll = dePrefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true),
             tabletMode = dePrefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false),
             networkTraffic = dePrefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true),
+            statusbarBatteryPercent = dePrefs.getBoolean(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false),
             trafficInterval = dePrefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1),
             trafficFontSize = dePrefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f),
             trafficThreshold = dePrefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1),

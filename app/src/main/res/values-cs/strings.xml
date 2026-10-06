@@ -27,6 +27,8 @@
     <string name="tablet_mode">Režim tabletu</string>
     <string name="tablet_mode_summary">Vynutit rozvržení tabletu (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Rozvržení tabletu aktivní (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Procento baterie zcela vpravo na stavové liště</string>
+    <string name="statusbar_battery_percent_summary">Zobrazit procento baterie jako text zcela vpravo na stavové liště</string>
     <string name="enable_battery_info">Zobrazit informace o baterii</string>
     <string name="enable_battery_info_summary">Zobrazit živá data baterie (obnovuje se každé 2s, vyžaduje Root)</string>
     <string name="camera_energy_ring">Energetický kroužek předního fotoaparátu</string>
@@ -81,7 +83,7 @@
     <string name="log_security">Protokoly systému a zabezpečení</string>
     <string name="log_security_summary">Logcat značky: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Protokoly rozhraní</string>
-    <string name="log_interface_summary">Logcat značky: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat značky: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Protokoly gest</string>
     <string name="log_gestures_summary">Logcat značka: PXTK_DT2S</string>
     <string name="log_quick_settings">Protokoly rychlého nastavení</string>

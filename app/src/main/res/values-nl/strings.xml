@@ -27,6 +27,8 @@
     <string name="tablet_mode">Tabletmodus</string>
     <string name="tablet_mode_summary">Tablet-lay-out forceren (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Tablet-lay-out actief (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Batterij-% uiterst rechts op statusbalk</string>
+    <string name="statusbar_battery_percent_summary">Batterijpercentage als tekst uiterst rechts op de statusbalk tonen</string>
     <string name="enable_battery_info">Batterij-info tonen</string>
     <string name="enable_battery_info_summary">Realtime batterijgegevens tonen (ververst elke 2s, vereist Root)</string>
     <string name="camera_energy_ring">Energie-ring voor camera-uitsparing</string>
@@ -81,7 +83,7 @@
     <string name="log_security">Systeem- &amp; Beveiligingslogs</string>
     <string name="log_security_summary">Logcat-tags: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Interface-logs</string>
-    <string name="log_interface_summary">Logcat-tags: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat-tags: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Gebaren-logs</string>
     <string name="log_gestures_summary">Logcat-tag: PXTK_DT2S</string>
     <string name="log_quick_settings">Snelle instellingen-logs</string>

@@ -173,6 +173,13 @@ fun SettingsScreen(
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SwitchSettingItem(
+                    title = stringResource(R.string.statusbar_battery_percent),
+                    summary = stringResource(R.string.statusbar_battery_percent_summary),
+                    checked = uiState.statusbarBatteryPercent,
+                    onCheckedChange = { onEvent(SettingsEvent.ToggleStatusbarBatteryPercent(it)) }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                SwitchSettingItem(
                     title = stringResource(R.string.network_traffic),
                     summary = stringResource(R.string.network_traffic_summary),
                     checked = uiState.networkTraffic,

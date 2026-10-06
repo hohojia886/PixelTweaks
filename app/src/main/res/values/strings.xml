@@ -27,6 +27,8 @@
     <string name="tablet_mode">Tablet Mode</string>
     <string name="tablet_mode_summary">Force tablet layout (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Tablet layout active (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Right Status Bar Battery %</string>
+    <string name="statusbar_battery_percent_summary">Display text battery percentage at the far-right of the status bar</string>
     <string name="enable_battery_info">Show Battery Info</string>
     <string name="enable_battery_info_summary">Show real-time battery hardware metrics (auto-refreshes every 2s, requires Root)</string>
     <string name="camera_energy_ring">Camera Hole Energy Ring</string>
@@ -81,7 +83,7 @@
     <string name="log_security">System &amp; Security Logs</string>
     <string name="log_security_summary">Logcat tag: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
     <string name="log_interface">Interface &amp; Status Bar Logs</string>
-    <string name="log_interface_summary">Logcat tag: PXTK_ClearAll, PXTK_Traffic</string>
+    <string name="log_interface_summary">Logcat tag: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
     <string name="log_gestures">Gestures &amp; Interactions Logs</string>
     <string name="log_gestures_summary">Logcat tag: PXTK_DT2S</string>
     <string name="log_quick_settings">Quick Settings Logs</string>
