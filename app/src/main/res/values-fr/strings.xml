@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Afficher un anneau dynamique autour de la caméra pour le niveau de batterie et la charge</string>
     <string name="ring_only_charging">Afficher uniquement pendant la charge</string>
     <string name="ring_only_charging_summary">Afficher l\'anneau d\'énergie uniquement lorsque l\'appareil est en charge</string>
+    <string name="enable_ring_rotation">Faire pivoter l\'anneau</string>
+    <string name="enable_ring_rotation_summary">Fait pivoter en continu l\'angle de départ de l\'anneau autour de la caméra</string>
     <string name="ring_radius_offset_format">Ajustement du rayon de l\'anneau : %1$.1f dp</string>
     <string name="ring_stroke_width_format">Épaisseur de l\'anneau : %1$.1f dp</string>
 

@@ -1,21 +1,30 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi")
+
 package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
+import android.animation.ValueAnimator
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.BatteryManager
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
+import android.os.SystemClock
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.net.toUri
+import androidx.core.view.isNotEmpty
+import io.github.hohojia886.pixeltweaks.utils.BatteryColorManager
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -35,6 +44,7 @@ import java.util.WeakHashMap
  * 2. Targets Compose Battery Views (UnifiedBatteryViewBinder & UnifiedBatteryKt).
  * 3. Zeros paddingEnd on StatusIconContainer to eliminate WiFi-battery spacing.
  * 4. Injects matching Clock-style text on both PhoneStatusBarView and KeyguardStatusBarView.
+ * 5. Matches Energy Ring color dynamics (charging HSV pulse, Power Save mode red, low battery yellow/green).
  */
 object BatteryPercentHook {
 
@@ -47,9 +57,14 @@ object BatteryPercentHook {
     @Volatile private var currentPercentText = ""
     @Volatile private var currentTint = Color.WHITE
 
+    @Volatile private var currentLevel = 100
+    @Volatile private var isCharging = false
+    @Volatile private var isPowerSaveMode = false
+    @Volatile private var animHue = 0f
+    private var pulseAnimator: ValueAnimator? = null
+
     private val trackedPercentTextViews = Collections.synchronizedList(mutableListOf<WeakReference<TextView>>())
     private val mainHandler = Handler(Looper.getMainLooper())
-    @Volatile private var appContextRef: WeakReference<Context>? = null
 
     private val trackedStatusIconContainers = Collections.synchronizedList(mutableListOf<WeakReference<ViewGroup>>())
     private val trackedComposeBatteryViews = Collections.synchronizedList(mutableListOf<WeakReference<View>>())
@@ -62,22 +77,14 @@ object BatteryPercentHook {
         processPackageName = "com.android.systemui"
         syncSettings(module, classLoader)
 
-        runCatching {
-            val appClass = classLoader.loadClass("android.app.Application")
-            module.hookBefore(appClass.getDeclaredMethod("onCreate")) { chain ->
-                val app = chain.thisObject as? Context
-                if (app != null) {
-                    appContextRef = WeakReference(app)
-                    IpcManager.registerSecureReceiver(app, module.getModuleApplicationInfo().uid) { intent ->
-                        handleBroadcast(intent, app)
-                    }
+        // Subscribe to process-level IPC broadcasts via IpcDispatcher
+        IpcDispatcher.addListener { intent ->
+            handleBroadcast(intent)
+        }
 
-                    // Register Pure SDK Battery Receiver (Sticky Broadcast)
-                    registerBatteryReceiver(app)
-                }
-            }
-        }.onFailure { e ->
-            Logger.e(TAG, "Error", "Failed to setup Application.onCreate hook", e)
+        // Register sticky battery receiver on Application Context when ready
+        IpcDispatcher.initializeOnce(module, classLoader) { app ->
+            registerBatteryReceiver(app)
         }
 
         // Apply Android 17 ModernStatusBarView Battery Hooks (slot="battery")
@@ -104,7 +111,7 @@ object BatteryPercentHook {
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
         val loadedFromDe = runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: IpcManager.getSystemContext(classLoader) ?: return@runCatching false
-            val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+            val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
             val bundle = ctx.contentResolver.call(uri, "get", null, null) ?: return@runCatching false
             isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false)
             Logger.i(TAG, "Sync", "Settings loaded from DE: statusbarBatteryPercent=$isEnabled")
@@ -163,7 +170,7 @@ object BatteryPercentHook {
                             synchronized(trackedModernBatteryViews) {
                                 if (trackedModernBatteryViews.none { it.get() == view }) {
                                     trackedModernBatteryViews.add(WeakReference(view))
-                                    Logger.i(TAG, "ModernBattery", "Tracked ModernStatusBarView for slot=battery: ${view.javaClass.name}")
+                                    Logger.i(TAG, "ModernBattery", "Tracked ModernStatusBarView for slot=battery: " + view.javaClass.name)
                                 }
                             }
                             applyVisibilityToModernBatteryView(view)
@@ -224,7 +231,7 @@ object BatteryPercentHook {
         synchronized(trackedComposeBatteryViews) {
             if (trackedComposeBatteryViews.none { it.get() == view }) {
                 trackedComposeBatteryViews.add(WeakReference(view))
-                Logger.i(TAG, "ComposeBattery", "Tracked Android 17 Compose Battery View: ${view.javaClass.name}")
+                Logger.i(TAG, "ComposeBattery", "Tracked Android 17 Compose Battery View: " + view.javaClass.name)
             }
         }
         applyVisibilityToComposeView(view)
@@ -249,7 +256,7 @@ object BatteryPercentHook {
                 }
 
                 // Hide inner AndroidComposeView child if present
-                if (view is ViewGroup && view.childCount > 0) {
+                if (view is ViewGroup && view.isNotEmpty()) {
                     for (i in 0 until view.childCount) {
                         val child = view.getChildAt(i) ?: continue
                         child.tag = BATTERY_MARKER_TAG
@@ -323,25 +330,26 @@ object BatteryPercentHook {
     private fun applyAndroid17ComposeBatteryHooks(module: XposedModule, classLoader: ClassLoader) {
         // 1. Hook UnifiedBatteryViewBinder$bind$1$1.invokeSuspend
         runCatching {
-            val bindInnerClass = classLoader.loadClass("com.android.systemui.statusbar.pipeline.battery.ui.binder.UnifiedBatteryViewBinder\$bind\$1\$1")
-            Logger.i(TAG, "Android17Compose", "Found UnifiedBatteryViewBinder\$bind\$1\$1 class!")
+            val binderClassName = "com.android.systemui.statusbar.pipeline.battery.ui.binder.UnifiedBatteryViewBinder" + '$' + "bind" + '$' + "1" + '$' + "1"
+            val bindInnerClass = classLoader.loadClass(binderClassName)
+            Logger.i(TAG, "Android17Compose", "Found UnifiedBatteryViewBinder inner binder class!")
 
             bindInnerClass.declaredMethods.filter { it.name == "invokeSuspend" }.forEach { method ->
                 module.hookAfter(method) { chain, _ ->
                     runCatching {
                         val instance = chain.thisObject
-                        val viewField = findField(instance.javaClass, "\$view")
+                        val viewField = findField(instance.javaClass, '$' + "view")
                         val composeView = viewField?.get(instance) as? View
                         if (composeView != null) {
                             composeView.tag = BATTERY_MARKER_TAG
-                            Logger.i(TAG, "Android17Compose", "Intercepted UnifiedBatteryViewBinder\$bind\$1\$1 \$view field: ${composeView.javaClass.name}")
+                            Logger.i(TAG, "Android17Compose", "Intercepted UnifiedBatteryViewBinder view field: " + composeView.javaClass.name)
                             trackComposeBatteryView(composeView)
                         }
                     }
                 }
             }
         }.onFailure { e ->
-            Logger.e(TAG, "Android17Compose", "UnifiedBatteryViewBinder\$bind\$1\$1 hook failed", e)
+            Logger.e(TAG, "Android17Compose", "UnifiedBatteryViewBinder hook failed", e)
         }
 
         // 2. Hook View.setVisibility(int) with O(1) tag-based lookup
@@ -372,12 +380,12 @@ object BatteryPercentHook {
     private fun applyStatusIconContainerHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val containerClass = classLoader.loadClass("com.android.systemui.statusbar.phone.StatusIconContainer")
-            Logger.i(TAG, "IconContainer", "Found StatusIconContainer class: ${containerClass.name}")
+            Logger.i(TAG, "IconContainer", "Found StatusIconContainer class: " + containerClass.name)
 
             val onAttachedMethod = containerClass.getDeclaredMethod("onAttachedToWindow")
             module.hookBefore(onAttachedMethod) { chain ->
                 runCatching {
-                    val container = chain.thisObject as? ViewGroup ?: return@runCatching
+                    val container = chain.thisObject as? ViewGroup ?: return@hookBefore
 
                     synchronized(trackedStatusIconContainers) {
                         if (trackedStatusIconContainers.none { it.get() == container }) {
@@ -469,17 +477,84 @@ object BatteryPercentHook {
         }
     }
 
+    private fun getEffectiveTextColor(): Int {
+        return BatteryColorManager.getPercentTextColor(isCharging, isPowerSaveMode, currentLevel, animHue, currentTint)
+    }
+
+    @Volatile private var lastPulseInvalidateTime = 0L
+
+    private fun startPulseAnimation() {
+        if (pulseAnimator != null) return
+        mainHandler.post {
+            pulseAnimator = ValueAnimator.ofFloat(0f, 360f).apply {
+                duration = 3000L
+                repeatCount = ValueAnimator.INFINITE
+                interpolator = LinearInterpolator()
+                addUpdateListener {
+                    val now = SystemClock.uptimeMillis()
+                    if (now - lastPulseInvalidateTime >= 33L) { // Throttle to 30 FPS max (33ms) for LTPO 30Hz VRR
+                        lastPulseInvalidateTime = now
+                        animHue = it.animatedValue as Float
+                        updatePercentTextColors()
+                    }
+                }
+                start()
+            }
+        }
+    }
+
+    private fun stopPulseAnimation() {
+        mainHandler.post {
+            pulseAnimator?.cancel()
+            pulseAnimator = null
+            updatePercentTextColors()
+        }
+    }
+
+    private fun updatePercentTextColors() {
+        val color = getEffectiveTextColor()
+        synchronized(trackedPercentTextViews) {
+            val iterator = trackedPercentTextViews.iterator()
+            while (iterator.hasNext()) {
+                val tv = iterator.next().get()
+                tv?.setTextColor(color)
+            }
+        }
+    }
+
     private fun registerBatteryReceiver(context: Context) {
         runCatching {
-            val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+            val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            isPowerSaveMode = pm?.isPowerSaveMode ?: false
+
+            val filter = IntentFilter().apply {
+                addAction(Intent.ACTION_BATTERY_CHANGED)
+                addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
+            }
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context, intent: Intent) {
-                    val rawLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
-                    val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-                    if (rawLevel >= 0 && scale > 0) {
-                        val percent = (rawLevel * 100) / scale
-                        currentPercentText = "$percent%"
-                        updatePercentText()
+                    when (intent.action) {
+                        Intent.ACTION_BATTERY_CHANGED -> {
+                            val rawLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                            val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+                            if (rawLevel >= 0 && scale > 0) {
+                                currentLevel = (rawLevel * 100) / scale
+                                currentPercentText = "$currentLevel%"
+                                updatePercentText()
+                            }
+                            val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                            val newCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+                            if (newCharging != isCharging) {
+                                isCharging = newCharging
+                                if (isCharging) startPulseAnimation() else stopPulseAnimation()
+                            }
+                            updatePercentTextColors()
+                        }
+                        PowerManager.ACTION_POWER_SAVE_MODE_CHANGED -> {
+                            val pManager = ctx.getSystemService(Context.POWER_SERVICE) as? PowerManager
+                            isPowerSaveMode = pManager?.isPowerSaveMode ?: false
+                            updatePercentTextColors()
+                        }
                     }
                 }
             }
@@ -488,10 +563,14 @@ object BatteryPercentHook {
                 val rawLevel = stickyIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
                 val scale = stickyIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
                 if (rawLevel >= 0 && scale > 0) {
-                    val percent = (rawLevel * 100) / scale
-                    currentPercentText = "$percent%"
+                    currentLevel = (rawLevel * 100) / scale
+                    currentPercentText = "$currentLevel%"
                     updatePercentText()
                 }
+                val status = stickyIntent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+                isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+                if (isCharging) startPulseAnimation() else stopPulseAnimation()
+                updatePercentTextColors()
             }
         }.onFailure { e ->
             Logger.e(TAG, "Error", "Failed to register sticky battery receiver", e)
@@ -500,15 +579,7 @@ object BatteryPercentHook {
 
     private fun applyTint(tint: Int) {
         currentTint = tint
-        mainHandler.post {
-            synchronized(trackedPercentTextViews) {
-                val iterator = trackedPercentTextViews.iterator()
-                while (iterator.hasNext()) {
-                    val tv = iterator.next().get()
-                    tv?.setTextColor(currentTint)
-                }
-            }
-        }
+        updatePercentTextColors()
     }
 
     private fun applyViewInjectionHooks(module: XposedModule, classLoader: ClassLoader) {
@@ -527,17 +598,12 @@ object BatteryPercentHook {
 
                 clazz.declaredMethods.filter { it.name in targetMethods }.forEach { method ->
                     module.hookBefore(method) { chain ->
-                        val targetObj = chain.thisObject
-                        val rootGroup = when (targetObj) {
-                            is View -> targetObj as? ViewGroup
+                        when (val targetObj = chain.thisObject) {
+                            is View -> injectTextViewToFarRight(targetObj as ViewGroup)
                             else -> runCatching {
                                 val field = targetObj.javaClass.declaredFields.find { View::class.java.isAssignableFrom(it.type) }
                                 field?.apply { isAccessible = true }?.get(targetObj) as? ViewGroup
-                            }.getOrNull()
-                        }
-
-                        if (rootGroup != null) {
-                            injectTextViewToFarRight(rootGroup)
+                            }.getOrNull()?.let { injectTextViewToFarRight(it) }
                         }
                     }
                 }
@@ -616,7 +682,7 @@ object BatteryPercentHook {
                         tag = VIEW_TAG
                         setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
                         typeface = Typeface.DEFAULT_BOLD
-                        setTextColor(currentTint)
+                        setTextColor(getEffectiveTextColor())
                         val paddingStartPx = (resources.displayMetrics.density * 2f).toInt()
                         setPadding(paddingStartPx, 0, 0, 0)
                         layoutParams = LinearLayout.LayoutParams(
@@ -653,7 +719,7 @@ object BatteryPercentHook {
                 }
 
                 textView.text = currentPercentText
-                textView.setTextColor(currentTint)
+                textView.setTextColor(getEffectiveTextColor())
                 textView.visibility = if (isEnabled) View.VISIBLE else View.GONE
             }
         }
@@ -667,7 +733,7 @@ object BatteryPercentHook {
                     val tv = iterator.next().get()
                     if (tv != null) {
                         tv.text = currentPercentText
-                        tv.setTextColor(currentTint)
+                        tv.setTextColor(getEffectiveTextColor())
                         tv.visibility = if (isEnabled) View.VISIBLE else View.GONE
                     } else {
                         iterator.remove()

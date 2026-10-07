@@ -1,7 +1,6 @@
 package io.github.hohojia886.pixeltweaks.ui.components
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -15,10 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -47,7 +46,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.ui.semantics.Role
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,14 +56,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import io.github.hohojia886.pixeltweaks.BuildConfig
 import io.github.hohojia886.pixeltweaks.R
 import io.github.hohojia886.pixeltweaks.presentation.SettingsEvent
 import io.github.hohojia886.pixeltweaks.presentation.SettingsUiState
 import io.github.hohojia886.pixeltweaks.utils.DensityUtils
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -313,6 +314,13 @@ fun SettingsScreen(
                             checked = uiState.ringOnlyCharging,
                             onCheckedChange = { onEvent(SettingsEvent.ToggleRingOnlyCharging(it)) }
                         )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        SwitchSettingItem(
+                            title = stringResource(R.string.enable_ring_rotation),
+                            summary = stringResource(R.string.enable_ring_rotation_summary),
+                            checked = uiState.ringRotation,
+                            onCheckedChange = { onEvent(SettingsEvent.ToggleRingRotation(it)) }
+                        )
                         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(bottom = 12.dp),
@@ -321,7 +329,7 @@ fun SettingsScreen(
 
                         // 1. Radius Offset Slider
                         val radiusValues = listOf(-2.0f, -1.0f, 0.0f, 1.0f, 2.0f)
-                        val radiusIndex = radiusValues.minByOrNull { Math.abs(it - uiState.ringRadiusOffset) }?.let { radiusValues.indexOf(it) } ?: 2
+                        val radiusIndex = radiusValues.minByOrNull { abs(it - uiState.ringRadiusOffset) }?.let { radiusValues.indexOf(it) } ?: 2
                         Text(
                             text = context.getString(R.string.ring_radius_offset_format, uiState.ringRadiusOffset),
                             style = MaterialTheme.typography.bodyMedium,
@@ -338,7 +346,7 @@ fun SettingsScreen(
 
                         // 2. Stroke Width Slider
                         val strokeValues = listOf(1.0f, 1.5f, 2.0f, 2.5f, 3.0f)
-                        val strokeIndex = strokeValues.minByOrNull { Math.abs(it - uiState.ringStrokeWidth) }?.let { strokeValues.indexOf(it) } ?: 2
+                        val strokeIndex = strokeValues.minByOrNull { abs(it - uiState.ringStrokeWidth) }?.let { strokeValues.indexOf(it) } ?: 2
                         Text(
                             text = context.getString(R.string.ring_stroke_width_format, uiState.ringStrokeWidth),
                             style = MaterialTheme.typography.bodyMedium,
@@ -673,7 +681,7 @@ fun OthersCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/hohojia886/PixelTweaks"))
+                    val intent = Intent(Intent.ACTION_VIEW, "https://github.com/hohojia886/PixelTweaks".toUri())
                     context.startActivity(intent)
                 }
                 .padding(horizontal = 18.dp, vertical = 14.dp),

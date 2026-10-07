@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Paparkan cincin dinamik di sekeliling kamera hadapan untuk tahap bateri dan pengecasan</string>
     <string name="ring_only_charging">Tunjukkan Sahaja Semasa Mengecas</string>
     <string name="ring_only_charging_summary">Hanya paparkan cincin tenaga apabila peranti disambungkan ke pengecas</string>
+    <string name="enable_ring_rotation">Putar Cincin Bateri</string>
+    <string name="enable_ring_rotation_summary">Memutar sudut permulaan cincin bateri di sekeliling kamera</string>
     <string name="ring_radius_offset_format">Pelarasan Jejari Cincin: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Ketebalan Garis Cincin: %1$.1f dp</string>
 

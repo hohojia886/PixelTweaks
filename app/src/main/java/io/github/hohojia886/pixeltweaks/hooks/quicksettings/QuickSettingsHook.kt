@@ -1,12 +1,12 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi", "DEPRECATION", "UsePropertyAccessSyntax")
+
 package io.github.hohojia886.pixeltweaks.hooks.quicksettings
 
-import android.content.Context
-import android.net.Uri
 import android.net.wifi.WifiManager
+import androidx.core.net.toUri
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
-import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -22,7 +22,6 @@ object QuickSettingsHook {
     
     @Volatile private var isWifiFixEnabled = true // Enable WiFi force-off
     @Volatile private var isDataFixEnabled = true // Enable data confirmation bypass
-    private var receiverRegistered = false
 
     // Entry point: Loads settings and hooks the tile interactors
     fun hook(module: XposedModule, classLoader: ClassLoader) {
@@ -30,7 +29,7 @@ object QuickSettingsHook {
         
         val loadedFromDe = runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, "com.android.systemui") ?: IpcManager.getSystemContext(classLoader) ?: return@runCatching false
-            val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+            val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
             val bundle = ctx.contentResolver.call(uri, "get", null, null) ?: return@runCatching false
             isDataFixEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
             isWifiFixEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
@@ -49,64 +48,42 @@ object QuickSettingsHook {
             }
         }
 
-        runCatching {
-            val appClass = classLoader.loadClass("android.app.Application")
-            module.hookBefore(appClass.getDeclaredMethod("onCreate")) { chain ->
-                val app = chain.thisObject as? Context
-                if (app != null) {
-                    registerReceiver(app, module.getModuleApplicationInfo().uid)
-                }
-            }
-        }
-
         // WiFi Fix: Intercepts 'pauseWifi' and executes 'setWifiEnabled(false)' instead
         runCatching {
             val wifiRepoClass = classLoader.loadClass("com.android.systemui.statusbar.pipeline.wifi.data.repository.prod.WifiRepositoryImpl")
-            val pauseWifiMethod = wifiRepoClass.getDeclaredMethod("pauseWifi")
+            wifiRepoClass.declaredMethods.filter { it.name == "pauseWifi" }.forEach { method ->
+                module.hook(method).intercept { chain ->
+                    if (!isWifiFixEnabled) {
+                        Logger.i(TAG, "Running", "WiFi Fix Disabled -> Proceeding with factory pauseWifi")
+                        return@intercept chain.proceed()
+                    }
 
-            // Cache reflections outside of the interceptor
-            var cancelMethodCached: Method? = null
-            var wifiManagerFieldCached: Field? = null
+                    try {
+                        val instance = chain.thisObject
+                        val wifiManagerField = wifiManagerFieldCached ?: run {
+                            val field = findField(instance.javaClass, "mWifiManager") ?: findField(instance.javaClass, "wifiManager")
+                            wifiManagerFieldCached = field
+                            field
+                        }
 
-            module.hook(pauseWifiMethod).intercept { chain ->
-                if (!isWifiFixEnabled) {
-                    Logger.i(TAG, "Running", "WiFi Fix Disabled -> Proceeding with factory pauseWifi")
-                    return@intercept chain.proceed()
+                        val wifiManager = wifiManagerField?.get(instance) as? WifiManager
+
+                        if (wifiManager != null) {
+                            Logger.i(TAG, "Success", "WiFi Fix Active -> Forcing setWifiEnabled(false)")
+                            wifiManager.setWifiEnabled(false)
+                            return@intercept null // Skip original pause logic
+                        }
+                    } catch (e: Exception) {
+                        Logger.e(TAG, "Error", "WiFi force-off logic failed", e)
+                    }
+                    chain.proceed()
                 }
-
-                val instance = chain.thisObject ?: return@intercept chain.proceed()
-                try {
-                    // Lazy-init cache (since instance class might be needed)
-                    if (cancelMethodCached == null) {
-                        cancelMethodCached = instance.javaClass.getDeclaredMethod("cancelOptimisticToggleTimeoutJobs").apply { isAccessible = true }
-                    }
-                    if (wifiManagerFieldCached == null) {
-                        wifiManagerFieldCached = instance.javaClass.getDeclaredField("wifiManager").apply { isAccessible = true }
-                    }
-
-                    // Prevent state flicker: cancelOptimisticToggleTimeoutJobs()
-                    runCatching {
-                        cancelMethodCached?.invoke(instance)
-                    }
-
-                    val wifiManager = wifiManagerFieldCached?.get(instance) as? WifiManager
-
-                    if (wifiManager != null) {
-                        Logger.i(TAG, "Success", "WiFi Fix Active -> Forcing setWifiEnabled(false)")
-                        @Suppress("DEPRECATION")
-                        wifiManager.setWifiEnabled(false)
-                        return@intercept null // Skip original pause logic
-                    }
-                } catch (e: Exception) {
-                    Logger.e(TAG, "Error", "WiFi force-off logic failed", e)
-                }
-                chain.proceed()
             }
         }
 
         // Mobile Data Fix: Intercepts the handleSecondaryClick lambda to enable data without dialog
         runCatching {
-            val targetClass = "com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor\$handleSecondaryClick$2"
+            val targetClass = "com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor" + '$' + "handleSecondaryClick" + '$' + "2"
             val lambdaClass = classLoader.loadClass(targetClass)
             val invokeSuspendMethod = lambdaClass.getDeclaredMethod("invokeSuspend", Any::class.java)
 
@@ -116,18 +93,33 @@ object QuickSettingsHook {
                     return@intercept chain.proceed()
                 }
 
-                val lambdaInstance = chain.thisObject ?: return@intercept chain.proceed()
                 try {
-                    val interactorField = lambdaInstance.javaClass.getDeclaredField("this$0").apply { isAccessible = true }
-                    val interactor = interactorField.get(lambdaInstance) ?: return@intercept chain.proceed()
+                    val lambdaInstance = chain.thisObject
+                    val interactorField = interactorFieldCached ?: run {
+                        val field = findField(lambdaInstance.javaClass, "this" + '$' + "0") ?: findField(lambdaInstance.javaClass, "val" + '$' + "interactor")
+                        interactorFieldCached = field
+                        field
+                    }
 
-                    val repoField = interactor.javaClass.getDeclaredField("mobileConnectionsRepository").apply { isAccessible = true }
-                    val repo = repoField.get(interactor) ?: return@intercept chain.proceed()
+                    val interactor = interactorField?.get(lambdaInstance) ?: return@intercept chain.proceed()
+                    
+                    // Invoke confirm(false) or setDataEnabled(true) directly on interactor
+                    val confirmMethod = findMethod(interactor.javaClass, "confirm", Boolean::class.java) 
+                        ?: findMethod(interactor.javaClass, "setDataEnabled", Boolean::class.java)
 
-                    val subIdFlow = repo.javaClass.getMethod("getDefaultDataSubId").invoke(repo)
-                    val subId = subIdFlow.javaClass.getMethod("getValue").invoke(subIdFlow) as? Int
+                    if (confirmMethod != null) {
+                        Logger.i(TAG, "Success", "Data Fix Active -> Bypassing dialog via method: ${confirmMethod.name}")
+                        confirmMethod.invoke(interactor, false)
+                        return@intercept Unit // Skip original dialog showing
+                    }
 
-                    if (subId != null) {
+                    // Fallback: Query SubID and set data enabled directly via connection repository
+                    val subIdField = findField(interactor.javaClass, "subId") ?: findField(interactor.javaClass, '$' + "subId")
+                    val subId = subIdField?.get(interactor) as? Int
+                    val repoField = findField(interactor.javaClass, "mobileDataRepository") ?: findField(interactor.javaClass, "repository")
+                    val repo = repoField?.get(interactor)
+
+                    if (subId != null && repo != null) {
                         val connectionRepo = repo.javaClass.getMethod("getRepoForSubId", Int::class.javaPrimitiveType).invoke(repo, subId)
                         if (connectionRepo != null) {
                             Logger.i(TAG, "Success", "Data Fix Active -> Bypassing dialog for SubID $subId")
@@ -143,30 +135,26 @@ object QuickSettingsHook {
         }
     }
 
-    // Registers a secure IPC receiver to handle dynamic Quick Settings configuration
-    private fun registerReceiver(context: Context, moduleUid: Int) {
-        if (receiverRegistered) return
-        receiverRegistered = true
-        IpcManager.registerSecureReceiver(context, moduleUid) { intent ->
-            val action = intent.action
-            if (action == IpcManager.ACTION_SETTINGS_SYNC) {
-                isDataFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
-                isWifiFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
-                Logger.i(TAG, "Success", "Full sync received: Data=$isDataFixEnabled, WiFi=$isWifiFixEnabled")
-            } else if (action == IpcManager.ACTION_SETTING_CHANGED) {
-                val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
-                val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
-                when (key) {
-                    PreferenceKeys.ENABLE_QS_DATA_FIX -> {
-                        isDataFixEnabled = value
-                        Logger.i(TAG, "Success", "Setting updated: [enable_qs_data_fix] = $isDataFixEnabled")
-                    }
-                    PreferenceKeys.ENABLE_QS_WIFI_FIX -> {
-                        isWifiFixEnabled = value
-                        Logger.i(TAG, "Success", "Setting updated: [enable_qs_wifi_fix] = $isWifiFixEnabled")
-                    }
-                }
-            }
+    private var wifiManagerFieldCached: Field? = null
+    private var interactorFieldCached: Field? = null
+
+    // Helper: Finds a field in class hierarchy
+    private fun findField(clazz: Class<*>, name: String): Field? {
+        var curr: Class<*>? = clazz
+        while (curr != null) {
+            try { return curr.getDeclaredField(name).apply { isAccessible = true } }
+            catch (_: NoSuchFieldException) { curr = curr.superclass }
         }
+        return null
+    }
+
+    // Helper: Finds a method in class hierarchy
+    private fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
+        var curr: Class<*>? = clazz
+        while (curr != null) {
+            try { return curr.getDeclaredMethod(name, *parameterTypes).apply { isAccessible = true } }
+            catch (_: NoSuchMethodException) { curr = curr.superclass }
+        }
+        return null
     }
 }

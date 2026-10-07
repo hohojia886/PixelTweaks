@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Dynamischen Ring um die Frontkamera für Akkustand und Laden anzeigen</string>
     <string name="ring_only_charging">Nur beim Laden anzeigen</string>
     <string name="ring_only_charging_summary">Energiering nur anzeigen, wenn das Gerät geladen wird</string>
+    <string name="enable_ring_rotation">Lade-Ring dynamisch drehen</string>
+    <string name="enable_ring_rotation_summary">Dreht den Startwinkel des Akkurings kontinuierlich um die Kamera</string>
     <string name="ring_radius_offset_format">Ring-Radius-Anpassung: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Ring-Strichstärke: %1$.1f dp</string>
 

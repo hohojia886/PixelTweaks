@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">围绕前置摄像头挖孔显示动态环形电量与充电动画</string>
     <string name="ring_only_charging">仅在充电时显示</string>
     <string name="ring_only_charging_summary">仅在插入充电器充电时显示前置摄像头电量光环</string>
+    <string name="enable_ring_rotation">光环随时间动态旋转</string>
+    <string name="enable_ring_rotation_summary">电池光环起点角度将围绕前置摄像头持续平滑旋转</string>
     <string name="ring_radius_offset_format">光环大小微调: %1$.1f dp</string>
     <string name="ring_stroke_width_format">光环线条粗细: %1$.1f dp</string>
 

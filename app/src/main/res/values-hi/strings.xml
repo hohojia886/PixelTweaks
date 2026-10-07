@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">बैटरी स्तर और चार्जिंग के लिए फ्रंट कैमरा होल के चारों ओर गतिशील रिंग दिखाएं</string>
     <string name="ring_only_charging">केवल चार्जिंग के दौरान दिखाएं</string>
     <string name="ring_only_charging_summary">केवल तब एनर्जी रिंग दिखाएं जब डिवाइस प्लग इन हो</string>
+    <string name="enable_ring_rotation">रिंग को लगातार घुमाएं</string>
+    <string name="enable_ring_rotation_summary">कैमरा कटआउट के चारों ओर बैटरी रिंग कोण को घुमाता है</string>
     <string name="ring_radius_offset_format">रिंग त्रिज्या समायोजन: %1$.1f dp</string>
     <string name="ring_stroke_width_format">रिंग लाइन की मोटाई: %1$.1f dp</string>
 

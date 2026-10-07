@@ -1,3 +1,5 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi")
+
 package io.github.hohojia886.pixeltweaks.utils
 
 import android.content.Context

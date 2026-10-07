@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Visa en dynamisk ring runt kamerahålet för batterinivå och laddning</string>
     <string name="ring_only_charging">Visa endast vid laddning</string>
     <string name="ring_only_charging_summary">Visa endast energiringen när enheten är ansluten till laddare</string>
+    <string name="enable_ring_rotation">Rotera batteriringen</string>
+    <string name="enable_ring_rotation_summary">Roterar batteriringens startvinkel kontinuerligt runt kameran</string>
     <string name="ring_radius_offset_format">Justering av ringradie: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Linjetjocklek för ring: %1$.1f dp</string>
 

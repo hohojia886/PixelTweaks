@@ -17,6 +17,8 @@
  * GNU General Public License for more details.
  */
 
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi")
+
 package io.github.hohojia886.pixeltweaks.hooks.gestures
 
 import android.content.BroadcastReceiver

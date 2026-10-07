@@ -1,6 +1,5 @@
 package io.github.hohojia886.pixeltweaks.presentation
 
-import android.util.Log
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
@@ -78,6 +77,12 @@ class SettingsViewModel(
                 _uiState.update { it.copy(ringOnlyCharging = event.enabled) }
                 repository.savePreference(PreferenceKeys.RING_ONLY_CHARGING, event.enabled)
                 repository.dispatchUpdateBroadcast(PreferenceKeys.RING_ONLY_CHARGING, event.enabled)
+            }
+
+            is SettingsEvent.ToggleRingRotation -> {
+                _uiState.update { it.copy(ringRotation = event.enabled) }
+                repository.savePreference(PreferenceKeys.ENABLE_RING_ROTATION, event.enabled)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_RING_ROTATION, event.enabled)
             }
 
             is SettingsEvent.ChangeRingRadiusOffset -> {

@@ -3,6 +3,7 @@ package io.github.hohojia886.pixeltweaks.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.core.content.edit
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -29,23 +30,23 @@ class BootReceiver : BroadcastReceiver() {
                 // When user unlocks, CE storage is accessible. Sync CE preferences over to DE preferences to preserve user settings.
                 val cePrefs = context.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
                 if (cePrefs.all.isNotEmpty()) {
-                    val editor = prefs.edit()
-                    cePrefs.all.forEach { (k, v) ->
-                        when (v) {
-                            is Boolean -> editor.putBoolean(k, v)
-                            is Int -> editor.putInt(k, v)
-                            is Float -> editor.putFloat(k, v)
-                            is Long -> editor.putLong(k, v)
-                            is String -> editor.putString(k, v)
+                    prefs.edit {
+                        cePrefs.all.forEach { (k, v) ->
+                            when (v) {
+                                is Boolean -> putBoolean(k, v)
+                                is Int -> putInt(k, v)
+                                is Float -> putFloat(k, v)
+                                is Long -> putLong(k, v)
+                                is String -> putString(k, v)
+                            }
                         }
                     }
-                    editor.apply()
                 }
             }
 
             // Seed DE defaults if keys are absent
             if (!prefs.contains(PreferenceKeys.ENABLE_EASY_UNLOCK)) {
-                prefs.edit().apply {
+                prefs.edit {
                     putBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
                     putBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
                     putBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
@@ -64,7 +65,6 @@ class BootReceiver : BroadcastReceiver() {
                     putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
                     putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
                     putBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false)
-                    apply()
                 }
             }
             

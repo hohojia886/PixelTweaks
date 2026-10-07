@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.isVisible
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -211,7 +212,7 @@ object ClearAllButtonHook {
         }
 
         clearAllButtonRef = WeakReference(button)
-        button.visibility = if (isEnabled && parent.visibility == View.VISIBLE) View.VISIBLE else View.GONE
+        button.visibility = if (isEnabled && parent.isVisible) View.VISIBLE else View.GONE
     }
 
     // Climbs the view tree to locate the RecentsView instance needed to trigger dismissal

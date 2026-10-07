@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Draw dynamic ring around front camera hole for battery level &amp; charging</string>
     <string name="ring_only_charging">Show Only While Charging</string>
     <string name="ring_only_charging_summary">Only display the camera energy ring when device is plugged in</string>
+    <string name="enable_ring_rotation">Rotate Ring Over Time</string>
+    <string name="enable_ring_rotation_summary">Continuously rotates the battery ring start angle smoothly around the camera cutout</string>
     <string name="ring_radius_offset_format">Ring Radius Offset: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Ring Stroke Width: %1$.1f dp</string>
 

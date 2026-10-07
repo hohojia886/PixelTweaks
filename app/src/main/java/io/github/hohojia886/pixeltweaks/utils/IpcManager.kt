@@ -1,3 +1,5 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi", "DEPRECATION")
+
 package io.github.hohojia886.pixeltweaks.utils
 
 import android.annotation.SuppressLint
@@ -6,11 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Binder
 import android.os.Bundle
 import android.os.Process
 import android.util.Log
+import androidx.core.net.toUri
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
 
@@ -173,12 +175,11 @@ object IpcManager {
             runCatching {
                 val ctx = getSafeContext(classLoader, packageName) ?: getSystemContext(classLoader)
                 if (ctx != null) {
-                    val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+                    val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
                     val cpBundle = ctx.contentResolver.call(uri, "get", null, null)
                     if (cpBundle != null && !cpBundle.isEmpty) {
                         cpBundle.keySet().forEach { k ->
-                            val v = cpBundle.get(k)
-                            when (v) {
+                            when (val v = cpBundle.get(k)) {
                                 is Boolean -> bundle.putBoolean(k, v)
                                 is Int -> bundle.putInt(k, v)
                                 is Float -> bundle.putFloat(k, v)
@@ -208,6 +209,7 @@ object IpcManager {
             putExtra(PreferenceKeys.RING_RADIUS_OFFSET, prefs.getFloat(PreferenceKeys.RING_RADIUS_OFFSET, 0f))
             putExtra(PreferenceKeys.RING_STROKE_WIDTH, prefs.getFloat(PreferenceKeys.RING_STROKE_WIDTH, 2.0f))
             putExtra(PreferenceKeys.RING_ONLY_CHARGING, prefs.getBoolean(PreferenceKeys.RING_ONLY_CHARGING, false))
+            putExtra(PreferenceKeys.ENABLE_RING_ROTATION, prefs.getBoolean(PreferenceKeys.ENABLE_RING_ROTATION, false))
 
             // DT2S
             putExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true))
@@ -217,7 +219,7 @@ object IpcManager {
             // EasyUnlock
             val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
                 if (inMemoryLen > 0) inMemoryLen else runCatching {
-                    val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+                    val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
                     val bundle = context.contentResolver.call(uri, "get", null, null)
                     bundle?.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1) ?: -1
                 }.getOrDefault(-1)

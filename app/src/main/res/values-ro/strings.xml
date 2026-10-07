@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Afișează un inel dinamic în jurul camerei frontale pentru nivelul bateriei și încărcare</string>
     <string name="ring_only_charging">Afișează doar în timpul încărcării</string>
     <string name="ring_only_charging_summary">Afișează inelul de energie doar când dispozitivul este conectat la încărcător</string>
+    <string name="enable_ring_rotation">Rotește inelul bateriei</string>
+    <string name="enable_ring_rotation_summary">Rotește continuu unghiul de pornire al inelului bateriei în jurul camerei</string>
     <string name="ring_radius_offset_format">Ajustare rază inel: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Grosime linie inel: %1$.1f dp</string>
 

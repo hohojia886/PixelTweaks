@@ -1,3 +1,5 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi")
+
 package io.github.hohojia886.pixeltweaks.hooks.security
 
 import android.app.Application
@@ -24,7 +26,7 @@ object ScreenshotHook {
     // Intercepts app-level surface creation to force non-secure surfaces
     fun hookApp(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
-            val builderClass = classLoader.loadClass("android.view.SurfaceControl\$Builder")
+            val builderClass = classLoader.loadClass("android.view.SurfaceControl" + "\$Builder")
             module.hook(builderClass.getDeclaredMethod("setSecure", Boolean::class.java)).intercept { chain ->
                 val requestedSecure = chain.args.getOrNull(0) as? Boolean ?: false
                 if (isEnabled && requestedSecure) {

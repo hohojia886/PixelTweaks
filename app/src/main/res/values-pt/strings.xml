@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Exibe um anel dinâmico ao redor da câmera frontal para nível de bateria e carregamento</string>
     <string name="ring_only_charging">Mostrar apenas ao carregar</string>
     <string name="ring_only_charging_summary">Mostrar o anel de energia apenas quando o dispositivo estiver conectado</string>
+    <string name="enable_ring_rotation">Rotacionar anel continuamente</string>
+    <string name="enable_ring_rotation_summary">Gira continuamente o ângulo inicial do anel ao redor da câmera</string>
     <string name="ring_radius_offset_format">Ajuste do raio do anel: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Espessura da linha do anel: %1$.1f dp</string>
 

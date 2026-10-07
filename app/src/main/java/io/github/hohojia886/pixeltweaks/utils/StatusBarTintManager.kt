@@ -17,13 +17,12 @@ import java.util.Collections
 object StatusBarTintManager {
 
     private const val TAG = "Interface"
-    @Volatile private var currentTint = Color.WHITE
+    @Volatile private var _currentTint = Color.WHITE
+    val currentTint: Int get() = _currentTint
     @Volatile private var isHooked = false
 
     private val listeners = Collections.synchronizedList(mutableListOf<(tint: Int) -> Unit>())
     private val uiHandler = Handler(Looper.getMainLooper())
-
-    fun getCurrentTint(): Int = currentTint
 
     @Synchronized
     fun register(module: XposedModule, classLoader: ClassLoader, onTintChanged: (tint: Int) -> Unit) {
@@ -101,13 +100,13 @@ object StatusBarTintManager {
     }
 
     private fun notifyTintChanged(tint: Int) {
-        currentTint = tint
+        _currentTint = tint
         uiHandler.post {
             synchronized(listeners) {
                 val iterator = listeners.iterator()
                 while (iterator.hasNext()) {
                     val callback = iterator.next()
-                    runCatching { callback(tint) }
+                    runCatching { callback(_currentTint) }
                 }
             }
         }

@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Zobrazit dynamický kroužek kolem výřezu fotoaparátu pro stav baterie a nabíjení</string>
     <string name="ring_only_charging">Zobrazit pouze při nabíjení</string>
     <string name="ring_only_charging_summary">Zobrazit energetický kroužek pouze při připojení k nabíječce</string>
+    <string name="enable_ring_rotation">Otáčet kroužek</string>
+    <string name="enable_ring_rotation_summary">Plynule otáčí počáteční úhel bateriového kroužku kolem fotoaparátu</string>
     <string name="ring_radius_offset_format">Úprava poloměru kroužku: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Tloušťka čáry kroužku: %1$.1f dp</string>
 

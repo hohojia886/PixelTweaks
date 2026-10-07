@@ -22,6 +22,7 @@ data class SettingsUiState(
     val enableBatteryInfo: Boolean = false,
     val cameraEnergyRing: Boolean = false,
     val ringOnlyCharging: Boolean = false,
+    val ringRotation: Boolean = false,
     val ringRadiusOffset: Float = 0f,
     val ringStrokeWidth: Float = 2.0f,
     val batteryStatus: String = "N/A",

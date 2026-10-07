@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Dynamische ring rond de camera aan de voorkant tonen voor batterijniveau en opladen</string>
     <string name="ring_only_charging">Alleen tonen tijdens opladen</string>
     <string name="ring_only_charging_summary">De energie-ring alleen tonen wanneer het apparaat wordt opgeladen</string>
+    <string name="enable_ring_rotation">Cirkel continu draaien</string>
+    <string name="enable_ring_rotation_summary">Draait de starthoek van de batterijring continu rond de camera</string>
     <string name="ring_radius_offset_format">Straal van ring aanpassen: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Lijndikte van ring: %1$.1f dp</string>
 

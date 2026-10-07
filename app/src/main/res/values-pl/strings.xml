@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">Wyświetlaj dynamiczny pierścień wokół aparatu dla poziomu baterii i ładowania</string>
     <string name="ring_only_charging">Pokaż tylko podczas ładowania</string>
     <string name="ring_only_charging_summary">Pokaż pierścień energii tylko wtedy, gdy urządzenie jest podłączone do ładowarki</string>
+    <string name="enable_ring_rotation">Obracaj pierścień</string>
+    <string name="enable_ring_rotation_summary">Płynnie obraca kąt początkowy pierścienia baterii wokół aparatu</string>
     <string name="ring_radius_offset_format">Dopasowanie promienia pierścienia: %1$.1f dp</string>
     <string name="ring_stroke_width_format">Grubość linii pierścienia: %1$.1f dp</string>
 

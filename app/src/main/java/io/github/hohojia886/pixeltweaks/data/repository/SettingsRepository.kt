@@ -43,6 +43,7 @@ class SettingsRepository(private val context: Context) {
             savePreference(PreferenceKeys.RING_RADIUS_OFFSET, 0f)
             savePreference(PreferenceKeys.RING_STROKE_WIDTH, 2.0f)
             savePreference(PreferenceKeys.RING_ONLY_CHARGING, false)
+            savePreference(PreferenceKeys.ENABLE_RING_ROTATION, false)
             savePreference(PreferenceKeys.APP_LANGUAGE, "")
             savePreference(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
             savePreference(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
@@ -74,6 +75,7 @@ class SettingsRepository(private val context: Context) {
             ringRadiusOffset = dePrefs.getFloat(PreferenceKeys.RING_RADIUS_OFFSET, 0f),
             ringStrokeWidth = dePrefs.getFloat(PreferenceKeys.RING_STROKE_WIDTH, 2.0f),
             ringOnlyCharging = dePrefs.getBoolean(PreferenceKeys.RING_ONLY_CHARGING, false),
+            ringRotation = dePrefs.getBoolean(PreferenceKeys.ENABLE_RING_ROTATION, false),
             unrestrictedScreenshots = dePrefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true),
             easyUnlock = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true),
             easyUnlockReboot = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false),

@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Binder
 import android.os.Bundle
 import android.os.Process
+import androidx.core.content.edit
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -27,28 +28,31 @@ class RemotePrefProvider : ContentProvider() {
 
     // Thread-safe cache for authorized component App IDs (uid % 100000)
     private val trustedAppIds = ConcurrentHashMap.newKeySet<Int>()
-    private val TAG = "Security"
 
-    // Whitelist of keys that external trusted callers (SystemUI, SystemServer UID 1000) are allowed to write.
-    private val ALLOWED_EXTERNAL_WRITE_KEYS = setOf(
-        PreferenceKeys.EXPECTED_PASS_LEN,
-        PreferenceKeys.IS_FIRST_UNLOCK_DONE,
-        PreferenceKeys.EXTRA_KEY,
-        PreferenceKeys.EXTRA_VALUE,
-        PreferenceKeys.EXTRA_BATTERY_CYCLES,
-        PreferenceKeys.EXTRA_BATTERY_RATED,
-        PreferenceKeys.EXTRA_BATTERY_ESTIMATED,
-        PreferenceKeys.EXTRA_BATTERY_HEALTH_CAP_INDEX,
-        PreferenceKeys.EXTRA_BATTERY_OVERALL_HEALTH,
-        PreferenceKeys.EXTRA_BATTERY_TEMP,
-        PreferenceKeys.EXTRA_BATTERY_RESISTANCE_AVG,
-        PreferenceKeys.EXTRA_BATTERY_RESISTANCE_NOW,
-        PreferenceKeys.EXTRA_BATTERY_HEALTH_IMP_INDEX,
-        PreferenceKeys.EXTRA_BATTERY_SERIAL_NUMBER,
-        PreferenceKeys.EXTRA_BATTERY_FIRST_USAGE,
-        PreferenceKeys.EXTRA_BATTERY_AGE,
-        PreferenceKeys.EXTRA_BATTERY_AAFV_OFFSET
-    )
+    companion object {
+        private const val TAG = "Security"
+
+        // Whitelist of keys that external trusted callers (SystemUI, SystemServer UID 1000) are allowed to write.
+        private val ALLOWED_EXTERNAL_WRITE_KEYS = setOf(
+            PreferenceKeys.EXPECTED_PASS_LEN,
+            PreferenceKeys.IS_FIRST_UNLOCK_DONE,
+            PreferenceKeys.EXTRA_KEY,
+            PreferenceKeys.EXTRA_VALUE,
+            PreferenceKeys.EXTRA_BATTERY_CYCLES,
+            PreferenceKeys.EXTRA_BATTERY_RATED,
+            PreferenceKeys.EXTRA_BATTERY_ESTIMATED,
+            PreferenceKeys.EXTRA_BATTERY_HEALTH_CAP_INDEX,
+            PreferenceKeys.EXTRA_BATTERY_OVERALL_HEALTH,
+            PreferenceKeys.EXTRA_BATTERY_TEMP,
+            PreferenceKeys.EXTRA_BATTERY_RESISTANCE_AVG,
+            PreferenceKeys.EXTRA_BATTERY_RESISTANCE_NOW,
+            PreferenceKeys.EXTRA_BATTERY_HEALTH_IMP_INDEX,
+            PreferenceKeys.EXTRA_BATTERY_SERIAL_NUMBER,
+            PreferenceKeys.EXTRA_BATTERY_FIRST_USAGE,
+            PreferenceKeys.EXTRA_BATTERY_AGE,
+            PreferenceKeys.EXTRA_BATTERY_AAFV_OFFSET
+        )
+    }
 
     override fun onCreate(): Boolean = true
 
@@ -132,25 +136,26 @@ class RemotePrefProvider : ContentProvider() {
     }
 
     // Internal write logic that persists data into DE storage
+    @Suppress("DEPRECATION")
     private fun handlePut(extras: Bundle?, filterKeys: Boolean): Bundle {
         val ctx = context?.createDeviceProtectedStorageContext() ?: return Bundle()
         val prefs = ctx.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
-        val editor = prefs.edit()
         
-        extras?.keySet()?.forEach { key ->
-            if (!filterKeys || key in ALLOWED_EXTERNAL_WRITE_KEYS) {
-                when (val value = extras.get(key)) {
-                    is Boolean -> editor.putBoolean(key, value)
-                    is Int -> editor.putInt(key, value)
-                    is Float -> editor.putFloat(key, value)
-                    is Long -> editor.putLong(key, value)
-                    is String -> editor.putString(key, value)
+        prefs.edit {
+            extras?.keySet()?.forEach { key ->
+                if (!filterKeys || key in ALLOWED_EXTERNAL_WRITE_KEYS) {
+                    when (val value = extras.get(key)) {
+                        is Boolean -> putBoolean(key, value)
+                        is Int -> putInt(key, value)
+                        is Float -> putFloat(key, value)
+                        is Long -> putLong(key, value)
+                        is String -> putString(key, value)
+                    }
+                } else {
+                    Logger.e(TAG, "BlockedKey", "Blocked external write to restricted key: $key")
                 }
-            } else {
-                Logger.e(TAG, "BlockedKey", "Blocked external write to restricted key: $key")
             }
         }
-        editor.apply()
         return Bundle().apply { putBoolean("success", true) }
     }
 

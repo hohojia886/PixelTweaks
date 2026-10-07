@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">전면 카메라 펀치홀 주위에 배터리 잔량 및 충전 상태 동적 링 표시</string>
     <string name="ring_only_charging">충전 중일 때만 표시</string>
     <string name="ring_only_charging_summary">기기가 충전 중일 때만 에너지 링 표시</string>
+    <string name="enable_ring_rotation">링 회전 애니메이션</string>
+    <string name="enable_ring_rotation_summary">카메라 홀 주변에서 배터리 링의 시작 각도를 지속적으로 회전합니다</string>
     <string name="ring_radius_offset_format">링 크기 미세 조절: %1$.1f dp</string>
     <string name="ring_stroke_width_format">링 선 두께: %1$.1f dp</string>
 

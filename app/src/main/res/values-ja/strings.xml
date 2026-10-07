@@ -35,6 +35,8 @@
     <string name="camera_energy_ring_summary">インカメラのパンチホール周囲にバッテリー残量と充電状態の動的リングを表示</string>
     <string name="ring_only_charging">充電中のみ表示</string>
     <string name="ring_only_charging_summary">端末が充電器に接続されている時のみエナジーリングを表示</string>
+    <string name="enable_ring_rotation">リングを動的に回転</string>
+    <string name="enable_ring_rotation_summary">インカメラの周囲でバッテリーリングの開始角度を継続的に回転させます</string>
     <string name="ring_radius_offset_format">リングサイズ微調整: %1$.1f dp</string>
     <string name="ring_stroke_width_format">リング線の太さ: %1$.1f dp</string>
 

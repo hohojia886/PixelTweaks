@@ -51,6 +51,7 @@ object PreferenceKeys {
     const val RING_RADIUS_OFFSET = "ring_radius_offset"
     const val RING_STROKE_WIDTH = "ring_stroke_width"
     const val RING_ONLY_CHARGING = "ring_only_charging"
+    const val ENABLE_RING_ROTATION = "enable_ring_rotation"
 
     // ---- Security bypasses -------------------------------------------------
     const val ALLOW_DOWNGRADE = "allow_downgrade"

@@ -151,7 +151,7 @@ object EasyUnlockHook {
                             val text = findMethod(passwordEntry.javaClass)?.invoke(passwordEntry) ?: 
                                        findField(passwordEntry.javaClass, "mText")?.get(passwordEntry)
                             
-                            val length = if (text is CharSequence) text.length else 0
+                            val length = (text as? CharSequence)?.length ?: 0
                             if (length > 0 && length != learnedPinLength) {
                                 learnedPinLength = length
                                 Logger.i(TAG, "Success", "Learned PIN length: $learnedPinLength")
@@ -192,7 +192,7 @@ object EasyUnlockHook {
         var curr: Class<*>? = clazz
         while (curr != null) {
             try { return curr.getDeclaredField(name).apply { isAccessible = true } } 
-            catch (e: NoSuchFieldException) { curr = curr.superclass }
+            catch (_: NoSuchFieldException) { curr = curr.superclass }
         }
         return null
     }

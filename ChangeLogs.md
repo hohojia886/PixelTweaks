@@ -4,6 +4,11 @@
 
 ---
 
+### v1.2.4
+- 💫 **Camera Hole Energy Ring Smooth Rotation**: Added "Rotate Ring Over Time" feature toggle, continuously animating the start angle of the battery ring around the front camera cutout.
+- ⚡ **LTPO 30 FPS Frame Throttling & Real-Time Sync**: Synchronized start angle directly with `System.currentTimeMillis() % 60000L` for seamless instant angle positioning upon screen wake, while capping animation frequency at 30 FPS to allow LTPO displays to drop to 30Hz VRR.
+- 🎨 **System Power Save Mode & Color Synchronization**: Added dynamic `PowerManager.ACTION_POWER_SAVE_MODE_CHANGED` listener to instantly update both Energy Ring and status bar battery percentage text to orange-yellow (`#FF9500`) during Battery Saver mode, with full charging HSV rainbow gradient pulse sync.
+
 ### v1.2.3
 - 🛡️ **Cross-Process Communication & Storage Security Hardening**: Upgraded IPC communication and storage bridge mechanisms with thread-safe multi-user App ID matching and strict access control, ensuring robust real-time settings synchronization and hardware metric reading.
 - 🔒 **Security Policy & Authorization Scoping**: Strengthened anti-tamper protections for policy bypasses using monotonic runtime timers (`SystemClock.elapsedRealtime`) and strictly scoped advanced privilege bypasses to active installation operations.

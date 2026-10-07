@@ -413,7 +413,7 @@ object NetworkTrafficHook {
 
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
-            updateColor(StatusBarTintManager.getCurrentTint())
+            updateColor(StatusBarTintManager.currentTint)
             startPolling()
         }
         

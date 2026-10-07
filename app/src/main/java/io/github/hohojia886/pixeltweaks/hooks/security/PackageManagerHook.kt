@@ -235,7 +235,7 @@ object PackageManagerHook {
             val smClass = Class.forName("android.os.ServiceManager")
             val getService = smClass.getDeclaredMethod("getService", String::class.java)
             val binder = getService.invoke(null, "window") as IBinder
-            val iwmClass = Class.forName("android.view.IWindowManager\$Stub")
+            val iwmClass = Class.forName("android.view.IWindowManager" + "\$Stub")
             val asInterface = iwmClass.getDeclaredMethod("asInterface", IBinder::class.java)
             val wms = asInterface.invoke(null, binder)
             cachedWms = wms

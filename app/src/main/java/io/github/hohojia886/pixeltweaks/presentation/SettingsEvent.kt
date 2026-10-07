@@ -12,6 +12,7 @@ sealed interface SettingsEvent {
     data class ToggleBatteryInfo(val enabled: Boolean) : SettingsEvent
     data class ToggleCameraEnergyRing(val enabled: Boolean) : SettingsEvent
     data class ToggleRingOnlyCharging(val enabled: Boolean) : SettingsEvent
+    data class ToggleRingRotation(val enabled: Boolean) : SettingsEvent
     data class ChangeRingRadiusOffset(val offset: Float) : SettingsEvent
     data class ChangeRingStrokeWidth(val width: Float) : SettingsEvent
     data object RefreshBatteryInfo : SettingsEvent
