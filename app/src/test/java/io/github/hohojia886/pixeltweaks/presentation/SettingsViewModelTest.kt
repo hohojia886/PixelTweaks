@@ -100,4 +100,37 @@ class SettingsViewModelTest {
 
         assertTrue(viewModel.uiState.value.enableBatteryInfo)
     }
+
+    @Test
+    fun testCameraEnergyRingEventsUpdateState() {
+        viewModel.onEvent(SettingsEvent.ToggleCameraEnergyRing(true))
+        assertTrue(viewModel.uiState.value.cameraEnergyRing)
+
+        viewModel.onEvent(SettingsEvent.ChangeRingRadiusOffset(1.2f))
+        assertEquals(1.2f, viewModel.uiState.value.ringRadiusOffset)
+
+        viewModel.onEvent(SettingsEvent.ChangeRingStrokeWidth(2.5f))
+        assertEquals(2.5f, viewModel.uiState.value.ringStrokeWidth)
+
+        viewModel.onEvent(SettingsEvent.ToggleRingOnlyCharging(true))
+        assertTrue(viewModel.uiState.value.ringOnlyCharging)
+
+        viewModel.onEvent(SettingsEvent.ToggleRingRotation(true))
+        assertTrue(viewModel.uiState.value.ringRotation)
+    }
+
+    @Test
+    fun testStatusbarBatteryPercentEventUpdatesState() {
+        viewModel.onEvent(SettingsEvent.ToggleStatusbarBatteryPercent(true))
+        assertTrue(viewModel.uiState.value.statusbarBatteryPercent)
+    }
+
+    @Test
+    fun testTrafficAdjustmentsUpdateState() {
+        viewModel.onEvent(SettingsEvent.ChangeTrafficFontSize(10f))
+        assertEquals(10f, viewModel.uiState.value.trafficFontSize)
+
+        viewModel.onEvent(SettingsEvent.ChangeTrafficThreshold(5))
+        assertEquals(5, viewModel.uiState.value.trafficThreshold)
+    }
 }

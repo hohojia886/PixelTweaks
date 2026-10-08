@@ -4,6 +4,14 @@
 
 ---
 
+### v1.2.5
+- 🛡️ **IPC & Security Hardening**: Enhanced cross-process communication security and identity verification across system components.
+- 🔒 **Package Installer & Timeout Stability**: Improved signature bypass session tracking and aligned security policy timeout countdowns.
+- 🚀 **Centralized IPC Dispatcher**: Unified broadcast receiver registration across SystemUI, SystemServer, and Launcher processes.
+- 🔋 **Battery & System UI Restorations**: Restored SystemUI broadcast sync, improved camera cutout overlay compatibility, and added screen-off animation power saving.
+- ⚡ **Real-Time Slider Responsiveness**: Fixed parameter extra type parsing for instant UI slider responsiveness across all fine-tuning settings.
+- 🧪 **Comprehensive Test Suite Expansion**: Expanded unit test coverage from 32 to 58 tests across all new features, utility classes, repositories, and ViewModels.
+
 ### v1.2.4
 - 💫 **Camera Hole Energy Ring Smooth Rotation**: Added "Rotate Ring Over Time" feature toggle, continuously animating the start angle of the battery ring around the front camera cutout.
 - ⚡ **LTPO 30 FPS Frame Throttling & Real-Time Sync**: Synchronized start angle directly with `System.currentTimeMillis() % 60000L` for seamless instant angle positioning upon screen wake, while capping animation frequency at 30 FPS to allow LTPO displays to drop to 30Hz VRR.

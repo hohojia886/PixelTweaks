@@ -1,4 +1,4 @@
-@file:Suppress("DiscouragedPrivateApi", "PrivateApi")
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "RedundantStringInterpolation", "AnInterpolationPrefixCanSimplifyTheString")
 
 package io.github.hohojia886.pixeltweaks.hooks.security
 
@@ -7,12 +7,15 @@ import android.os.Bundle
 import android.os.IBinder
 import android.os.SystemClock
 import android.provider.Settings
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
+import io.github.hohojia886.pixeltweaks.utils.hookAfter
 import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Method
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * PackageManagerHook: Manages security policy bypasses in the system process.
@@ -29,9 +32,10 @@ object PackageManagerHook {
     @Volatile private var isDowngradeEnabled = false // Toggle for downgrade bypass
     @Volatile private var isSignatureBypassEnabled = false // Toggle for signature bypass
 
-    @Volatile private var downgradeTimestamp = 0L // Monotonic start time of downgrade bypass
-    @Volatile private var signatureTimestamp = 0L // Monotonic start time of signature bypass
+    @Volatile private var downgradeTimestamp = 0L // Wall-clock start time of downgrade bypass
+    @Volatile private var signatureTimestamp = 0L // Wall-clock start time of signature bypass
     @Volatile private var lastInstallSessionTime = 0L // Monotonic timestamp of last active install operation
+    private val activeInstallSessions = ConcurrentHashMap<Int, Long>() // Active package installer session IDs
     @Volatile private var isHooked = false // Prevent duplicate hooking
     @Volatile private var lastSignatureActiveState = false
 
@@ -54,67 +58,88 @@ object PackageManagerHook {
 
             isDowngradeEnabled = bundle.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, prefs?.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false) ?: false)
             isSignatureBypassEnabled = bundle.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, prefs?.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false) ?: false)
-            val dgTs = bundle.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs?.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L) ?: 0L)
-            val sigTs = bundle.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs?.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L) ?: 0L)
-
-            if (isDowngradeEnabled && dgTs > 0) downgradeTimestamp = SystemClock.elapsedRealtime()
-            if (isSignatureBypassEnabled && sigTs > 0) signatureTimestamp = SystemClock.elapsedRealtime()
+            downgradeTimestamp = bundle.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs?.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L) ?: 0L)
+            signatureTimestamp = bundle.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs?.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L) ?: 0L)
         }
     }
 
-    // Evaluates if a security bypass feature is currently active and within monotonic timeout
-    private fun isFeatureActive(enabled: Boolean, timestamp: Long): Boolean {
-        if (!enabled || timestamp <= 0L) return false
-        val elapsed = SystemClock.elapsedRealtime() - timestamp
+    // Evaluates if a security bypass feature is currently active and within wall-clock timeout
+    private fun isFeatureActive(enabled: Boolean, wallTimestampMs: Long): Boolean {
+        if (!enabled || wallTimestampMs <= 0L) return false
+        val elapsed = System.currentTimeMillis() - wallTimestampMs
         return elapsed in 0L..<TIMEOUT_MS
     }
 
     // Evaluates if signature bypass is active AND restricted to an active package installation operation
     private fun isSignatureBypassActiveForInstall(): Boolean {
-        if (!isFeatureActive(isSignatureBypassEnabled, signatureTimestamp)) return false
-        val elapsedSinceInstall = SystemClock.elapsedRealtime() - lastInstallSessionTime
-        return elapsedSinceInstall in 0L..<ACTIVE_INSTALL_WINDOW_MS
+        if (!isFeatureActive(isSignatureBypassEnabled, signatureTimestamp)) {
+            if (activeInstallSessions.isNotEmpty()) {
+                activeInstallSessions.clear()
+            }
+            return false
+        }
+
+        // Purge expired session IDs older than 5 minutes
+        val nowRealtime = SystemClock.elapsedRealtime()
+        val iterator = activeInstallSessions.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            if (nowRealtime - entry.value > 5 * 60 * 1000L) {
+                iterator.remove()
+            }
+        }
+
+        val hasActiveSession = activeInstallSessions.isNotEmpty()
+        val elapsedSinceInstall = nowRealtime - lastInstallSessionTime
+        val recentInstall = elapsedSinceInstall in 0L..<ACTIVE_INSTALL_WINDOW_MS
+        return hasActiveSession || recentInstall
     }
 
-    // Registers a secure IPC receiver to track real-time security state changes
+    // Subscribes to process-level IPC dispatcher to track real-time security state changes
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
-        Thread {
-            val sysContext = IpcManager.getSystemContext(classLoader) ?: IpcManager.getSafeContext(classLoader, "android")
-            if (sysContext != null) {
-                IpcManager.registerSecureReceiver(sysContext, module.getModuleApplicationInfo().uid) { intent ->
-                    if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
-                        val now = SystemClock.elapsedRealtime()
-                        isDowngradeEnabled = intent.getBooleanExtra(PreferenceKeys.ALLOW_DOWNGRADE, false)
-                        isSignatureBypassEnabled = intent.getBooleanExtra(PreferenceKeys.BYPASS_SIGNATURE, false)
-                        if (isDowngradeEnabled && downgradeTimestamp <= 0L) downgradeTimestamp = now
-                        if (isSignatureBypassEnabled && signatureTimestamp <= 0L) signatureTimestamp = now
-                        val isTabletMode = intent.getBooleanExtra(PreferenceKeys.ENABLE_TABLET_MODE, false)
+        IpcDispatcher.addListener { intent ->
+            when (intent.action) {
+                IpcManager.ACTION_SETTINGS_SYNC -> {
+                    isDowngradeEnabled = intent.getBooleanExtra(PreferenceKeys.ALLOW_DOWNGRADE, false)
+                    isSignatureBypassEnabled = intent.getBooleanExtra(PreferenceKeys.BYPASS_SIGNATURE, false)
+                    downgradeTimestamp = intent.getLongExtra(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
+                    signatureTimestamp = intent.getLongExtra(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
+                    val isTabletMode = intent.getBooleanExtra(PreferenceKeys.ENABLE_TABLET_MODE, false)
+                    
+                    val sysContext = IpcManager.getSystemContext(classLoader) ?: IpcManager.getSafeContext(classLoader, "android")
+                    if (sysContext != null) {
                         updateSystemServerDensity(sysContext, isTabletMode)
-                        Logger.d(TAG, "Sync", "Settings updated via broadcast: DG=$isDowngradeEnabled, Sig=$isSignatureBypassEnabled, Tablet=$isTabletMode")
-                    } else if (intent.action == IpcManager.ACTION_SETTING_CHANGED) {
-                        val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
-                        val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
-                        val now = SystemClock.elapsedRealtime()
-                        when (key) {
-                            PreferenceKeys.ALLOW_DOWNGRADE -> {
-                                isDowngradeEnabled = value
-                                downgradeTimestamp = if (value) now else 0L
-                                Logger.d(TAG, "Sync", "Setting [allow_downgrade] updated to $isDowngradeEnabled")
-                            }
-                            PreferenceKeys.BYPASS_SIGNATURE -> {
-                                isSignatureBypassEnabled = value
-                                signatureTimestamp = if (value) now else 0L
-                                Logger.d(TAG, "Sync", "Setting [bypass_signature] updated to $isSignatureBypassEnabled")
-                            }
-                            PreferenceKeys.ENABLE_TABLET_MODE -> {
+                    }
+                    Logger.d(TAG, "Sync", "Settings updated via broadcast: DG=$isDowngradeEnabled, Sig=$isSignatureBypassEnabled, Tablet=$isTabletMode")
+                }
+                IpcManager.ACTION_SETTING_CHANGED -> {
+                    val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
+                    val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
+                    val nowMs = System.currentTimeMillis()
+                    when (key) {
+                        PreferenceKeys.ALLOW_DOWNGRADE -> {
+                            isDowngradeEnabled = value
+                            downgradeTimestamp = if (value) nowMs else 0L
+                            Logger.d(TAG, "Sync", "Setting [allow_downgrade] updated to $isDowngradeEnabled")
+                        }
+                        PreferenceKeys.BYPASS_SIGNATURE -> {
+                            isSignatureBypassEnabled = value
+                            signatureTimestamp = if (value) nowMs else 0L
+                            if (!value) activeInstallSessions.clear()
+                            Logger.d(TAG, "Sync", "Setting [bypass_signature] updated to $isSignatureBypassEnabled")
+                        }
+                        PreferenceKeys.ENABLE_TABLET_MODE -> {
+                            val sysContext = IpcManager.getSystemContext(classLoader) ?: IpcManager.getSafeContext(classLoader, "android")
+                            if (sysContext != null) {
                                 updateSystemServerDensity(sysContext, value)
-                                Logger.d(TAG, "Sync", "Setting [enable_tablet_mode] updated to $value")
                             }
+                            Logger.d(TAG, "Sync", "Setting [enable_tablet_mode] updated to $value")
                         }
                     }
                 }
             }
-        }.start()
+        }
+        IpcDispatcher.initializeOnce(module, classLoader)
     }
 
     // Injects logic into PackageManager components to ignore signature mismatches and version downgrades.
@@ -127,19 +152,45 @@ object PackageManagerHook {
             binder.javaClass.classLoader
         }.getOrNull() ?: classLoader
 
-        // A. PackageInstallerService: Injects flags (0x82) to permit version downgrades & records active install session
+        // A. PackageInstallerService: Injects flags (0x82) to permit version downgrades BEFORE createSession & records active install session ID AFTER createSession
         runCatching {
             val piClass = realClassLoader.loadClass("com.android.server.pm.PackageInstallerService")
+            
+            // 1. Inject downgrade flags (0x82) BEFORE createSession executes
             piClass.declaredMethods.filter { it.name == "createSession" }.forEach { m ->
                 module.hookBefore(m) { chain ->
-                    lastInstallSessionTime = SystemClock.elapsedRealtime()
                     if (isFeatureActive(isDowngradeEnabled, downgradeTimestamp)) {
-                        val params = chain.args[0]
-                        runCatching {
-                            val f = params.javaClass.getDeclaredField("installFlags").apply { isAccessible = true }
-                            f.setInt(params, f.getInt(params) or 0x00000082)
-                            Logger.i(TAG, "Active", "Injected Downgrade flags (0x82)")
+                        val params = chain.args.getOrNull(0)
+                        if (params != null) {
+                            runCatching {
+                                val f = params.javaClass.getDeclaredField("installFlags").apply { isAccessible = true }
+                                f.setInt(params, f.getInt(params) or 0x00000082)
+                                Logger.i(TAG, "Active", "Injected Downgrade flags (0x82)")
+                            }
                         }
+                    }
+                }
+            }
+
+            // 2. Track created session ID AFTER createSession executes
+            piClass.declaredMethods.filter { it.name == "createSession" }.forEach { m ->
+                module.hookAfter(m) { _, result ->
+                    lastInstallSessionTime = SystemClock.elapsedRealtime()
+                    val sessionId = result as? Int ?: -1
+                    if (sessionId > 0 && isFeatureActive(isSignatureBypassEnabled, signatureTimestamp)) {
+                        activeInstallSessions[sessionId] = SystemClock.elapsedRealtime()
+                        Logger.i(TAG, "Session", "Tracked active install session ID: $sessionId")
+                    }
+                }
+            }
+
+            // Cleanup completed/abandoned sessions
+            piClass.declaredMethods.filter { it.name == "abandonSession" || it.name == "cleanupSession" }.forEach { m ->
+                module.hookBefore(m) { chain ->
+                    val sessionId = chain.args.getOrNull(0) as? Int ?: -1
+                    if (sessionId > 0) {
+                        activeInstallSessions.remove(sessionId)
+                        Logger.i(TAG, "Session", "Removed install session ID: $sessionId")
                     }
                 }
             }
@@ -235,7 +286,7 @@ object PackageManagerHook {
             val smClass = Class.forName("android.os.ServiceManager")
             val getService = smClass.getDeclaredMethod("getService", String::class.java)
             val binder = getService.invoke(null, "window") as IBinder
-            val iwmClass = Class.forName("android.view.IWindowManager" + "\$Stub")
+            val iwmClass = Class.forName("android.view.IWindowManager" + '$' + "Stub")
             val asInterface = iwmClass.getDeclaredMethod("asInterface", IBinder::class.java)
             val wms = asInterface.invoke(null, binder)
             cachedWms = wms

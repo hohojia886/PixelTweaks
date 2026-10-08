@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
-import android.os.Binder
 import android.os.Bundle
 import android.os.Process
 import android.util.Log
@@ -35,8 +34,8 @@ object IpcManager {
     private var sysContextRef: WeakReference<Context>? = null // Cached system context
     @Volatile private var cachedModulePkgAppId = -1
 
-    // Resolves sender UID using multiple fallbacks (Android 14+ getSentFromUid API, AOSP getSendingUid, Intent Extras, and Binder Calling UID)
-    fun resolveSenderUid(receiver: BroadcastReceiver, intent: Intent): Int {
+    // Resolves sender UID using trusted system APIs (Android 14+ getSentFromUid & AOSP getSendingUid)
+    fun resolveSenderUid(receiver: BroadcastReceiver): Int {
         // 1. Try Android 14+ (API 34) public getSentFromUid API
         runCatching {
             val method = receiver.javaClass.getMethod("getSentFromUid")
@@ -51,14 +50,6 @@ object IpcManager {
             val uid = method.invoke(receiver) as Int
             if (uid > 0) return uid
         }
-
-        // 3. Try Intent extra sender_uid
-        val extraUid = intent.getIntExtra("sender_uid", -1)
-        if (extraUid > 0) return extraUid
-
-        // 4. Try Binder calling UID
-        val binderUid = Binder.getCallingUid()
-        if (binderUid > 0 && binderUid != Process.myUid()) return binderUid
 
         return -1
     }
@@ -93,10 +84,9 @@ object IpcManager {
             val atClass = classLoader.loadClass("android.app.ActivityThread")
             val at = atClass.getDeclaredMethod("currentActivityThread").invoke(null) ?: return null
             val app = atClass.getDeclaredMethod("getApplication").invoke(at) as? Context
-            
-            if (app != null) return app
+            app?.let { return it }
 
-            val sysContext = atClass.getDeclaredMethod("getSystemContext").invoke(at) as? Context ?: return null
+            val sysContext = (atClass.getDeclaredMethod("getSystemContext").invoke(at) as? Context) ?: return null
             
             val myUid = Process.myUid()
             val targetPackage = packageName ?: runCatching {
@@ -107,7 +97,7 @@ object IpcManager {
                 packages?.get(0) as? String
             }.getOrNull()
 
-            if (myUid != 1000 && targetPackage != null && targetPackage != "android" && targetPackage != "unknown") {
+            if ((myUid != 1000) && (targetPackage != null) && (targetPackage != "android") && (targetPackage != "unknown")) {
                 runCatching { sysContext.createPackageContext(targetPackage, 0) }.getOrDefault(sysContext)
             } else {
                 sysContext
@@ -140,7 +130,7 @@ object IpcManager {
                 PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
                 PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
                 PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_SECURITY, PreferenceKeys.LOG_INTERFACE,
-                PreferenceKeys.LOG_GESTURES, PreferenceKeys.LOG_QUICK_SETTINGS
+                PreferenceKeys.LOG_GESTURES, PreferenceKeys.LOG_QUICK_SETTINGS,
             )
             val defaultFalseKeys = setOf(
                 PreferenceKeys.ALLOW_DOWNGRADE,
@@ -151,7 +141,7 @@ object IpcManager {
                 PreferenceKeys.ENABLE_CAMERA_ENERGY_RING,
                 PreferenceKeys.RING_ONLY_CHARGING,
                 PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT,
-                PreferenceKeys.ENABLE_MASTER_LOG
+                PreferenceKeys.ENABLE_MASTER_LOG,
             )
             knownBooleans.forEach { key ->
                 runCatching {
@@ -179,7 +169,7 @@ object IpcManager {
                     val cpBundle = ctx.contentResolver.call(uri, "get", null, null)
                     if (cpBundle != null && !cpBundle.isEmpty) {
                         cpBundle.keySet().forEach { k ->
-                            when (val v = cpBundle.get(k)) {
+                            when (val v = cpBundle[k]) {
                                 is Boolean -> bundle.putBoolean(k, v)
                                 is Int -> bundle.putInt(k, v)
                                 is Float -> bundle.putFloat(k, v)
@@ -195,12 +185,16 @@ object IpcManager {
         return bundle
     }
 
+    private fun makeBroadcastOptions(): Bundle {
+        return android.app.BroadcastOptions.makeBasic().apply {
+            isShareIdentityEnabled = true
+        }.toBundle()
+    }
+
     // Dispatches a full settings synchronization broadcast to all active hook processes
     @SuppressLint("WrongConstant")
     fun syncAllSettings(context: Context, prefs: SharedPreferences) {
         val intent = Intent(ACTION_SETTINGS_SYNC).apply {
-            putExtra("sender_uid", Process.myUid())
-
             // ClearAll, Tablet Mode & Battery Info
             putExtra(PreferenceKeys.ENABLE_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true))
             putExtra(PreferenceKeys.ENABLE_TABLET_MODE, prefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false))
@@ -258,24 +252,22 @@ object IpcManager {
 
             addFlags(0x01000000) // FLAG_RECEIVER_INCLUDE_BACKGROUND
         }
-        context.sendBroadcast(intent)
+        context.sendBroadcast(intent, null, makeBroadcastOptions())
     }
 
     // Sends a high-priority request to SystemUI to put the device to sleep
     @SuppressLint("WrongConstant")
     fun sendSleepRequest(context: Context) {
         val intent = Intent(ACTION_REQUEST_SLEEP).apply {
-            putExtra("sender_uid", Process.myUid())
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND or 0x01000000)
         }
-        context.sendBroadcast(intent)
+        context.sendBroadcast(intent, null, makeBroadcastOptions())
     }
 
     // Dispatches a broadcast for a single preference change to minimize IPC overhead
     @SuppressLint("WrongConstant")
     fun sendUpdateBroadcast(context: Context, key: String, value: Any) {
         val intent = Intent(ACTION_SETTING_CHANGED).apply {
-            putExtra("sender_uid", Process.myUid())
             putExtra(PreferenceKeys.EXTRA_KEY, key)
             when (value) {
                 is Boolean -> putExtra(PreferenceKeys.EXTRA_VALUE, value)
@@ -285,7 +277,7 @@ object IpcManager {
             }
             addFlags(0x01000000) // FLAG_RECEIVER_INCLUDE_BACKGROUND
         }
-        context.sendBroadcast(intent)
+        context.sendBroadcast(intent, null, makeBroadcastOptions())
     }
 
     // Registers a receiver with multi-layer UID verification
@@ -303,15 +295,15 @@ object IpcManager {
             }
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context, intent: Intent) {
-                    val senderUid = resolveSenderUid(this, intent)
+                    val senderUid = resolveSenderUid(this)
                     val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
                     val moduleAppId = moduleUid % 100000
                     val myAppId = Process.myUid() % 100000
                     val pkgAppId = getModulePackageAppId(ctx)
 
-                    val isTrusted = senderUid == -1 || senderAppId == 0 || senderAppId == 1000 || 
+                    val isTrusted = senderUid > 0 && (senderAppId == 0 || senderAppId == 1000 || 
                                     senderAppId == moduleAppId || senderAppId == myAppId || 
-                                    (pkgAppId > 0 && senderAppId == pkgAppId)
+                                    (pkgAppId > 0 && senderAppId == pkgAppId))
 
                     Logger.d("Ipc", "Broadcast", "Action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
 
@@ -336,20 +328,20 @@ object IpcManager {
             val filter = IntentFilter(ACTION_REQUEST_SLEEP)
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(ctx: Context, intent: Intent) {
-                    val senderUid = resolveSenderUid(this, intent)
+                    val senderUid = resolveSenderUid(this)
                     val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
                     val moduleAppId = moduleUid % 100000
                     val myAppId = Process.myUid() % 100000
                     val pkgAppId = getModulePackageAppId(ctx)
 
-                    val isTrusted = senderUid == -1 || senderAppId == 0 || senderAppId == 1000 || 
+                    val isTrusted = senderUid > 0 && (senderAppId == 0 || senderAppId == 1000 || 
                                     senderAppId == moduleAppId || senderAppId == myAppId || 
                                     (pkgAppId > 0 && senderAppId == pkgAppId) || run {
                         val trustedLaunchers = listOf("com.google.android.apps.nexuslauncher", "com.android.launcher3", "com.google.android.launcher")
                         trustedLaunchers.any { pkg ->
                             runCatching { context.packageManager.getPackageInfo(pkg, 0)?.applicationInfo?.uid?.rem(100000) }.getOrNull() == senderAppId
                         }
-                    }
+                    })
 
                     Logger.d("Ipc", "Sleep", "Request received: action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
 

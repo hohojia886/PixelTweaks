@@ -1,3 +1,5 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi", "SetTextI18n", "UseCompatLoadingForDrawables")
+
 package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
 import android.content.Context
@@ -10,7 +12,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.isVisible
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -28,7 +32,6 @@ object ClearAllButtonHook {
 
     private var clearAllButtonRef: WeakReference<TextView>? = null // Reference to the injected button
     private var isEnabled = true // Feature toggle
-    private var receiverRegistered = false
     private var dismissAllTasksMethod: Method? = null // Cached reflection method
     private const val TAG = "ClearAll"
 
@@ -46,27 +49,33 @@ object ClearAllButtonHook {
             dismissAllTasksMethod = (findMethod(recentsViewClass, "dismissAllTasks", View::class.java)
                 ?: findMethod(recentsViewClass, "dismissAllTasks"))?.apply { isAccessible = true }
 
-            runCatching {
-                val appClass = classLoader.loadClass("android.app.Application")
-                module.hookAfter(appClass.getDeclaredMethod("onCreate")) { chain, _ ->
-                    registerReceiver(chain.thisObject as Context, module.getModuleApplicationInfo().uid)
+            IpcDispatcher.addListener { intent ->
+                when (intent.action) {
+                    IpcManager.ACTION_SETTINGS_SYNC -> {
+                        isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_CLEAR_ALL, true)
+                        Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
+                    }
+                    IpcManager.ACTION_SETTING_CHANGED -> {
+                        if (intent.getStringExtra(PreferenceKeys.EXTRA_KEY) == PreferenceKeys.ENABLE_CLEAR_ALL) {
+                            isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                            Logger.i(TAG, "Sync", "Setting [enable_clear_all] updated to $isEnabled")
+                        }
+                    }
                 }
-            }.onFailure { e ->
-                Logger.e(TAG, "Error", "Failed to hook Application.onCreate", e)
+                clearAllButtonRef?.get()?.post { updateButtonVisibility() }
             }
+            IpcDispatcher.initializeOnce(module, classLoader)
 
             // Syncs our button's visibility with the RecentsView container's state
-            val setVisibilityMethod = findMethod(recentsViewClass, "setVisibility", Int::class.java)
-            if (setVisibilityMethod != null) {
-                module.hookAfter(setVisibilityMethod) { chain, _ ->
+            findMethod(recentsViewClass, "setVisibility", Int::class.java)?.let { method ->
+                module.hookAfter(method) { chain, _ ->
                     updateButtonVisibility(chain.args[0] as Int)
                 }
             }
 
             // Hook that triggers the actual button injection after layout inflation
-            val onFinishInflateMethod = findMethod(actionsViewClass, "onFinishInflate")
-            if (onFinishInflateMethod != null) {
-                module.hookAfter(onFinishInflateMethod) { chain, _ ->
+            findMethod(actionsViewClass, "onFinishInflate")?.let { method ->
+                module.hookAfter(method) { chain, _ ->
                     val parent = chain.thisObject as FrameLayout
                     injectButton(parent, recentsViewClass)
                 }
@@ -95,11 +104,15 @@ object ClearAllButtonHook {
 
         // In tablet mode (or low DPI setups), Launcher removes or restructures default action buttons (action_screenshot/select).
         // Force fallback pill layout fixed at Gravity.END | Gravity.CENTER_VERTICAL to ensure visibility and prevent disappearing hook points.
-        val usePillStyle = isTablet || screenshotBtn !is TextView
+        val usePillStyle = isTablet || (screenshotBtn !is TextView)
+
+        val clearAllStrId = res.getIdentifier("recents_clear_all", "string", context.packageName)
+            .let { if (it == 0) res.getIdentifier("clear_all", "string", "android") else it }
+        val clearAllText = if (clearAllStrId != 0) runCatching { res.getString(clearAllStrId) }.getOrNull() ?: "Clear all" else "Clear all"
 
         val button = TextView(context).apply {
             tag = "pxtk_clear_all"
-            text = "Clear all"
+            text = clearAllText
             gravity = Gravity.CENTER
             isAllCaps = false
             
@@ -121,7 +134,7 @@ object ClearAllButtonHook {
                     .let { if (it == 0) res.getIdentifier("ic_delete", "drawable", "android") else it }
                 
                 if (iconId != 0) {
-                    val icon = res.getDrawable(iconId, context.theme)?.mutate()
+                    val icon = ResourcesCompat.getDrawable(res, iconId, context.theme)?.mutate()
                     icon?.let {
                         val size = (textSize * 1.2).toInt()
                         it.setBounds(0, 0, size, size)
@@ -144,7 +157,7 @@ object ClearAllButtonHook {
             setOnClickListener { v ->
                 Logger.i(TAG, "Action", "Clear All button clicked")
                 val recentsView = findRecentsView(v, recentsViewClass)
-                if (recentsView != null && dismissAllTasksMethod != null) {
+                if ((recentsView != null) && (dismissAllTasksMethod != null)) {
                     runCatching {
                         if (dismissAllTasksMethod!!.parameterCount == 1) {
                             dismissAllTasksMethod!!.invoke(recentsView, v)
@@ -159,12 +172,13 @@ object ClearAllButtonHook {
 
         if (usePillStyle) {
             val lp = parent.layoutParams
-            if (lp != null && lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+            if ((lp != null) && (lp.height != ViewGroup.LayoutParams.MATCH_PARENT)) {
                 lp.height = ViewGroup.LayoutParams.MATCH_PARENT
                 parent.layoutParams = lp
             }
             val params = FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
             ).apply {
                 marginEnd = dp(context, 16)
                 gravity = Gravity.END or Gravity.CENTER_VERTICAL
@@ -172,10 +186,10 @@ object ClearAllButtonHook {
             parent.addView(button, params)
             Logger.i(TAG, "Success", "Button integrated with tablet layout (sw=${context.resources.configuration.smallestScreenWidthDp}dp)")
         } else {
-            val container = selectBtn?.parent as? ViewGroup ?: parent
-            if (container is FrameLayout || container is LinearLayout) {
+            val container = (selectBtn?.parent as? ViewGroup) ?: parent
+            if ((container is FrameLayout) || (container is LinearLayout)) {
                 val lp = container.layoutParams
-                if (lp != null && lp.height != ViewGroup.LayoutParams.MATCH_PARENT) {
+                if ((lp != null) && (lp.height != ViewGroup.LayoutParams.MATCH_PARENT)) {
                     lp.height = ViewGroup.LayoutParams.MATCH_PARENT
                     container.layoutParams = lp
                 }
@@ -192,9 +206,7 @@ object ClearAllButtonHook {
                     }
                     val targetMargin = if (oldParams.marginStart > 0) oldParams.marginStart else dp(context, 8)
                     newParams.setMargins(targetMargin, oldParams.topMargin, 0, oldParams.bottomMargin)
-                    if (newParams is FrameLayout.LayoutParams) {
-                        newParams.gravity = (oldParams as? FrameLayout.LayoutParams)?.gravity ?: Gravity.CENTER_VERTICAL
-                    }
+                    (newParams as? FrameLayout.LayoutParams)?.gravity = (oldParams as? FrameLayout.LayoutParams)?.gravity ?: Gravity.CENTER_VERTICAL
                     newParams
                 } else {
                     FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
@@ -221,9 +233,9 @@ object ClearAllButtonHook {
         while (current != null) {
             if (recentsViewClass.isInstance(current)) return current
             val parent = current.parent
-            if (parent is ViewGroup) {
-                for (i in 0 until parent.childCount) {
-                    val child = parent.getChildAt(i)
+            (parent as? ViewGroup)?.let { group ->
+                for (i in 0 until group.childCount) {
+                    val child = group.getChildAt(i)
                     if (recentsViewClass.isInstance(child)) return child
                 }
             }
@@ -232,32 +244,11 @@ object ClearAllButtonHook {
         return null
     }
 
-    // Registers a secure IPC receiver to handle button visibility toggles
-    private fun registerReceiver(context: Context, moduleUid: Int) {
-        if (receiverRegistered) return
-        IpcManager.registerSecureReceiver(context, moduleUid) { intent ->
-            when (intent.action) {
-                IpcManager.ACTION_SETTINGS_SYNC -> {
-                    isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_CLEAR_ALL, true)
-                    Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
-                }
-                IpcManager.ACTION_SETTING_CHANGED -> {
-                    if (intent.getStringExtra(PreferenceKeys.EXTRA_KEY) == PreferenceKeys.ENABLE_CLEAR_ALL) {
-                        isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
-                        Logger.i(TAG, "Sync", "Setting [enable_clear_all] updated to $isEnabled")
-                    }
-                }
-            }
-            clearAllButtonRef?.get()?.post { updateButtonVisibility() }
-        }
-        receiverRegistered = true
-    }
-
     // Updates the visibility of the custom button based on current settings and system UI state
     private fun updateButtonVisibility(systemVisibility: Int? = null) {
         val button = clearAllButtonRef?.get() ?: return
         val visibility = systemVisibility ?: (button.parent as? View)?.visibility ?: View.VISIBLE
-        button.visibility = if (isEnabled && visibility == View.VISIBLE) View.VISIBLE else View.GONE
+        button.visibility = if (isEnabled && (visibility == View.VISIBLE)) View.VISIBLE else View.GONE
     }
 
     // Helper: Safely locates a method in a class or its superclasses

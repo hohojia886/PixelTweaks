@@ -1,3 +1,5 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi", "DEPRECATION", "SameParameterValue")
+
 package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
 import android.annotation.SuppressLint
@@ -19,12 +21,14 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.StatusBarTintManager
+import io.github.hohojia886.pixeltweaks.utils.getFlexibleFloatExtra
+import io.github.hohojia886.pixeltweaks.utils.getFlexibleIntExtra
 import io.github.hohojia886.pixeltweaks.utils.hookAfter
-import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
 import java.lang.reflect.Method
@@ -48,7 +52,6 @@ object NetworkTrafficHook {
     private var updateInterval = 1000L // Polling frequency in milliseconds
     private var autoHideThreshold = 1024L // Minimum speed to show the indicator
     private var fontSizeSp = 8f // Visual scale of the text
-    private var receiverRegistered = false
     @Volatile private var currentTint = Color.WHITE // Adaptive color based on status bar theme
 
     private val uiHandler = Handler(Looper.getMainLooper())
@@ -108,20 +111,20 @@ object NetworkTrafficHook {
             val newTx = TrafficStats.getTotalTxBytes()
             val deltaTimeMs = (now - lastTime).coerceAtLeast(1)
             
-            val rxSpeed = ((newRx - lastRxBytes) * 1000L / deltaTimeMs).coerceAtLeast(0L)
-            val txSpeed = ((newTx - lastTxBytes) * 1000L / deltaTimeMs).coerceAtLeast(0L)
+            val rxSpeed = (((newRx - lastRxBytes) * 1000L) / deltaTimeMs).coerceAtLeast(0L)
+            val txSpeed = (((newTx - lastTxBytes) * 1000L) / deltaTimeMs).coerceAtLeast(0L)
             
             lastRxBytes = newRx
             lastTxBytes = newTx
             lastTime = now
 
-            if (rxSpeed != lastRxSpeed || txSpeed != lastTxSpeed) {
+            if ((rxSpeed != lastRxSpeed) || (txSpeed != lastTxSpeed)) {
                 lastRxSpeed = rxSpeed
                 lastTxSpeed = txSpeed
                 
                 uiHandler.post {
                     iterateViews { view ->
-                        if (autoHideThreshold > 0 && rxSpeed < autoHideThreshold && txSpeed < autoHideThreshold) {
+                        if ((autoHideThreshold > 0) && (rxSpeed < autoHideThreshold) && (txSpeed < autoHideThreshold)) {
                             if (view.visibility != View.GONE) view.visibility = View.GONE
                         } else if (isEnabled) {
                             if (view.visibility != View.VISIBLE) view.visibility = View.VISIBLE
@@ -175,7 +178,6 @@ object NetworkTrafficHook {
         Logger.i(TAG, "Started", "Initializing NetworkTrafficHook (Robust Edition)")
         try {
             val bundle = IpcManager.loadPreferences(module, classLoader, "com.android.systemui")
-            val moduleUid = module.getModuleApplicationInfo().uid
             isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
             val rawFont = bundle.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
             fontSizeSp = if (rawFont > 0f) rawFont.coerceAtLeast(6f) else 8f
@@ -192,8 +194,7 @@ object NetworkTrafficHook {
                     runCatching {
                         val clock = chain.thisObject as View
                         if (isStatusBarClock(clock)) {
-                            val parent = clock.parent as? ViewGroup
-                            if (parent != null) {
+                            (clock.parent as? ViewGroup)?.let { parent ->
                                 attachToClock(clock, parent)
                             }
                         }
@@ -210,12 +211,38 @@ object NetworkTrafficHook {
                 applyTint(tint)
             }
 
-            runCatching {
-                val appClass = classLoader.loadClass("android.app.Application")
-                module.hookBefore(appClass.getDeclaredMethod("onCreate")) { chain ->
-                    registerReceiver(chain.thisObject as Context, moduleUid)
+            IpcDispatcher.addListener { intent ->
+                when (intent.action) {
+                    IpcManager.ACTION_SETTINGS_SYNC -> handleSync(intent)
+                    IpcManager.ACTION_SETTING_CHANGED -> {
+                        val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY) ?: return@addListener
+                        when (key) {
+                            PreferenceKeys.ENABLE_NETWORK_TRAFFIC -> {
+                                isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                                Logger.i(TAG, "Sync", "Setting [enable_network_traffic] updated to $isEnabled")
+                                updateState()
+                            }
+                            PreferenceKeys.NETWORK_TRAFFIC_INTERVAL -> {
+                                val intervalSec = intent.getFlexibleIntExtra(PreferenceKeys.EXTRA_VALUE, 1)
+                                updateInterval = intervalSec * 1000L
+                                Logger.i(TAG, "Sync", "Setting [network_traffic_interval] updated to ${intervalSec}s")
+                                workerHandler?.post { poller.reset() }
+                            }
+                            PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD -> {
+                                val threshKb = intent.getFlexibleIntExtra(PreferenceKeys.EXTRA_VALUE, 1)
+                                autoHideThreshold = threshKb * 1024L
+                                Logger.i(TAG, "Sync", "Setting [network_traffic_threshold] updated to ${threshKb}KB")
+                            }
+                            PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE -> {
+                                fontSizeSp = intent.getFlexibleFloatExtra(PreferenceKeys.EXTRA_VALUE, 8f)
+                                Logger.i(TAG, "Sync", "Setting [network_traffic_font_size] updated to ${fontSizeSp}sp")
+                                uiHandler.post { iterateViews { it.updateFontSize(fontSizeSp) } }
+                            }
+                        }
+                    }
                 }
             }
+            IpcDispatcher.initializeOnce(module, classLoader)
 
         } catch (e: Throwable) {
             Logger.e(TAG, "Error", "Hook setup failed", e)
@@ -245,7 +272,7 @@ object NetworkTrafficHook {
         
         val targetIds = listOf(
             res.getIdentifier("status_bar_start_side_content", "id", pkg),
-            res.getIdentifier("status_bar_start_side_except_heads_up", "id", pkg)
+            res.getIdentifier("status_bar_start_side_except_heads_up", "id", pkg),
         ).filter { it != 0 }
 
         var current: View = clock
@@ -264,7 +291,7 @@ object NetworkTrafficHook {
                     for (fName in fieldNames) {
                         try {
                             val field = parent.javaClass.getDeclaredField(fName).apply { isAccessible = true }
-                            targetContainer = field.get(parent) as? ViewGroup
+                            targetContainer = field[parent] as? ViewGroup
                             if (targetContainer != null) break
                         } catch (_: NoSuchFieldException) {}
                     }
@@ -292,9 +319,9 @@ object NetworkTrafficHook {
         }
 
         val params = try {
-            val layoutClass = when {
-                container is LinearLayout -> LinearLayout.LayoutParams::class.java
-                container is FrameLayout -> FrameLayout.LayoutParams::class.java
+            val layoutClass = when (container) {
+                is LinearLayout -> LinearLayout.LayoutParams::class.java
+                is FrameLayout -> FrameLayout.LayoutParams::class.java
                 else -> ViewGroup.MarginLayoutParams::class.java
             }
             val lp = layoutClass.getConstructor(Int::class.java, Int::class.java)
@@ -315,7 +342,7 @@ object NetworkTrafficHook {
 
         container.addView(trafficView, -1, params)
         synchronized(trafficViews) { trafficViews.add(WeakReference(trafficView)) }
-        if (clock is TextView) applyTint(clock.currentTextColor)
+        (clock as? TextView)?.let { applyTint(it.currentTextColor) }
         startPolling()
         Logger.i(TAG, "Success", "Precision-injected to ${container.javaClass.simpleName}")
     }
@@ -326,51 +353,14 @@ object NetworkTrafficHook {
         uiHandler.post { iterateViews { it.updateColor(currentTint) } }
     }
 
-    // Registers a secure IPC receiver to handle real-time configuration updates
-    private fun registerReceiver(context: Context, moduleUid: Int) {
-        if (receiverRegistered) return
-        IpcManager.registerSecureReceiver(context, moduleUid) { intent ->
-            when (intent.action) {
-                IpcManager.ACTION_SETTINGS_SYNC -> handleSync(intent)
-                IpcManager.ACTION_SETTING_CHANGED -> {
-                    val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY) ?: return@registerSecureReceiver
-                    when (key) {
-                        PreferenceKeys.ENABLE_NETWORK_TRAFFIC -> {
-                            isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
-                            Logger.i(TAG, "Sync", "Setting [enable_network_traffic] updated to $isEnabled")
-                            updateState()
-                        }
-                        PreferenceKeys.NETWORK_TRAFFIC_INTERVAL -> {
-                            val intervalSec = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, 1)
-                            updateInterval = intervalSec * 1000L
-                            Logger.i(TAG, "Sync", "Setting [network_traffic_interval] updated to ${intervalSec}s")
-                            workerHandler?.post { poller.reset() }
-                        }
-                        PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD -> {
-                            val threshKb = intent.getIntExtra(PreferenceKeys.EXTRA_VALUE, 1)
-                            autoHideThreshold = threshKb * 1024L
-                            Logger.i(TAG, "Sync", "Setting [network_traffic_threshold] updated to ${threshKb}KB")
-                        }
-                        PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE -> {
-                            fontSizeSp = intent.getFloatExtra(PreferenceKeys.EXTRA_VALUE, 8f)
-                            Logger.i(TAG, "Sync", "Setting [network_traffic_font_size] updated to ${fontSizeSp}sp")
-                            uiHandler.post { iterateViews { it.updateFontSize(fontSizeSp) } }
-                        }
-                    }
-                }
-            }
-        }
-        receiverRegistered = true
-    }
-
     // Batch updates all configuration variables during a full sync event
     private fun handleSync(intent: Intent) {
         isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
-        val rawFont = intent.getFloatExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
+        val rawFont = intent.getFlexibleFloatExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
         fontSizeSp = if (rawFont > 0f) rawFont.coerceAtLeast(6f) else 8f
-        val rawInterval = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
+        val rawInterval = intent.getFlexibleIntExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
         updateInterval = (if (rawInterval > 0) rawInterval else 1) * 1000L
-        val rawThreshold = intent.getIntExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
+        val rawThreshold = intent.getFlexibleIntExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
         autoHideThreshold = (if (rawThreshold >= 0) rawThreshold else 1) * 1024L
         Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled, interval=${updateInterval/1000}s, font=${fontSizeSp}sp, thresh=${autoHideThreshold/1024}KB")
         uiHandler.post { iterateViews { it.updateFontSize(fontSizeSp) } }
@@ -458,7 +448,7 @@ object NetworkTrafficHook {
             val fm = paint.fontMetrics
             val singleLineHeight = fm.descent - fm.ascent
             val totalHeight = singleLineHeight * 2
-            val startY = (height - totalHeight) / 2f - fm.ascent
+            val startY = ((height - totalHeight) / 2f) - fm.ascent
             
             canvas.drawText(txText, centerX, startY, paint)
             canvas.drawText(rxText, centerX, startY + singleLineHeight, paint)
@@ -475,7 +465,7 @@ object NetworkTrafficHook {
         private fun formatValue(bytes: Long, unit: Int, suffix: String): String {
             val integral = bytes / unit
             return if (integral >= 10) "$integral$suffix" else {
-                val decimal = (bytes * 10 / unit) % 10
+                val decimal = ((bytes * 10) / unit) % 10
                 "$integral.$decimal$suffix"
             }
         }

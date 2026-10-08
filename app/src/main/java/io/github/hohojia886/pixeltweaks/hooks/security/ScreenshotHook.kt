@@ -2,10 +2,10 @@
 
 package io.github.hohojia886.pixeltweaks.hooks.security
 
-import android.app.Application
 import android.os.Bundle
 import android.os.IBinder
 import android.view.WindowManager
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -20,13 +20,14 @@ import io.github.libxposed.api.XposedModule
 object ScreenshotHook {
 
     private const val TAG = "Screenshot"
-    @Volatile private var isEnabled = true // Feature master toggle
+    @Volatile private var isEnabled = false // Feature master toggle
     @Volatile private var isSystemHooked = false // Prevent duplicate hooking in system_server
 
     // Intercepts app-level surface creation to force non-secure surfaces
     fun hookApp(module: XposedModule, classLoader: ClassLoader) {
+        syncSettings(module, classLoader)
         runCatching {
-            val builderClass = classLoader.loadClass("android.view.SurfaceControl" + "\$Builder")
+            val builderClass = classLoader.loadClass("android.view.SurfaceControl" + '$' + "Builder")
             module.hook(builderClass.getDeclaredMethod("setSecure", Boolean::class.java)).intercept { chain ->
                 val requestedSecure = chain.args.getOrNull(0) as? Boolean ?: false
                 if (isEnabled && requestedSecure) {
@@ -101,22 +102,19 @@ object ScreenshotHook {
         val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null
 
         isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, prefs?.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true) ?: true)
-        
-        runCatching {
-            val ctxClass = Class.forName("android.app.ActivityThread")
-            val app = ctxClass.getDeclaredMethod("currentApplication").invoke(null) as? Application
-            app?.let {
-                IpcManager.registerSecureReceiver(it, module.getModuleApplicationInfo().uid) { intent ->
-                    val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
-                    if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
-                        isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
-                        Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
-                    } else if (key == PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS) {
-                        isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
-                        Logger.i(TAG, "Sync", "Setting [enable_unrestricted_screenshots] updated to $isEnabled")
-                    }
-                }
+
+        IpcDispatcher.addListener { intent ->
+            val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
+            if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
+                isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
+                Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
+            } else if (key == PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS) {
+                isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                Logger.i(TAG, "Sync", "Setting [enable_unrestricted_screenshots] updated to $isEnabled")
             }
+        }
+        if (classLoader != null) {
+            IpcDispatcher.initializeOnce(module, classLoader)
         }
     }
 }

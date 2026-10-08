@@ -2,7 +2,6 @@ package io.github.hohojia886.pixeltweaks.hooks.security
 
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
-import android.os.IBinder
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.libxposed.api.XposedModule
@@ -32,7 +31,7 @@ class PackageManagerHookTest {
         prefs = mock(SharedPreferences::class.java)
 
         val appInfo = ApplicationInfo().apply { uid = 1000 }
-        whenever(module.getModuleApplicationInfo()).thenReturn(appInfo)
+        whenever(module.moduleApplicationInfo).thenReturn(appInfo)
         whenever(module.getRemotePreferences(IpcManager.PREF_NAME)).thenReturn(prefs)
 
         resetSingleton()
@@ -40,22 +39,21 @@ class PackageManagerHookTest {
 
     private fun resetSingleton() {
         val clazz = PackageManagerHook::class.java
-        val instance = clazz.getField("INSTANCE").get(null)
+        val instance = clazz.getField("INSTANCE")[null]
         val fields = clazz.declaredFields
         for (field in fields) {
             field.isAccessible = true
-            if (field.name == "isHooked") field.set(instance, false)
-            if (field.name == "isDowngradeEnabled") field.set(instance, false)
-            if (field.name == "isSignatureBypassEnabled") field.set(instance, false)
-            if (field.name == "downgradeTimestamp") field.set(instance, 0L)
-            if (field.name == "signatureTimestamp") field.set(instance, 0L)
+            if (field.name == "isHooked") field[instance] = false
+            if (field.name == "isDowngradeEnabled") field[instance] = false
+            if (field.name == "isSignatureBypassEnabled") field[instance] = false
+            if (field.name == "downgradeTimestamp") field[instance] = 0L
+            if (field.name == "signatureTimestamp") field[instance] = 0L
         }
     }
 
     @Test
     fun testHookWiring() {
         // Basic wiring test without mocking Class.class
-        val binder = mock(IBinder::class.java)
         whenever(classLoader.loadClass(anyString())).thenReturn(Any::class.java)
 
         // PackageManagerHook.hook should not crash
@@ -66,13 +64,12 @@ class PackageManagerHookTest {
 
     @Test
     fun testIsFeatureActive() {
-        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMinutes(10))
         val clazz = PackageManagerHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)
         val method = clazz.getDeclaredMethod("isFeatureActive", Boolean::class.java, Long::class.java)
         method.isAccessible = true
 
-        val now = android.os.SystemClock.elapsedRealtime()
+        val now = System.currentTimeMillis()
         
         // Enabled and recent
         assertTrue(method.invoke(instance, true, now - 1000L) as Boolean)
@@ -106,8 +103,7 @@ class PackageManagerHookTest {
     
     @Test
     fun testTimeoutLogicInActiveProcess() {
-        org.robolectric.shadows.ShadowSystemClock.advanceBy(java.time.Duration.ofMinutes(10))
-        val now = android.os.SystemClock.elapsedRealtime()
+        val now = System.currentTimeMillis()
         
         val clazz = PackageManagerHook::class.java
         val instance = clazz.getField("INSTANCE").get(null)

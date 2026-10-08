@@ -8,7 +8,7 @@ setlocal enabledelayedexpansion
 
 title PixelTweaks Build Script
 
-set "VERSION=1.2.4"
+set "VERSION=1.2.5"
 
 echo ================================================================
 echo   PixelTweaks Build Script (v%VERSION%)

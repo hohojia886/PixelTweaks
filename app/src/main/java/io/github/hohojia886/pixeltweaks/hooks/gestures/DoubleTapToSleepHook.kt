@@ -30,6 +30,7 @@ import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -72,32 +73,26 @@ object DoubleTapToSleepHook {
             Logger.e(TAG, "Error", "Failed to load initial settings via RemotePrefProvider", e)
         }
 
-        // 2. Register Receivers
-        runCatching {
-            val appClass = classLoader.loadClass("android.app.Application")
-            module.hookBefore(appClass.getDeclaredMethod("onCreate")) { chain ->
-                val app = chain.thisObject as? Context
-                if (app != null) {
-                    val moduleUid = module.getModuleApplicationInfo().uid
-                    if (proc == "com.android.systemui") {
-                        IpcManager.registerSleepReceiver(app, moduleUid) {
-                            if (isDtLauncherEnabled) {
-                                Logger.i(TAG, "Running", "Executing sleep request from Launcher")
-                                triggerSleep(app)
-                            }
-                        }
-                        
-                        // Register ACTION_SCREEN_ON receiver for reliable Wake Guard
-                        runCatching {
-                            val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
-                            app.registerReceiver(object : BroadcastReceiver() {
-                                override fun onReceive(context: Context, intent: Intent) {
-                                    lastWakeTime = SystemClock.uptimeMillis()
-                                }
-                            }, filter)
-                        }
+        // 2. Dispatcher & Sleep Receiver Registration
+        IpcDispatcher.addListener { intent -> handleSync(intent) }
+        IpcDispatcher.initializeOnce(module, classLoader) { app ->
+            val moduleUid = module.getModuleApplicationInfo().uid
+            if (proc == "com.android.systemui") {
+                IpcManager.registerSleepReceiver(app, moduleUid) {
+                    if (isDtLauncherEnabled) {
+                        Logger.i(TAG, "Running", "Executing sleep request from Launcher")
+                        triggerSleep(app)
                     }
-                    IpcManager.registerSecureReceiver(app, moduleUid) { intent -> handleSync(intent) }
+                }
+
+                // Register ACTION_SCREEN_ON receiver for reliable Wake Guard
+                runCatching {
+                    val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+                    app.registerReceiver(object : BroadcastReceiver() {
+                        override fun onReceive(context: Context, intent: Intent) {
+                            lastWakeTime = SystemClock.uptimeMillis()
+                        }
+                    }, filter)
                 }
             }
         }
@@ -124,12 +119,12 @@ object DoubleTapToSleepHook {
         // 3. Monitor Bouncer visibility
         runCatching {
             val managerClass = classLoader.loadClass("com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager")
-            managerClass.getDeclaredMethods().find { it.name == "showPrimaryBouncer" }?.let { m ->
+            managerClass.declaredMethods.find { it.name == "showPrimaryBouncer" }?.let { m ->
                 module.hookBefore(m) { _ ->
                     isBouncerShowing = true
                 }
             }
-            managerClass.getDeclaredMethods().find { it.name == "reset" || it.name == "hideBouncer" }?.let { m ->
+            managerClass.declaredMethods.find { it.name == "reset" || it.name == "hideBouncer" }?.let { m ->
                 module.hookBefore(m) { _ ->
                     isBouncerShowing = false
                 }
@@ -175,9 +170,7 @@ object DoubleTapToSleepHook {
 
                         if (isInteractive && !isDozing && !isBouncerShowing && !isUserTyping && !isRecentlyWoken) {
                             Logger.i(TAG, "Success", "DT2S triggered on Lockscreen")
-                            if (sysContext != null) {
-                                triggerSleep(sysContext)
-                            }
+                            triggerSleep(sysContext)
                             return@intercept true
                         }
                     }

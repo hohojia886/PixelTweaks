@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**Version:** v1.2.4 (Stable Release)  
+**Version:** v1.2.5 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -28,7 +28,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.2.4)
+## ✨ Features (v1.2.5)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -47,6 +47,8 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Unrestricted Screenshots**: Force-enable screenshots and recordings in restricted apps (Banking, Incognito).
 
 ### 📱 System UI Settings
+- **Camera Hole Energy Ring**: Dynamic battery energy ring rendered around the front camera cutout (`DisplayCutout`) featuring color status thresholds (<=20% Yellow, <=10% Red, >20% Cyan/Green), 3s HSV rainbow gradient pulse animation during charging, system Battery Saver mode orange sync (`#FF9500`), smooth 1-minute clock rotation, fine-tuning sliders for offset & stroke width, "Show Only While Charging" toggle, and automatic screen-off power saving.
+- **Status Bar Battery Percent**: Displays a clean text battery percentage (e.g., "100%") on the far-right side of the status bar. Suppresses Android 17 stock battery views while dynamically matching status bar clock typography, theme colors, and charging pulse gradient.
 - **Clear All Button**: Adds a native-style "Clear all" button to the Pixel Launcher recents screen.
 - **Tablet Mode**: Dynamically calculates and applies target display density (`sw >= 600dp`) for tablet UI layout via pure LSPosed system server integration.
 - **Network Traffic Indicator**: Real-time speed monitor in status bar with intensity-aware color syncing.
@@ -60,7 +62,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ### 🐞 Debug & Logs
 - **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).
 
-## 🏗️ Architecture (v1.2.4)
+## 🏗️ Architecture (v1.2.5)
 
 PixelTweaks is built with modern Android **MVVM + Unidirectional Data Flow (UDF)** architecture:
 - **`presentation/`**: `SettingsUiState` (Immutable State), `SettingsEvent` (Sealed Interface Intents), `SettingsViewModel` (StateFlow & Coroutine Timers).

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
 import android.content.Context
@@ -28,7 +30,7 @@ class ClearAllButtonHookTest {
         prefs = mock(SharedPreferences::class.java)
 
         val appInfo = ApplicationInfo().apply { uid = 1000 }
-        whenever(module.getModuleApplicationInfo()).thenReturn(appInfo)
+        whenever(module.moduleApplicationInfo).thenReturn(appInfo)
         whenever(module.getRemotePreferences(IpcManager.PREF_NAME)).thenReturn(prefs)
 
         resetSingleton()
@@ -36,13 +38,12 @@ class ClearAllButtonHookTest {
 
     private fun resetSingleton() {
         val clazz = ClearAllButtonHook::class.java
-        val instance = clazz.getField("INSTANCE").get(null)
+        val instance = clazz.getField("INSTANCE")[null]
         val fields = clazz.declaredFields
         for (field in fields) {
             field.isAccessible = true
             when (field.name) {
-                "isEnabled" -> field.set(instance, true)
-                "receiverRegistered" -> field.set(instance, false)
+                "isEnabled" -> field[instance] = true
             }
         }
     }
@@ -55,9 +56,9 @@ class ClearAllButtonHookTest {
         ClearAllButtonHook.hook(module, classLoader)
 
         val clazz = ClearAllButtonHook::class.java
-        val instance = clazz.getField("INSTANCE").get(null)
+        val instance = clazz.getField("INSTANCE")[null]
         val enabledField = clazz.getDeclaredField("isEnabled").apply { isAccessible = true }
-        assertFalse(enabledField.get(instance) as Boolean)
+        assertFalse(enabledField[instance] as Boolean)
     }
 
     @Test

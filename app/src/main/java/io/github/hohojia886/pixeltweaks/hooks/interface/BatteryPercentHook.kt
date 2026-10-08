@@ -50,7 +50,6 @@ object BatteryPercentHook {
 
     private const val TAG = "Battery" // Functional category for Logger (PXTK_Battery)
     private const val VIEW_TAG = "PX_RIGHT_BATTERY_PERCENT_TAG"
-    private const val BATTERY_MARKER_TAG = "PX_STOCK_BATTERY_VIEW_MARKER"
 
     @Volatile private var isEnabled = false
     @Volatile private var processPackageName: String? = null
@@ -60,8 +59,19 @@ object BatteryPercentHook {
     @Volatile private var currentLevel = 100
     @Volatile private var isCharging = false
     @Volatile private var isPowerSaveMode = false
+    @Volatile private var isScreenOn = true
     @Volatile private var animHue = 0f
     private var pulseAnimator: ValueAnimator? = null
+
+    private val stockBatteryViews = Collections.synchronizedMap(WeakHashMap<View, Boolean>())
+
+    private fun markAsStockBatteryView(view: View) {
+        stockBatteryViews[view] = true
+    }
+
+    private fun isStockBatteryView(view: View): Boolean {
+        return stockBatteryViews[view] == true
+    }
 
     private val trackedPercentTextViews = Collections.synchronizedList(mutableListOf<WeakReference<TextView>>())
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -166,7 +176,7 @@ object BatteryPercentHook {
                         val view = chain.thisObject as? View ?: return@runCatching
                         val slot = chain.args.getOrNull(0) as? String
                         if (slot == "battery") {
-                            view.tag = BATTERY_MARKER_TAG
+                            markAsStockBatteryView(view)
                             synchronized(trackedModernBatteryViews) {
                                 if (trackedModernBatteryViews.none { it.get() == view }) {
                                     trackedModernBatteryViews.add(WeakReference(view))
@@ -183,7 +193,7 @@ object BatteryPercentHook {
                 module.hookBefore(method) { chain ->
                     if (isEnabled) {
                         val view = chain.thisObject as? View ?: return@hookBefore
-                        if (view.tag == BATTERY_MARKER_TAG) {
+                        if (isStockBatteryView(view)) {
                             chain.args[0] = 2 // 2 = STATE_HIDDEN
                         }
                     }
@@ -227,7 +237,7 @@ object BatteryPercentHook {
 
     private fun trackComposeBatteryView(view: View) {
         if (view.tag == VIEW_TAG) return
-        view.tag = BATTERY_MARKER_TAG
+        markAsStockBatteryView(view)
         synchronized(trackedComposeBatteryViews) {
             if (trackedComposeBatteryViews.none { it.get() == view }) {
                 trackedComposeBatteryViews.add(WeakReference(view))
@@ -259,7 +269,7 @@ object BatteryPercentHook {
                 if (view is ViewGroup && view.isNotEmpty()) {
                     for (i in 0 until view.childCount) {
                         val child = view.getChildAt(i) ?: continue
-                        child.tag = BATTERY_MARKER_TAG
+                        markAsStockBatteryView(child)
                         child.visibility = if (hide) View.GONE else View.VISIBLE
                         child.alpha = if (hide) 0f else 1f
                         child.scaleX = if (hide) 0f else 1f
@@ -341,7 +351,7 @@ object BatteryPercentHook {
                         val viewField = findField(instance.javaClass, '$' + "view")
                         val composeView = viewField?.get(instance) as? View
                         if (composeView != null) {
-                            composeView.tag = BATTERY_MARKER_TAG
+                            markAsStockBatteryView(composeView)
                             Logger.i(TAG, "Android17Compose", "Intercepted UnifiedBatteryViewBinder view field: " + composeView.javaClass.name)
                             trackComposeBatteryView(composeView)
                         }
@@ -360,7 +370,8 @@ object BatteryPercentHook {
             module.hookBefore(setVisibilityMethod) { chain ->
                 if (isEnabled) {
                     val view = chain.thisObject as? View ?: return@hookBefore
-                    if (view.tag == BATTERY_MARKER_TAG || (view as? ViewGroup)?.getChildAt(0)?.tag == BATTERY_MARKER_TAG) {
+                    val child0 = (view as? ViewGroup)?.let { if (it.isNotEmpty()) it.getChildAt(0) else null }
+                    if (isStockBatteryView(view) || (child0 != null && isStockBatteryView(child0))) {
                         chain.args[0] = View.GONE
                         view.alpha = 0f
                         view.scaleX = 0f
@@ -484,7 +495,7 @@ object BatteryPercentHook {
     @Volatile private var lastPulseInvalidateTime = 0L
 
     private fun startPulseAnimation() {
-        if (pulseAnimator != null) return
+        if (!isScreenOn || pulseAnimator != null) return
         mainHandler.post {
             pulseAnimator = ValueAnimator.ofFloat(0f, 360f).apply {
                 duration = 3000L
@@ -529,6 +540,8 @@ object BatteryPercentHook {
 
             val filter = IntentFilter().apply {
                 addAction(Intent.ACTION_BATTERY_CHANGED)
+                addAction(Intent.ACTION_SCREEN_OFF)
+                addAction(Intent.ACTION_SCREEN_ON)
                 addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
             }
             val receiver = object : BroadcastReceiver() {
@@ -546,9 +559,17 @@ object BatteryPercentHook {
                             val newCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
                             if (newCharging != isCharging) {
                                 isCharging = newCharging
-                                if (isCharging) startPulseAnimation() else stopPulseAnimation()
+                                if (isCharging && isScreenOn) startPulseAnimation() else stopPulseAnimation()
                             }
                             updatePercentTextColors()
+                        }
+                        Intent.ACTION_SCREEN_OFF -> {
+                            isScreenOn = false
+                            stopPulseAnimation()
+                        }
+                        Intent.ACTION_SCREEN_ON -> {
+                            isScreenOn = true
+                            if (isCharging) startPulseAnimation() else stopPulseAnimation()
                         }
                         PowerManager.ACTION_POWER_SAVE_MODE_CHANGED -> {
                             val pManager = ctx.getSystemService(Context.POWER_SERVICE) as? PowerManager

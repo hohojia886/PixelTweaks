@@ -1,7 +1,5 @@
 package io.github.hohojia886.pixeltweaks.hooks.quicksettings
 
-import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
 import io.github.hohojia886.pixeltweaks.utils.IpcManager

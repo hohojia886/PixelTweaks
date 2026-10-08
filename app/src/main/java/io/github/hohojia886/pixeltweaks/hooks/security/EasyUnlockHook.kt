@@ -1,9 +1,11 @@
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi")
+
 package io.github.hohojia886.pixeltweaks.hooks.security
 
-import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
+import androidx.core.net.toUri
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -31,17 +33,8 @@ object EasyUnlockHook {
         processPackageName = packageName
         syncSettings(module, classLoader)
 
-        runCatching {
-            val appClass = classLoader.loadClass("android.app.Application")
-            module.hookBefore(appClass.getDeclaredMethod("onCreate")) { chain ->
-                val app = chain.thisObject as? Context
-                if (app != null) {
-                    IpcManager.registerSecureReceiver(app, module.getModuleApplicationInfo().uid) { intent ->
-                        handleBroadcast(intent)
-                    }
-                }
-            }
-        }
+        IpcDispatcher.addListener { intent -> handleBroadcast(intent) }
+        IpcDispatcher.initializeOnce(module, classLoader)
 
         applyNativeHijack(module, classLoader)
     }
@@ -50,7 +43,7 @@ object EasyUnlockHook {
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
         val loadedFromDe = runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: IpcManager.getSystemContext(classLoader) ?: return@runCatching false
-            val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+            val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
             val bundle = ctx.contentResolver.call(uri, "get", null, null) ?: return@runCatching false
             isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
             isBypassActive = bundle.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
@@ -170,7 +163,7 @@ object EasyUnlockHook {
     private fun saveLearnedLength(classLoader: ClassLoader, len: Int) {
         runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: return@runCatching
-            val uri = Uri.parse("content://io.github.hohojia886.pixeltweaks")
+            val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
             val bundle = Bundle().apply { putInt(PreferenceKeys.EXPECTED_PASS_LEN, len) }
             ctx.contentResolver.call(uri, "put", null, bundle)
             IpcManager.sendUpdateBroadcast(ctx, PreferenceKeys.EXPECTED_PASS_LEN, len)

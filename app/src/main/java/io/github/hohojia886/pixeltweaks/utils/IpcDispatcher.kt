@@ -79,13 +79,23 @@ object IpcDispatcher {
             }
         }
 
+        val isSystemServer = runCatching { android.os.Process.myUid() }.getOrDefault(-1) == 1000
+
         val currentApp = runCatching {
             val atClass = classLoader.loadClass("android.app.ActivityThread")
-            atClass.getDeclaredMethod("currentApplication").invoke(null) as? Context
+            val at = atClass.getDeclaredMethod("currentActivityThread").invoke(null) ?: return@runCatching null
+            val app = atClass.getDeclaredMethod("currentApplication").invoke(at) as? Context
+            if (app != null) return@runCatching app
+
+            if (isSystemServer) {
+                (atClass.getDeclaredMethod("getSystemContext").invoke(at) as? Context)
+            } else {
+                null
+            }
         }.getOrNull()
 
         if (currentApp != null) {
-            Logger.i("Ipc", "Dispatcher", "Application already active (Hot Reload/Late Load). Registering IPC receiver immediately.")
+            Logger.i("Ipc", "Dispatcher", "Active Context found (${currentApp.packageName}). Registering IPC receiver immediately.")
             setupReceiver(currentApp)
         } else {
             runCatching {

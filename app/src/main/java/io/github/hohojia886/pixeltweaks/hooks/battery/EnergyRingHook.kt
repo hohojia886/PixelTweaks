@@ -26,6 +26,7 @@ import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
+import io.github.hohojia886.pixeltweaks.utils.getFlexibleFloatExtra
 import io.github.libxposed.api.XposedModule
 
 /**
@@ -107,8 +108,8 @@ object EnergyRingHook {
                 isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, false)
                 ringOnlyCharging = intent.getBooleanExtra(PreferenceKeys.RING_ONLY_CHARGING, false)
                 ringRotation = intent.getBooleanExtra(PreferenceKeys.ENABLE_RING_ROTATION, false)
-                ringRadiusOffset = intent.getFloatExtra(PreferenceKeys.RING_RADIUS_OFFSET, 0f)
-                ringStrokeWidth = intent.getFloatExtra(PreferenceKeys.RING_STROKE_WIDTH, 2.0f)
+                ringRadiusOffset = intent.getFlexibleFloatExtra(PreferenceKeys.RING_RADIUS_OFFSET, 0f)
+                ringStrokeWidth = intent.getFlexibleFloatExtra(PreferenceKeys.RING_STROKE_WIDTH, 2.0f)
                 Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
                 updateOverlayConfig()
             }
@@ -131,12 +132,12 @@ object EnergyRingHook {
                         updateOverlayConfig()
                     }
                     PreferenceKeys.RING_RADIUS_OFFSET -> {
-                        ringRadiusOffset = intent.getFloatExtra(PreferenceKeys.EXTRA_VALUE, 0f)
+                        ringRadiusOffset = intent.getFlexibleFloatExtra(PreferenceKeys.EXTRA_VALUE, 0f)
                         Logger.i(TAG, "Sync", "Setting [ring_radius_offset] updated to $ringRadiusOffset")
                         updateOverlayConfig()
                     }
                     PreferenceKeys.RING_STROKE_WIDTH -> {
-                        ringStrokeWidth = intent.getFloatExtra(PreferenceKeys.EXTRA_VALUE, 2.0f)
+                        ringStrokeWidth = intent.getFlexibleFloatExtra(PreferenceKeys.EXTRA_VALUE, 2.0f)
                         Logger.i(TAG, "Sync", "Setting [ring_stroke_width] updated to $ringStrokeWidth")
                         updateOverlayConfig()
                     }
@@ -223,6 +224,7 @@ object EnergyRingHook {
                 PixelFormat.TRANSLUCENT
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
             }
 
             wm.addView(view, params)
@@ -379,7 +381,7 @@ object EnergyRingHook {
             super.onDraw(canvas)
             if (!isRingEnabled || !isScreenActive) return
 
-            val cutout = rootWindowInsets?.displayCutout
+            val cutout = rootWindowInsets?.displayCutout ?: context.display.cutout
             if (cutout == null || cutout.boundingRects.isEmpty()) return
 
             val rect = cutout.boundingRects[0]
