@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**版本：** v1.2.5 (穩定版)  
+**版本：** v1.2.6 (穩定版)  
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
@@ -82,7 +82,7 @@ PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **作用域**：System Framework, Pixel Launcher, System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-v1.2.4-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-v1.2.6-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
 3. 開啟 **PixelTweaks** App 一次以初始化設定（消除 Android 的 `STOPPED` 狀態）。
 4. 重新啟動您的裝置。

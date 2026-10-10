@@ -16,19 +16,37 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
         
-        if (action == Intent.ACTION_BOOT_COMPLETED ||
-            action == Intent.ACTION_LOCKED_BOOT_COMPLETED || 
-            action == Intent.ACTION_USER_UNLOCKED ||
-            action == Intent.ACTION_PACKAGE_ADDED ||
-            action == Intent.ACTION_PACKAGE_REPLACED ||
-            action == Intent.ACTION_MY_PACKAGE_REPLACED) {
+        if ((action == Intent.ACTION_BOOT_COMPLETED) ||
+            (action == Intent.ACTION_LOCKED_BOOT_COMPLETED) || 
+            (action == Intent.ACTION_USER_UNLOCKED) ||
+            (action == Intent.ACTION_PACKAGE_ADDED) ||
+            (action == Intent.ACTION_PACKAGE_REPLACED) ||
+            (action == Intent.ACTION_MY_PACKAGE_REPLACED)) {
             
             val deContext = context.createDeviceProtectedStorageContext()
             val prefs = deContext.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
+            val cePrefs = runCatching { context.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE) }.getOrNull()
+
+            // Unconditionally reset security switches on boot in both DE and CE storage
+            if ((action == Intent.ACTION_BOOT_COMPLETED) || (action == Intent.ACTION_LOCKED_BOOT_COMPLETED)) {
+                prefs.edit {
+                    putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
+                    putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
+                    putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
+                    putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
+                    putBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false)
+                }
+                cePrefs?.edit {
+                    putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
+                    putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
+                    putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
+                    putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
+                    putBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false)
+                }
+            }
             
-            if (action == Intent.ACTION_USER_UNLOCKED) {
+            if ((action == Intent.ACTION_USER_UNLOCKED) && (cePrefs != null)) {
                 // When user unlocks, CE storage is accessible. Sync CE preferences over to DE preferences to preserve user settings.
-                val cePrefs = context.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
                 if (cePrefs.all.isNotEmpty()) {
                     prefs.edit {
                         cePrefs.all.forEach { (k, v) ->
@@ -40,6 +58,12 @@ class BootReceiver : BroadcastReceiver() {
                                 is String -> putString(k, v)
                             }
                         }
+                        // Ensure security switches remain off during unlock sync
+                        putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
+                        putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
+                        putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
+                        putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
+                        putBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false)
                     }
                 }
             }

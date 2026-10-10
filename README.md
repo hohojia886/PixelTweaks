@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**Version:** v1.2.5 (Stable Release)  
+**Version:** v1.2.6 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
@@ -80,7 +80,7 @@ See [ChangeLogs.md](ChangeLogs.md) for the complete version release history and 
 - **Static Scope Enforcement**: System Framework, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-v1.2.4-<buildType>.apk`.
+1. Build or download `pixel-tweaks-v1.2.6-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
 4. Reboot your device.

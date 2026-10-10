@@ -1,8 +1,6 @@
-# PixelTweaks Change Logs
-
-**Language:** **English** | [繁體中文 (Traditional Chinese)](CHANGELOG_ZHT.md)
-
----
+### v1.2.6
+- 🛡️ **Camera Ring Touch Pass-Through**: Prevented camera energy ring overlay from blocking touch interactions in third-party apps.
+- 🔒 **Boot Security Switch Auto-Reset**: Fixed `BootReceiver` lifecycle to unconditionally reset security switches on device boot.
 
 ### v1.2.5
 - 🛡️ **IPC & Security Hardening**: Enhanced cross-process communication security and identity verification across system components.

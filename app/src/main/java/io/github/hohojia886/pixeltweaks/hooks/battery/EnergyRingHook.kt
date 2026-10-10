@@ -216,7 +216,7 @@ object EnergyRingHook {
             val params = WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 statusBarHeight,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                2015, // TYPE_SECURE_SYSTEM_OVERLAY (Bypasses Tapjacking protections inherently)
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
