@@ -30,7 +30,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.2.5)
+## ✨ 功能特點 (v1.2.6)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **雙擊桌面熄屏**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -64,7 +64,7 @@
 ### 🐞 偵錯與日誌 (Debug & Logs)
 - **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有功能模組（**僅限 Debug Build**）。
 
-## 🏗️ 專案架構 (v1.2.5)
+## 🏗️ 專案架構 (v1.2.6)
 
 PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **`presentation/`**：`SettingsUiState` (不可變 State)、`SettingsEvent` (Sealed Event 意圖)、`SettingsViewModel` (StateFlow 與協程定時器)。

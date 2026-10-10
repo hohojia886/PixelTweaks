@@ -28,7 +28,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.2.5)
+## ✨ Features (v1.2.6)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -62,7 +62,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ### 🐞 Debug & Logs
 - **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).
 
-## 🏗️ Architecture (v1.2.5)
+## 🏗️ Architecture (v1.2.6)
 
 PixelTweaks is built with modern Android **MVVM + Unidirectional Data Flow (UDF)** architecture:
 - **`presentation/`**: `SettingsUiState` (Immutable State), `SettingsEvent` (Sealed Interface Intents), `SettingsViewModel` (StateFlow & Coroutine Timers).
