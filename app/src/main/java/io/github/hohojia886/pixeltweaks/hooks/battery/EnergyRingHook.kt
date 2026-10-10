@@ -163,11 +163,11 @@ object EnergyRingHook {
                         Intent.ACTION_BATTERY_CHANGED -> {
                             val rawLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
                             val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-                            if (rawLevel >= 0 && scale > 0) {
+                            if ((rawLevel >= 0) && (scale > 0)) {
                                 batteryLevel = (rawLevel * 100) / scale
                             }
                             val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
-                            isCharging = status == BatteryManager.BATTERY_STATUS_CHARGING || status == BatteryManager.BATTERY_STATUS_FULL
+                            isCharging = (status == BatteryManager.BATTERY_STATUS_CHARGING) || (status == BatteryManager.BATTERY_STATUS_FULL)
                             val pManager = ctx.getSystemService(Context.POWER_SERVICE) as? PowerManager
                             isPowerSaveMode = pManager?.isPowerSaveMode ?: false
                             overlayView?.updateConfig(isEnabled, isScreenOn, batteryLevel, isCharging, isPowerSaveMode, ringOnlyCharging, ringRotation, ringRadiusOffset, ringStrokeWidth)
@@ -221,7 +221,7 @@ object EnergyRingHook {
                         WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
                         WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                         WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                PixelFormat.TRANSLUCENT
+                PixelFormat.TRANSLUCENT,
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
                 layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
@@ -242,6 +242,14 @@ object EnergyRingHook {
     }
 
     class EnergyRingView(context: Context) : View(context) {
+
+        init {
+            isClickable = false
+            isFocusable = false
+            isLongClickable = false
+            importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+            runCatching { setScrollCaptureCallback(null) }
+        }
 
         private var isRingEnabled = false
         private var isScreenActive = true
@@ -288,7 +296,7 @@ object EnergyRingHook {
             onlyCharge: Boolean,
             rotation: Boolean,
             offsetDp: Float,
-            strokeDp: Float
+            strokeDp: Float,
         ) {
             isRingEnabled = enabled
             isScreenActive = screenOn
@@ -399,7 +407,7 @@ object EnergyRingHook {
                 centerX - radiusPx,
                 centerY - radiusPx,
                 centerX + radiusPx,
-                centerY + radiusPx
+                centerY + radiusPx,
             )
 
             // 1. Draw Background Track Arc

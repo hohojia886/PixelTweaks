@@ -62,7 +62,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ### 🐞 Debug & Logs
 - **Master Logging**: Standardized, low-overhead logging system with complete coverage across all functional modules (**Debug build only**).
 
-## 🏗️ Architecture (v1.2.6)
+## 🏗️ Architecture
 
 PixelTweaks is built with modern Android **MVVM + Unidirectional Data Flow (UDF)** architecture:
 - **`presentation/`**: `SettingsUiState` (Immutable State), `SettingsEvent` (Sealed Interface Intents), `SettingsViewModel` (StateFlow & Coroutine Timers).

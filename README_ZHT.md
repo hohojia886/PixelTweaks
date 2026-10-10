@@ -64,7 +64,7 @@
 ### 🐞 偵錯與日誌 (Debug & Logs)
 - **啟用主日誌開關**：標準化、低負載的日誌系統，完整涵蓋所有功能模組（**僅限 Debug Build**）。
 
-## 🏗️ 專案架構 (v1.2.6)
+## 🏗️ 專案架構
 
 PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **`presentation/`**：`SettingsUiState` (不可變 State)、`SettingsEvent` (Sealed Event 意圖)、`SettingsViewModel` (StateFlow 與協程定時器)。
