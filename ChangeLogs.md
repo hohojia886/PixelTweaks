@@ -1,3 +1,6 @@
+### v1.2.7
+- ⚡ **Mobile Data Confirmation Bypass Fix**: Fixed mobile data toggle confirmation bypass feature with 0ms visual flicker and full multi-language compatibility.
+
 ### v1.2.6
 - 🛡️ **Camera Ring Touch Pass-Through**: Prevented camera energy ring overlay from blocking touch interactions in third-party apps.
 - 🔒 **Boot Security Switch Auto-Reset**: Fixed `BootReceiver` lifecycle to unconditionally reset security switches on device boot.

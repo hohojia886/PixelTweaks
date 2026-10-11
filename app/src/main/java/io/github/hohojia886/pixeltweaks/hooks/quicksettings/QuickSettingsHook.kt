@@ -2,19 +2,22 @@
 
 package io.github.hohojia886.pixeltweaks.hooks.quicksettings
 
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
 import android.net.wifi.WifiManager
 import androidx.core.net.toUri
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Field
-import java.lang.reflect.Method
 
 /**
  * QuickSettingsHook: Enhances Quick Settings tile behaviors.
  * Fixes the WiFi "Pause" behavior by forcing a complete power-off,
- * and bypasses the confirmation dialog when enabling Mobile Data.
+ * and bypasses the confirmation dialog when enabling Mobile Data via Pre-Show Zero-Flicker Interception.
  */
 object QuickSettingsHook {
 
@@ -23,7 +26,7 @@ object QuickSettingsHook {
     @Volatile private var isWifiFixEnabled = true // Enable WiFi force-off
     @Volatile private var isDataFixEnabled = true // Enable data confirmation bypass
 
-    // Entry point: Loads settings and hooks the tile interactors
+    // Entry point: Loads settings and hooks tile interactors & dialogs
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Started", "Initializing QuickSettingsHook")
         
@@ -47,6 +50,30 @@ object QuickSettingsHook {
                 Logger.e(TAG, "Error", "Failed to load settings via RemotePrefProvider", e)
             }
         }
+
+        // Subscribe to process-level IPC broadcasts via IpcDispatcher for real-time sync
+        IpcDispatcher.addListener { intent ->
+            when (intent.action) {
+                IpcManager.ACTION_SETTINGS_SYNC -> {
+                    isDataFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
+                    isWifiFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
+                    Logger.i(TAG, "Sync", "Full sync received: Data=$isDataFixEnabled, WiFi=$isWifiFixEnabled")
+                }
+                IpcManager.ACTION_SETTING_CHANGED -> {
+                    when (intent.getStringExtra(PreferenceKeys.EXTRA_KEY)) {
+                        PreferenceKeys.ENABLE_QS_DATA_FIX -> {
+                            isDataFixEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                            Logger.i(TAG, "Sync", "Setting [enable_qs_data_fix] updated to $isDataFixEnabled")
+                        }
+                        PreferenceKeys.ENABLE_QS_WIFI_FIX -> {
+                            isWifiFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
+                            Logger.i(TAG, "Sync", "Setting [enable_qs_wifi_fix] updated to $isWifiFixEnabled")
+                        }
+                    }
+                }
+            }
+        }
+        IpcDispatcher.initializeOnce(module, classLoader)
 
         // WiFi Fix: Intercepts 'pauseWifi' and executes 'setWifiEnabled(false)' instead
         runCatching {
@@ -79,64 +106,79 @@ object QuickSettingsHook {
                     chain.proceed()
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook WiFiRepositoryImpl#pauseWifi", e)
         }
 
-        // Mobile Data Fix: Intercepts the handleSecondaryClick lambda to enable data without dialog
+        // Mobile Data Fix: Pre-show Zero-Flicker Interception for Mobile Data dialogs
         runCatching {
-            val targetClass = "com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor" + '$' + "handleSecondaryClick" + '$' + "2"
-            val lambdaClass = classLoader.loadClass(targetClass)
-            val invokeSuspendMethod = lambdaClass.getDeclaredMethod("invokeSuspend", Any::class.java)
+            val dialogClass = classLoader.loadClass("android.app.Dialog")
+            val showMethod = dialogClass.getDeclaredMethod("show")
+            module.hook(showMethod).intercept { chain ->
+                val dialog = chain.thisObject as? Dialog
 
-            module.hook(invokeSuspendMethod).intercept { chain ->
-                if (!isDataFixEnabled) {
-                    Logger.i(TAG, "Running", "Data Fix Disabled -> Proceeding with factory confirmation dialog")
-                    return@intercept chain.proceed()
-                }
-
-                try {
-                    val lambdaInstance = chain.thisObject
-                    val interactorField = interactorFieldCached ?: run {
-                        val field = findField(lambdaInstance.javaClass, "this" + '$' + "0") ?: findField(lambdaInstance.javaClass, "val" + '$' + "interactor")
-                        interactorFieldCached = field
-                        field
+                if (isDataFixEnabled && dialog != null) {
+                    // Check StackTrace BEFORE chain.proceed() to suppress window attachment entirely
+                    val isMobileDataStack = Throwable().stackTrace.any { element ->
+                        val cls = element.className
+                        cls.contains("MobileData") || cls.contains("Cellular") || cls.contains("MobileConnections") || cls.contains("cell.domain")
                     }
 
-                    val interactor = interactorField?.get(lambdaInstance) ?: return@intercept chain.proceed()
-                    
-                    // Invoke confirm(false) or setDataEnabled(true) directly on interactor
-                    val confirmMethod = findMethod(interactor.javaClass, "confirm", Boolean::class.java) 
-                        ?: findMethod(interactor.javaClass, "setDataEnabled", Boolean::class.java)
-
-                    if (confirmMethod != null) {
-                        Logger.i(TAG, "Success", "Data Fix Active -> Bypassing dialog via method: ${confirmMethod.name}")
-                        confirmMethod.invoke(interactor, false)
-                        return@intercept Unit // Skip original dialog showing
-                    }
-
-                    // Fallback: Query SubID and set data enabled directly via connection repository
-                    val subIdField = findField(interactor.javaClass, "subId") ?: findField(interactor.javaClass, '$' + "subId")
-                    val subId = subIdField?.get(interactor) as? Int
-                    val repoField = findField(interactor.javaClass, "mobileDataRepository") ?: findField(interactor.javaClass, "repository")
-                    val repo = repoField?.get(interactor)
-
-                    if (subId != null && repo != null) {
-                        val connectionRepo = repo.javaClass.getMethod("getRepoForSubId", Int::class.javaPrimitiveType).invoke(repo, subId)
-                        if (connectionRepo != null) {
-                            Logger.i(TAG, "Success", "Data Fix Active -> Bypassing dialog for SubID $subId")
-                            connectionRepo.javaClass.getMethod("setDataEnabled", Boolean::class.javaPrimitiveType).invoke(connectionRepo, true)
-                            return@intercept Unit // Skip original dialog showing
+                    if (isMobileDataStack) {
+                        Logger.i(TAG, "Success", "Bypassed Mobile Data confirmation dialog PRE-SHOW (Zero-Flicker)")
+                        
+                        // 1. Force Absolute Window Transparency, Zero Alpha, & Invisible Attributes
+                        runCatching {
+                            dialog.window?.let { win ->
+                                win.setDimAmount(0f)
+                                win.setWindowAnimations(0)
+                                win.attributes = win.attributes.apply {
+                                    alpha = 0f
+                                    dimAmount = 0f
+                                }
+                                win.decorView.visibility = android.view.View.INVISIBLE
+                            }
                         }
+
+                        // 2. Try triggering positive listener directly without rendering window
+                        var triggered = false
+                        runCatching {
+                            if (dialog is AlertDialog) {
+                                dialog.create() // Ensure AlertController is initialized
+                                val alertField = findField(AlertDialog::class.java, "mAlert")
+                                val alertController = alertField?.get(dialog)
+                                if (alertController != null) {
+                                    val listenerField = findField(alertController.javaClass, "mButtonPositiveListener")
+                                    val listener = listenerField?.get(alertController) as? DialogInterface.OnClickListener
+                                    if (listener != null) {
+                                        listener.onClick(dialog, DialogInterface.BUTTON_POSITIVE)
+                                        triggered = true
+                                    }
+                                }
+                            }
+                        }
+
+                        if (triggered) {
+                            return@intercept null // Skip chain.proceed() completely
+                        }
+
+                        // 3. Fallback: Proceed with 100% transparent window, then perform instant click & dismiss
+                        val res = chain.proceed()
+                        runCatching {
+                            (dialog as? AlertDialog)?.getButton(DialogInterface.BUTTON_POSITIVE)?.performClick() ?: dialog.dismiss()
+                        }
+                        return@intercept res
                     }
-                } catch (e: Exception) {
-                    Logger.e(TAG, "Error", "Mobile data bypass logic failed", e)
                 }
+                
                 chain.proceed()
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook Dialog#show for Mobile Data fix", e)
         }
     }
 
     private var wifiManagerFieldCached: Field? = null
-    private var interactorFieldCached: Field? = null
 
     // Helper: Finds a field in class hierarchy
     private fun findField(clazz: Class<*>, name: String): Field? {
@@ -144,16 +186,6 @@ object QuickSettingsHook {
         while (curr != null) {
             try { return curr.getDeclaredField(name).apply { isAccessible = true } }
             catch (_: NoSuchFieldException) { curr = curr.superclass }
-        }
-        return null
-    }
-
-    // Helper: Finds a method in class hierarchy
-    private fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
-        var curr: Class<*>? = clazz
-        while (curr != null) {
-            try { return curr.getDeclaredMethod(name, *parameterTypes).apply { isAccessible = true } }
-            catch (_: NoSuchMethodException) { curr = curr.superclass }
         }
         return null
     }

@@ -1,7 +1,9 @@
 package io.github.hohojia886.pixeltweaks.hooks.quicksettings
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.ApplicationInfo
+import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.libxposed.api.XposedModule
@@ -12,6 +14,7 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 class QuickSettingsHookTest {
@@ -62,4 +65,39 @@ class QuickSettingsHookTest {
         assertFalse(dataField.get(instance) as Boolean)
     }
 
+    @Test
+    fun testIpcDispatcherSync() {
+        val classLoader = mock(ClassLoader::class.java)
+        QuickSettingsHook.hook(module, classLoader)
+
+        val clazz = QuickSettingsHook::class.java
+        val instance = clazz.getField("INSTANCE").get(null)
+        val wifiField = clazz.getDeclaredField("isWifiFixEnabled")
+        val dataField = clazz.getDeclaredField("isDataFixEnabled")
+        wifiField.isAccessible = true
+        dataField.isAccessible = true
+
+        // Dispatch sync intent via IpcDispatcher listeners
+        val syncIntent = Intent(IpcManager.ACTION_SETTINGS_SYNC).apply {
+            putExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
+            putExtra(PreferenceKeys.ENABLE_QS_DATA_FIX, false)
+        }
+        
+        val listenersField = IpcDispatcher::class.java.getDeclaredField("listeners").apply { isAccessible = true }
+        @Suppress("UNCHECKED_CAST")
+        val listeners = listenersField.get(IpcDispatcher) as List<(Intent) -> Unit>
+        listeners.forEach { it.invoke(syncIntent) }
+
+        assertTrue(wifiField.get(instance) as Boolean)
+        assertFalse(dataField.get(instance) as Boolean)
+
+        // Dispatch setting changed intent
+        val changeIntent = Intent(IpcManager.ACTION_SETTING_CHANGED).apply {
+            putExtra(PreferenceKeys.EXTRA_KEY, PreferenceKeys.ENABLE_QS_DATA_FIX)
+            putExtra(PreferenceKeys.EXTRA_VALUE, true)
+        }
+        listeners.forEach { it.invoke(changeIntent) }
+
+        assertTrue(dataField.get(instance) as Boolean)
+    }
 }
