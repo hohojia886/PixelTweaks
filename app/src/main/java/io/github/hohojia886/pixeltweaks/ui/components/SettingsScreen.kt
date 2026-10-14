@@ -1,6 +1,8 @@
 package io.github.hohojia886.pixeltweaks.ui.components
 
 import android.content.Intent
+import android.os.Build
+import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Gesture
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Security
@@ -285,13 +288,15 @@ fun SettingsScreen(
                     checked = uiState.qsWifiFix,
                     onCheckedChange = { onEvent(SettingsEvent.ToggleQsWifiFix(it)) }
                 )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                SwitchSettingItem(
-                    title = stringResource(R.string.qs_data_fix),
-                    summary = stringResource(R.string.qs_data_fix_summary),
-                    checked = uiState.qsDataFix,
-                    onCheckedChange = { onEvent(SettingsEvent.ToggleQsDataFix(it)) }
-                )
+                if (isQsDataFixSupported()) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    SwitchSettingItem(
+                        title = stringResource(R.string.qs_data_fix),
+                        summary = stringResource(R.string.qs_data_fix_summary),
+                        checked = uiState.qsDataFix,
+                        onCheckedChange = { onEvent(SettingsEvent.ToggleQsDataFix(it)) }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -704,6 +709,39 @@ fun OthersCard(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = stringResource(R.string.github_repository_summary),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+        // 3. System Build Number Row
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Info,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.system_build_number),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = Build.DISPLAY,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium

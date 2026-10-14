@@ -11,6 +11,7 @@ import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
+import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
 import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Field
 
@@ -51,18 +52,24 @@ object QuickSettingsHook {
             }
         }
 
+        if (!isQsDataFixSupported()) {
+            isDataFixEnabled = false
+        }
+
         // Subscribe to process-level IPC broadcasts via IpcDispatcher for real-time sync
         IpcDispatcher.addListener { intent ->
             when (intent.action) {
                 IpcManager.ACTION_SETTINGS_SYNC -> {
                     isDataFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_DATA_FIX, true)
                     isWifiFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
+                    if (!isQsDataFixSupported()) isDataFixEnabled = false
                     Logger.i(TAG, "Sync", "Full sync received: Data=$isDataFixEnabled, WiFi=$isWifiFixEnabled")
                 }
                 IpcManager.ACTION_SETTING_CHANGED -> {
                     when (intent.getStringExtra(PreferenceKeys.EXTRA_KEY)) {
                         PreferenceKeys.ENABLE_QS_DATA_FIX -> {
                             isDataFixEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                            if (!isQsDataFixSupported()) isDataFixEnabled = false
                             Logger.i(TAG, "Sync", "Setting [enable_qs_data_fix] updated to $isDataFixEnabled")
                         }
                         PreferenceKeys.ENABLE_QS_WIFI_FIX -> {

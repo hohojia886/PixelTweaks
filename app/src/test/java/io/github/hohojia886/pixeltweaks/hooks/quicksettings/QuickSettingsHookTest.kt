@@ -13,6 +13,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.util.ReflectionHelpers
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -24,6 +25,7 @@ class QuickSettingsHookTest {
 
     @Before
     fun setUp() {
+        ReflectionHelpers.setStaticField(android.os.Build::class.java, "DISPLAY", "CP2A.260605.001")
         module = mock(XposedModule::class.java)
         prefs = mock(SharedPreferences::class.java)
 
@@ -99,5 +101,20 @@ class QuickSettingsHookTest {
         listeners.forEach { it.invoke(changeIntent) }
 
         assertTrue(dataField.get(instance) as Boolean)
+    }
+
+    @Test
+    fun testUnsupportedBuildNumberForcesDataFixDisabled() {
+        ReflectionHelpers.setStaticField(android.os.Build::class.java, "DISPLAY", "CP3A.260905.001")
+        whenever(prefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true)).thenReturn(true)
+
+        val classLoader = mock(ClassLoader::class.java)
+        QuickSettingsHook.hook(module, classLoader)
+
+        val clazz = QuickSettingsHook::class.java
+        val instance = clazz.getField("INSTANCE").get(null)
+        val dataField = clazz.getDeclaredField("isDataFixEnabled").apply { isAccessible = true }
+
+        assertFalse(dataField.get(instance) as Boolean)
     }
 }

@@ -11,6 +11,7 @@
     <string name="lang_system_default">அமைப்பு இயல்புநிலை</string>
     <string name="github_repository">GitHub களஞ்சியம்</string>
     <string name="github_repository_summary">மூலக் குறியீடு மற்றும் வெளியீடுகளைப் பார்க்கவும்</string>
+    <string name="system_build_number">சிஸ்டம் பில்ட் எண்</string>
 
     <!-- Categories -->
     <string name="category_security">அமைப்பு &amp; பாதுகாப்பு</string>

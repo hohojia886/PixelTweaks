@@ -11,6 +11,7 @@
     <string name="lang_system_default">Implicit sistem</string>
     <string name="github_repository">Depozit GitHub</string>
     <string name="github_repository_summary">Vezi codul sursă și versiunile</string>
+    <string name="system_build_number">Număr versiune sistem</string>
 
     <!-- Categories -->
     <string name="category_security">Sistem &amp; Securitate</string>

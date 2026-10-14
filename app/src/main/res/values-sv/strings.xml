@@ -11,6 +11,7 @@
     <string name="lang_system_default">Systemstandard</string>
     <string name="github_repository">GitHub-arkiv</string>
     <string name="github_repository_summary">Visa källkod och releaser</string>
+    <string name="system_build_number">Systemets build-nummer</string>
 
     <!-- Categories -->
     <string name="category_security">System &amp; Säkerhet</string>

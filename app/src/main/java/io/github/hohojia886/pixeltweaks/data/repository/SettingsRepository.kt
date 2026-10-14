@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import io.github.hohojia886.pixeltweaks.presentation.SettingsUiState
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
+import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
 
 /**
  * SettingsRepository: Data access layer handling dual SharedPreferences persistence (CE/DE)
@@ -92,7 +93,7 @@ class SettingsRepository(private val context: Context) {
             dtLockscreen = dePrefs.getBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true),
             dtStatusbar = dePrefs.getBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true),
             qsWifiFix = dePrefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true),
-            qsDataFix = dePrefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true),
+            qsDataFix = if (isQsDataFixSupported()) dePrefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true) else false,
             masterLog = dePrefs.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, false),
             logSecurity = dePrefs.getBoolean(PreferenceKeys.LOG_SECURITY, true),
             logInterface = dePrefs.getBoolean(PreferenceKeys.LOG_INTERFACE, true),

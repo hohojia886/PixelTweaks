@@ -11,6 +11,7 @@
     <string name="lang_system_default">系统默认</string>
     <string name="github_repository">GitHub 项目库</string>
     <string name="github_repository_summary">查看开源代码与发布版本</string>
+    <string name="system_build_number">系统版本号</string>
 
     <!-- Categories -->
     <string name="category_security">系统与安全</string>

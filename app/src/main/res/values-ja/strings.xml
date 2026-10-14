@@ -11,6 +11,7 @@
     <string name="lang_system_default">システムデフォルト</string>
     <string name="github_repository">GitHub リポジトリ</string>
     <string name="github_repository_summary">ソースコードとリリースを表示</string>
+    <string name="system_build_number">システムビルド番号</string>
 
     <!-- Categories -->
     <string name="category_security">システムとセキュリティ</string>

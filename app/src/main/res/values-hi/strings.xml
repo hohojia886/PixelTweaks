@@ -11,6 +11,7 @@
     <string name="lang_system_default">सिस्टम डिफ़ॉल्ट</string>
     <string name="github_repository">GitHub रिपॉजिटरी</string>
     <string name="github_repository_summary">सोर्स कोड और रिलीज़ देखें</string>
+    <string name="system_build_number">सिस्टम बिल्ड नंबर</string>
 
     <!-- Categories -->
     <string name="category_security">सिस्टम और सुरक्षा</string>

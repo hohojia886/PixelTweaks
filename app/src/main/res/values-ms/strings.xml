@@ -11,6 +11,7 @@
     <string name="lang_system_default">Lalai Sistem</string>
     <string name="github_repository">Repositori GitHub</string>
     <string name="github_repository_summary">Lihat kod sumber dan keluaran</string>
+    <string name="system_build_number">Nombor Binaan Sistem</string>
 
     <!-- Categories -->
     <string name="category_security">Sistem &amp; Keselamatan</string>

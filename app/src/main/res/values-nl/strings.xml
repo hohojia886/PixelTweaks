@@ -11,6 +11,7 @@
     <string name="lang_system_default">Systeemstandaard</string>
     <string name="github_repository">GitHub-repository</string>
     <string name="github_repository_summary">Broncode en releases bekijken</string>
+    <string name="system_build_number">Systeembuildnummer</string>
 
     <!-- Categories -->
     <string name="category_security">Systeem &amp; Beveiliging</string>

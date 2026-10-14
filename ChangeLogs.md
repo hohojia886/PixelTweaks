@@ -1,3 +1,7 @@
+### v1.2.8
+- ℹ️ **System Build Number**: Display system build number under "Others" (17 languages supported).
+- ⚙️ **Mobile Data Toggle**: Limit direct mobile data toggle to specific Android 17 builds (`CP2A.260605/260705/260805`), as this feature is no longer needed starting from `CP3A.260905`.
+
 ### v1.2.7
 - ⚡ **Mobile Data Confirmation Bypass Fix**: Fixed mobile data toggle confirmation bypass feature with 0ms visual flicker and full multi-language compatibility.
 

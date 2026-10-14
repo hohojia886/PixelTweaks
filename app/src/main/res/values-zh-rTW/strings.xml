@@ -11,6 +11,7 @@
     <string name="lang_system_default">系統預設</string>
     <string name="github_repository">GitHub 專案庫</string>
     <string name="github_repository_summary">檢視開放原始碼與發行版本</string>
+    <string name="system_build_number">系統版本號</string>
 
     <!-- Categories -->
     <string name="category_security">系統與安全</string>

@@ -11,6 +11,7 @@
     <string name="lang_system_default">Výchozí nastavení systému</string>
     <string name="github_repository">Repositář GitHub</string>
     <string name="github_repository_summary">Zobrazit zdrojový kód a vydání</string>
+    <string name="system_build_number">Číslo sestavení systému</string>
 
     <!-- Categories -->
     <string name="category_security">Systém a zabezpečení</string>

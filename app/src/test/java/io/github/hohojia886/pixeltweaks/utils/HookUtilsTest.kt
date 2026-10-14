@@ -6,6 +6,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
@@ -57,5 +59,22 @@ class HookUtilsTest {
     fun testGetFlexibleFloatExtraWithMissingExtraReturnsDefault() {
         val intent = Intent()
         assertEquals(1.0f, intent.getFlexibleFloatExtra("missing", 1.0f))
+    }
+
+    @Test
+    fun testIsQsDataFixSupportedReturnsTrueForTargetBuilds() {
+        assertTrue(isQsDataFixSupported("CP2A.260605.001", "ID1"))
+        assertTrue(isQsDataFixSupported("CP2A.260705.002", "ID2"))
+        assertTrue(isQsDataFixSupported("CP2A.260805.003", "ID3"))
+        assertTrue(isQsDataFixSupported("DISPLAY", "BUILD_CP2A.260605_ID"))
+    }
+
+    @Test
+    fun testIsQsDataFixSupportedReturnsFalseForOtherBuilds() {
+        assertFalse(isQsDataFixSupported("CP3A.260905.001", "ID4"))
+        assertFalse(isQsDataFixSupported("BP1A.260605.001", "ID5"))
+        assertFalse(isQsDataFixSupported("260605", "260605"))
+        assertFalse(isQsDataFixSupported("AP1A.240305.019.A1", "AP1A"))
+        assertFalse(isQsDataFixSupported("BUILD_DISPLAY", "BUILD_ID"))
     }
 }

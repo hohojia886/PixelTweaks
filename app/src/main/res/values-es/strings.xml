@@ -11,6 +11,7 @@
     <string name="lang_system_default">Predeterminado del sistema</string>
     <string name="github_repository">Repositorio de GitHub</string>
     <string name="github_repository_summary">Ver código fuente y versiones</string>
+    <string name="system_build_number">Número de compilación del sistema</string>
 
     <!-- Categories -->
     <string name="category_security">Sistema y seguridad</string>

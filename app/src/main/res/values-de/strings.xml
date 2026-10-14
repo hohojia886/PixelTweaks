@@ -11,6 +11,7 @@
     <string name="lang_system_default">Systemstandard</string>
     <string name="github_repository">GitHub-Repository</string>
     <string name="github_repository_summary">Quellcode und Releases anzeigen</string>
+    <string name="system_build_number">System-Build-Nummer</string>
 
     <!-- Categories -->
     <string name="category_security">System &amp; Sicherheit</string>

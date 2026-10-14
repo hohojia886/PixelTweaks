@@ -60,3 +60,16 @@ fun android.content.Intent.getFlexibleFloatExtra(name: String, defaultValue: Flo
         else -> defaultValue
     }
 }
+
+/**
+ * Checks if Mobile Data Direct Toggle (qs_data_fix) is supported based on system build numbers.
+ * Supported build numbers contain "CP2A.260605", "CP2A.260705", or "CP2A.260805".
+ * Starting from CP3A.260905 or for other build versions, this feature is not supported and will be hidden/disabled.
+ */
+fun isQsDataFixSupported(
+    display: String = android.os.Build.DISPLAY,
+    id: String = android.os.Build.ID
+): Boolean {
+    val targetTags = listOf("CP2A.260605", "CP2A.260705", "CP2A.260805")
+    return targetTags.any { display.contains(it) || id.contains(it) }
+}
