@@ -28,8 +28,8 @@
     <string name="tablet_mode">Tablet-Modus</string>
     <string name="tablet_mode_summary">Tablet-Layout erzwingen (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Tablet-Layout aktiv (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Akkustand ganz rechts in der Statusleiste</string>
-    <string name="statusbar_battery_percent_summary">Akkustand als Text ganz rechts in der Statusleiste anzeigen (z. B. 100%)</string>
+    <string name="statusbar_battery_percent">Akkustand in der Statusleiste</string>
+    <string name="statusbar_battery_percent_summary">Akkustand als Text in der Statusleiste anzeigen (z. B. 100%)</string>
     <string name="enable_battery_info">Akku-Info anzeigen</string>
     <string name="enable_battery_info_summary">Echtzeit-Akkudaten anzeigen (alle 2s aktualisiert, erfordert Root)</string>
     <string name="camera_energy_ring">Kamera-Punchhole-Energiering</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Signaturprüfung umgehen</string>
     <string name="bypass_signature_summary">Apps mit anderer Signatur installieren (läuft in 3 Min. ab)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Netzwerkverkehrsanzeige</string>
     <string name="network_traffic_summary">Echtzeit-Geschwindigkeit in Statusleiste anzeigen</string>
     <string name="traffic_interval_format">Aktualisierungsintervall: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Schwellenwert: Immer anzeigen</string>
     <string name="traffic_threshold_mb">Schwellenwert: 1MB/s</string>
     <string name="traffic_threshold_kb">Schwellenwert: %1$d KB/s</string>
+    <string name="hide_vpn_icon">VPN-Symbol ausblenden</string>
+    <string name="hide_vpn_icon_summary">Das Schlüsselsymbol in der Statusleiste ausblenden (Neustart oder Netzwerkwechsel erforderlich)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Hauptprotokollierung</string>

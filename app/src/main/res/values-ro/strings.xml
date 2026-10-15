@@ -28,8 +28,8 @@
     <string name="tablet_mode">Mod tabletă</string>
     <string name="tablet_mode_summary">Afișează aspect de tabletă (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Aspect de tabletă activ (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Procentaj baterie în extrema dreaptă a barei de stare</string>
-    <string name="statusbar_battery_percent_summary">Afișează procentajul bateriei ca text în extrema dreaptă a barei de stare</string>
+    <string name="statusbar_battery_percent">Procentaj baterie în bara de stare</string>
+    <string name="statusbar_battery_percent_summary">Afișează procentajul bateriei ca text în bara de stare</string>
     <string name="enable_battery_info">Afișează informații baterie</string>
     <string name="enable_battery_info_summary">Afișează date baterie în timp real (reîmprospătare la 2s, necesită Root)</string>
     <string name="camera_energy_ring">Inel de energie pentru camera frontală</string>
@@ -67,7 +67,7 @@
     <string name="allow_downgrade">Permite degradarea aplicațiilor</string>
     <string name="allow_downgrade_summary">Instalează versiuni vechi de aplicații (expiră în 3 min)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Indicator trafic rețea</string>
     <string name="network_traffic_summary">Afișează viteza în timp real în bara de stare</string>
     <string name="traffic_interval_format">Interval reîmprospătare: %1$ds</string>
@@ -75,6 +75,8 @@
     <string name="traffic_threshold_always">Prag: Afișează mereu</string>
     <string name="traffic_threshold_mb">Prag: 1MB/s</string>
     <string name="traffic_threshold_kb">Prag: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Ascunde pictograma VPN</string>
+    <string name="hide_vpn_icon_summary">Ascunde pictograma cheie din bara de stare (necesită repornire sau comutare rețea pentru actualizare)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Jurnalizare principală</string>

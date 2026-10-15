@@ -28,8 +28,8 @@
     <string name="tablet_mode">Modo Tablet</string>
     <string name="tablet_mode_summary">Forçar layout de tablet (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Layout de tablet ativo (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Porcentagem da bateria no canto direito</string>
-    <string name="statusbar_battery_percent_summary">Exibir a porcentagem da bateria em texto no canto direito da barra de status</string>
+    <string name="statusbar_battery_percent">Porcentagem da bateria na barra de status</string>
+    <string name="statusbar_battery_percent_summary">Exibir a porcentagem da bateria em texto na barra de status</string>
     <string name="enable_battery_info">Mostrar informações da bateria</string>
     <string name="enable_battery_info_summary">Mostrar dados da bateria em tempo real (atualiza a cada 2s, requer Root)</string>
     <string name="camera_energy_ring">Anel de energia da câmera frontal</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Ignorar verificação de assinatura</string>
     <string name="bypass_signature_summary">Instalar apps com assinaturas diferentes (expira em 3 min)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Indicador de tráfego de rede</string>
     <string name="network_traffic_summary">Mostrar velocidade em tempo real na barra de status</string>
     <string name="traffic_interval_format">Intervalo de atualização: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Limite: Mostrar sempre</string>
     <string name="traffic_threshold_mb">Limite: 1MB/s</string>
     <string name="traffic_threshold_kb">Limite: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Ocultar ícone da VPN</string>
+    <string name="hide_vpn_icon_summary">Ocultar o ícone de chave na barra de status (requer reinicialização ou alternância de rede)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Log Mestre</string>

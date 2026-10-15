@@ -29,14 +29,14 @@ class BootReceiver : BroadcastReceiver() {
 
             // Unconditionally reset security switches on boot in both DE and CE storage
             if ((action == Intent.ACTION_BOOT_COMPLETED) || (action == Intent.ACTION_LOCKED_BOOT_COMPLETED)) {
-                prefs.edit {
+                prefs.edit(commit = true) {
                     putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
                     putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
                     putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
                     putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
                     putBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false)
                 }
-                cePrefs?.edit {
+                cePrefs?.edit(commit = true) {
                     putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
                     putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
                     putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
@@ -48,7 +48,7 @@ class BootReceiver : BroadcastReceiver() {
             if ((action == Intent.ACTION_USER_UNLOCKED) && (cePrefs != null)) {
                 // When user unlocks, CE storage is accessible. Sync CE preferences over to DE preferences to preserve user settings.
                 if (cePrefs.all.isNotEmpty()) {
-                    prefs.edit {
+                    prefs.edit(commit = true) {
                         cePrefs.all.forEach { (k, v) ->
                             when (v) {
                                 is Boolean -> putBoolean(k, v)
@@ -70,7 +70,7 @@ class BootReceiver : BroadcastReceiver() {
 
             // Seed DE defaults if keys are absent
             if (!prefs.contains(PreferenceKeys.ENABLE_EASY_UNLOCK)) {
-                prefs.edit {
+                prefs.edit(commit = true) {
                     putBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
                     putBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false)
                     putBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
@@ -79,6 +79,8 @@ class BootReceiver : BroadcastReceiver() {
                     putBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false)
                     putBoolean(PreferenceKeys.ENABLE_BATTERY_INFO, false)
                     putBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
+                    putBoolean(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false)
+                    putBoolean(PreferenceKeys.ENABLE_HIDE_VPN_ICON, false)
                     putBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
                     putBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
                     putBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true)

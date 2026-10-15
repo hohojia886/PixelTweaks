@@ -1,3 +1,8 @@
+### v1.2.9
+- 🔋 **Battery Percentage Refactoring**: Updated status bar battery percentage implementation to support new Android 17 builds (`CP3A` firmwares). Note: Pixel 11 series builds with different build tags may not be compatible.
+- 🛡️ **Hide VPN Icon**: Added feature to hide the system VPN status bar icon (18 languages supported).
+- 🌐 **Full Multi-Language Support**: Completed missing Italian and Hungarian language packs, ensuring 100% string coverage across 18 non-English languages.
+
 ### v1.2.8
 - ℹ️ **System Build Number**: Display system build number under "Others" (17 languages supported).
 - ⚙️ **Mobile Data Toggle**: Limit direct mobile data toggle to specific Android 17 builds (`CP2A.260605/260705/260805`), as this feature is no longer needed starting from `CP3A.260905`.

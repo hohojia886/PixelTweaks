@@ -28,8 +28,8 @@
     <string name="tablet_mode">டேப்லெட் பயன்முறை</string>
     <string name="tablet_mode_summary">டேப்லெட் அமைப்பை கட்டாயப்படுத்து (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">டேப்லெட் அமைப்பு செயலில் உள்ளது (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">நிலைமைப் பட்டியின் வலது கோடியில் பேட்டரி %</string>
-    <string name="statusbar_battery_percent_summary">நிலைமைப் பட்டியின் வலது கோடியில் பேட்டரி சதவீதத்தை உரையாகக் காட்டு</string>
+    <string name="statusbar_battery_percent">நிலைமைப் பட்டியில் பேட்டரி %</string>
+    <string name="statusbar_battery_percent_summary">நிலைமைப் பட்டியில் பேட்டரி சதவீதத்தை உரையாகக் காட்டு</string>
     <string name="enable_battery_info">பேட்டரி தகவலைக் காட்டு</string>
     <string name="enable_battery_info_summary">நேரடி பேட்டரி தகவலைக் காட்டு (2 வினாடிக்கு ஒருமுறை புதுப்பிக்கப்படும், Root தேவை)</string>
     <string name="camera_energy_ring">முன் கேமரா ஆற்றல் வளையம்</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">கையொப்ப சரிபார்ப்பைத் தவிர்க்கவும்</string>
     <string name="bypass_signature_summary">வெவ்வேறு கையொப்பம் கொண்ட செயலிகளை நிறுவவும் (3 நிமிடங்களில் காலாவதியாகும்)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">பிணைய போக்குவரத்து காட்டி</string>
     <string name="network_traffic_summary">நிலைமைப் பட்டியில் நேரடி வேகத்தைக் காட்டு</string>
     <string name="traffic_interval_format">புதுப்பிப்பு இடைவெளி: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">வரம்பு: எப்போதும் காட்டு</string>
     <string name="traffic_threshold_mb">வரம்பு: 1MB/s</string>
     <string name="traffic_threshold_kb">வரம்பு: %1$d KB/s</string>
+    <string name="hide_vpn_icon">VPN ஐகானை மறை</string>
+    <string name="hide_vpn_icon_summary">ஸ்டேட்டஸ் பாரில் திறவுகோல் ஐகானை மறைக்க (புதுப்பிக்க ரீபூட் அல்லது நெட்வொர்க் மாற்றம் தேவை)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">முதன்மை பதிவேடு</string>

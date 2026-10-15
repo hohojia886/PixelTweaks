@@ -28,8 +28,8 @@
     <string name="tablet_mode">Modo Tableta</string>
     <string name="tablet_mode_summary">Forzar diseño de tableta (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Diseño de tableta activo (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Porcentaje de batería en el extremo derecho</string>
-    <string name="statusbar_battery_percent_summary">Muestra el porcentaje de batería en texto al extremo derecho de la barra de estado</string>
+    <string name="statusbar_battery_percent">Porcentaje de batería en la barra de estado</string>
+    <string name="statusbar_battery_percent_summary">Muestra el porcentaje de batería en texto en la barra de estado</string>
     <string name="enable_battery_info">Mostrar datos de batería</string>
     <string name="enable_battery_info_summary">Mostrar datos de hardware en tiempo real (actualización cada 2s, requiere Root)</string>
     <string name="camera_energy_ring">Anillo de energía para la cámara frontal</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Omitir verificación de firma</string>
     <string name="bypass_signature_summary">Instalar apps con firma diferente (auto-desactiva en 3 min)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Indicador de tráfico de red</string>
     <string name="network_traffic_summary">Mostrar velocidad de red en tiempo real</string>
     <string name="traffic_interval_format">Intervalo: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Umbral: Mostrar siempre</string>
     <string name="traffic_threshold_mb">Umbral: 1MB/s</string>
     <string name="traffic_threshold_kb">Umbral: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Ocultar icono de VPN</string>
+    <string name="hide_vpn_icon_summary">Ocultar el icono de la llave en la barra de estado (requiere reiniciar o cambiar de red para actualizar)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Registro maestro</string>

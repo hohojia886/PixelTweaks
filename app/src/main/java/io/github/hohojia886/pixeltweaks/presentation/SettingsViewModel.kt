@@ -167,6 +167,12 @@ class SettingsViewModel(
                 repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, event.enabled)
             }
 
+            is SettingsEvent.ToggleHideVpnIcon -> {
+                _uiState.update { it.copy(hideVpnIcon = event.enabled) }
+                repository.savePreference(PreferenceKeys.ENABLE_HIDE_VPN_ICON, event.enabled)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_HIDE_VPN_ICON, event.enabled)
+            }
+
             is SettingsEvent.ChangeTrafficInterval -> {
                 _uiState.update { it.copy(trafficInterval = event.interval) }
                 repository.savePreference(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, event.interval)

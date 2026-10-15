@@ -28,8 +28,8 @@
     <string name="tablet_mode">Tablet Mode</string>
     <string name="tablet_mode_summary">Force tablet layout (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Tablet layout active (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Right Status Bar Battery %</string>
-    <string name="statusbar_battery_percent_summary">Display text battery percentage at the far-right of the status bar</string>
+    <string name="statusbar_battery_percent">Status Bar Battery %</string>
+    <string name="statusbar_battery_percent_summary">Display text battery percentage in the status bar</string>
     <string name="enable_battery_info">Show Battery Info</string>
     <string name="enable_battery_info_summary">Show real-time battery hardware metrics (auto-refreshes every 2s, requires Root)</string>
     <string name="camera_energy_ring">Camera Hole Energy Ring</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Bypass Signature Verification</string>
     <string name="bypass_signature_summary">Allow installing app with different signature</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Network Traffic Indicator</string>
     <string name="network_traffic_summary">Show real-time network speed</string>
     <string name="traffic_interval_format">Refresh Interval: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Threshold: Always Show</string>
     <string name="traffic_threshold_mb">Threshold: 1MB/s</string>
     <string name="traffic_threshold_kb">Threshold: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Hide VPN Icon</string>
+    <string name="hide_vpn_icon_summary">Hide the key icon in the status bar (requires reboot or network toggle to refresh)</string>
 
     <!-- Debug & Logs (With Logcat Tags) -->
     <string name="master_log">Master Logging</string>

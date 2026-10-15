@@ -29,6 +29,7 @@ sealed interface SettingsEvent {
     data class ToggleTabletMode(val enabled: Boolean) : SettingsEvent
     data class ToggleNetworkTraffic(val enabled: Boolean) : SettingsEvent
     data class ToggleStatusbarBatteryPercent(val enabled: Boolean) : SettingsEvent
+    data class ToggleHideVpnIcon(val enabled: Boolean) : SettingsEvent
     data class ChangeTrafficInterval(val interval: Int) : SettingsEvent
     data class ChangeTrafficFontSize(val size: Float) : SettingsEvent
     data class ChangeTrafficThreshold(val threshold: Int) : SettingsEvent

@@ -52,6 +52,7 @@ data class SettingsUiState(
     val tabletMode: Boolean = false,
     val networkTraffic: Boolean = true,
     val statusbarBatteryPercent: Boolean = false,
+    val hideVpnIcon: Boolean = false,
     val trafficInterval: Int = 1,
     val trafficFontSize: Float = 8f,
     val trafficThreshold: Int = 1,

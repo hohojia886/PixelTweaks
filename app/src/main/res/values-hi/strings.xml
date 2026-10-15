@@ -28,8 +28,8 @@
     <string name="tablet_mode">टैबलेट मोड</string>
     <string name="tablet_mode_summary">टैबलेट लेआउट लागू करें (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">टैबलेट लेआउट सक्रिय (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">स्टेटस बार के सबसे दाईं ओर बैटरी %</string>
-    <string name="statusbar_battery_percent_summary">स्टेटस बार के सबसे दाईं ओर टेक्स्ट बैटरी प्रतिशत दिखाएं (जैसे 100%)</string>
+    <string name="statusbar_battery_percent">स्टेटस बार बैटरी %</string>
+    <string name="statusbar_battery_percent_summary">स्टेटस बार में टेक्स्ट बैटरी प्रतिशत दिखाएं (जैसे 100%)</string>
     <string name="enable_battery_info">बैटरी जानकारी दिखाएं</string>
     <string name="enable_battery_info_summary">रीयल-टाइम बैटरी डेटा दिखाएं (हर 2 सेकंड में स्वतः रीफ़्रेश, Root आवश्यक)</string>
     <string name="camera_energy_ring">फ्रंट कैमरा एनर्जी रिंग</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">हस्ताक्षर सत्यापन बाईपास करें</string>
     <string name="bypass_signature_summary">विभिन्न हस्ताक्षर वाले ऐप इंस्टॉल करें (3 मिनट में समाप्त)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">नेटवर्क ट्रैफ़िक संकेतक</string>
     <string name="network_traffic_summary">स्टेटस बार में रीयल-टाइम गति दिखाएं</string>
     <string name="traffic_interval_format">रीफ़्रेश अंतराल: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">सीमा: हमेशा दिखाएं</string>
     <string name="traffic_threshold_mb">सीमा: 1MB/s</string>
     <string name="traffic_threshold_kb">सीमा: %1$d KB/s</string>
+    <string name="hide_vpn_icon">VPN आइकन छुपाएं</string>
+    <string name="hide_vpn_icon_summary">स्टेटस बार में कुंजी आइकन छिपाएँ (अपडेट के लिए रीबूट या नेटवर्क स्विच की आवश्यकता है)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">मुख्य लॉगिंग</string>

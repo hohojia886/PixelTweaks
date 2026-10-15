@@ -1,4 +1,4 @@
-@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi")
+@file:Suppress("DiscouragedPrivateApi", "PrivateApi", "DiscouragedApi", "UsePropertyAccessSyntax", "RedundantInterpolationPrefix", "UNUSED_PARAMETER")
 
 package io.github.hohojia886.pixeltweaks.hooks.`interface`
 
@@ -19,12 +19,16 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.LinearInterpolator
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.net.toUri
+import androidx.core.view.isGone
 import androidx.core.view.isNotEmpty
+import androidx.core.view.isVisible
 import io.github.hohojia886.pixeltweaks.utils.BatteryColorManager
 import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
+import io.github.hohojia886.pixeltweaks.utils.SystemVersion
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
@@ -83,8 +87,32 @@ object BatteryPercentHook {
     // Memory-safe map to hold original paddingEnd for StatusIconContainer
     private val originalPaddingEndMap = Collections.synchronizedMap(WeakHashMap<ViewGroup, Int>())
 
+    @Volatile private var cachedClassLoader: ClassLoader? = null
+    
+    // Android 17 CP3 / CP2 Version Detection Flag
+    @Volatile private var isAndroid17CP3 = false
+
     fun hook(module: XposedModule, classLoader: ClassLoader) {
+        cachedClassLoader = classLoader
         processPackageName = "com.android.systemui"
+        
+        /**
+         * Dynamically probe Android 17 system version using [SystemVersion]:
+         * - CP2A builds & CD1A builds before 260905: Use legacy/CP2 layout strategy (isAndroid17CP3 = false)
+         * - CP3A builds: Use unified Compose layout strategy (isAndroid17CP3 = true)
+         * - Other builds: Fallback to class probing for SingleBindableStatusBarComposeIconView
+         */
+        val buildDisplay = SystemVersion.display
+
+        isAndroid17CP3 = when {
+            SystemVersion.isCp2a() || SystemVersion.isCd1aBefore260905() -> false
+            SystemVersion.isCp3a() -> true
+            else -> runCatching { 
+                classLoader.loadClass("com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView") != null
+            }.getOrDefault(false)
+        }
+        Logger.i(TAG, "VersionProbe", "Resolved strategy: isAndroid17CP3=$isAndroid17CP3 (display=$buildDisplay)")
+
         syncSettings(module, classLoader)
 
         // Subscribe to process-level IPC broadcasts via IpcDispatcher
@@ -99,6 +127,9 @@ object BatteryPercentHook {
 
         // Apply Android 17 ModernStatusBarView Battery Hooks (slot="battery")
         applyModernStatusBarViewBatteryHooks(module, classLoader)
+
+        // Apply Android 17 CP3 SingleBindableStatusBarComposeIconView Hooks
+        applySingleBindableIconViewBatteryHooks(module, classLoader)
 
         // Apply Android 17 Compose Battery View Hooks (UnifiedBatteryViewBinder$bind$1$1)
         applyAndroid17ComposeBatteryHooks(module, classLoader)
@@ -168,19 +199,17 @@ object BatteryPercentHook {
     private fun applyModernStatusBarViewBatteryHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val modernViewClass = classLoader.loadClass("com.android.systemui.statusbar.pipeline.shared.ui.view.ModernStatusBarView")
-            Logger.i(TAG, "ModernBattery", "Found ModernStatusBarView class!")
 
             modernViewClass.declaredMethods.filter { it.name == "initView" }.forEach { method ->
                 module.hookAfter(method) { chain, _ ->
                     runCatching {
                         val view = chain.thisObject as? View ?: return@runCatching
-                        val slot = chain.args.getOrNull(0) as? String
-                        if (slot == "battery") {
+                        val slot = chain.args.getOrNull(0)?.toString() ?: ""
+                        if (slot == "battery" || slot == "status_bar_battery") {
                             markAsStockBatteryView(view)
                             synchronized(trackedModernBatteryViews) {
                                 if (trackedModernBatteryViews.none { it.get() == view }) {
                                     trackedModernBatteryViews.add(WeakReference(view))
-                                    Logger.i(TAG, "ModernBattery", "Tracked ModernStatusBarView for slot=battery: " + view.javaClass.name)
                                 }
                             }
                             applyVisibilityToModernBatteryView(view)
@@ -201,6 +230,40 @@ object BatteryPercentHook {
             }
         }.onFailure { e ->
             Logger.e(TAG, "ModernBattery", "ModernStatusBarView hook failed", e)
+        }
+    }
+
+    /**
+     * Android 17 CP3 Strategy:
+     * Hooks SingleBindableStatusBarComposeIconView, SingleBindableStatusBarIconView, and ModernStatusBarView.
+     */
+    private fun applySingleBindableIconViewBatteryHooks(module: XposedModule, classLoader: ClassLoader) {
+        val classNames = listOf(
+            "com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView",
+            "com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarIconView",
+            "com.android.systemui.statusbar.pipeline.shared.ui.view.ModernStatusBarView"
+        )
+
+        classNames.forEach { className ->
+            runCatching {
+                val clazz = classLoader.loadClass(className)
+
+                // Hook initView(String, Function0) strictly for slot="battery" or "status_bar_battery"
+                clazz.declaredMethods.filter { it.name == "initView" }.forEach { method ->
+                    module.hookBefore(method) { chain ->
+                        runCatching {
+                            val view = chain.thisObject as? View ?: return@runCatching
+                            val slot = chain.args.getOrNull(0)?.toString() ?: ""
+
+                            if (slot == "battery" || slot == "status_bar_battery") {
+                                markAsStockBatteryView(view)
+                                applyVisibilityToModernBatteryView(view)
+                                applyVisibilityToComposeView(view)
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -237,17 +300,27 @@ object BatteryPercentHook {
 
     private fun trackComposeBatteryView(view: View) {
         if (view.tag == VIEW_TAG) return
+        if (!isBatteryViewCandidate(view)) {
+            return
+        }
         markAsStockBatteryView(view)
         synchronized(trackedComposeBatteryViews) {
             if (trackedComposeBatteryViews.none { it.get() == view }) {
                 trackedComposeBatteryViews.add(WeakReference(view))
-                Logger.i(TAG, "ComposeBattery", "Tracked Android 17 Compose Battery View: " + view.javaClass.name)
             }
         }
         applyVisibilityToComposeView(view)
     }
 
     private fun applyVisibilityToComposeView(view: View) {
+        // On Android 17 CP3, the outer ComposeView is a UNIFIED CONTAINER for Battery + WiFi + Cellular.
+        // We MUST NOT set view.visibility = View.GONE on the outer ComposeView, because doing so
+        // hides WiFi and Cellular along with the battery!
+        // Battery hiding is handled inside Compose by cancelling UnifiedBatteryKt execution.
+        if (isAndroid17CP3) {
+            return
+        }
+
         mainHandler.post {
             runCatching {
                 val hide = isEnabled
@@ -265,6 +338,25 @@ object BatteryPercentHook {
                     view.layoutParams = lp
                 }
 
+                if (hide) {
+                    view.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+                        if (isEnabled && isStockBatteryView(v)) {
+                            if (v.visibility != View.GONE || v.alpha != 0f) {
+                                v.visibility = View.GONE
+                                v.alpha = 0f
+                                v.scaleX = 0f
+                                v.scaleY = 0f
+                                val currentLp = v.layoutParams
+                                if (currentLp != null && currentLp.width != 0) {
+                                    currentLp.width = 0
+                                    currentLp.height = 0
+                                    v.layoutParams = currentLp
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Hide inner AndroidComposeView child if present
                 if (view is ViewGroup && view.isNotEmpty()) {
                     for (i in 0 until view.childCount) {
@@ -279,6 +371,24 @@ object BatteryPercentHook {
                             childLp.width = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
                             childLp.height = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
                             child.layoutParams = childLp
+                        }
+                        if (hide) {
+                            child.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+                                if (isEnabled && isStockBatteryView(v)) {
+                                    if (v.visibility != View.GONE || v.alpha != 0f) {
+                                        v.visibility = View.GONE
+                                        v.alpha = 0f
+                                        v.scaleX = 0f
+                                        v.scaleY = 0f
+                                        val currentLp = v.layoutParams
+                                        if (currentLp != null && currentLp.width != 0) {
+                                            currentLp.width = 0
+                                            currentLp.height = 0
+                                            v.layoutParams = currentLp
+                                        }
+                                    }
+                                }
+                            }
                         }
                         child.requestLayout()
                         child.invalidate()
@@ -299,37 +409,30 @@ object BatteryPercentHook {
     /**
      * Android 17 Compose Modifier Hook:
      * Intercepts UnifiedBatteryKt Composable methods (UnifiedBattery, BatteryBody, BatteryCap, etc.)
-     * and forces Modifier.alpha(0f) on the Composable parameter.
+     * and cancels their composition by returning null without calling chain.proceed().
      */
     private fun applyComposeUnifiedBatteryModifierHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val unifiedBatteryKtClass = classLoader.loadClass("com.android.systemui.statusbar.pipeline.battery.ui.composable.UnifiedBatteryKt")
-            val alphaKtClass = classLoader.loadClass("androidx.compose.ui.draw.AlphaKt")
-            val modifierClass = classLoader.loadClass("androidx.compose.ui.Modifier")
+            Logger.i(TAG, "ComposeModifier", "Found UnifiedBatteryKt class!")
 
-            val alphaMethod = alphaKtClass.getMethod("alpha", modifierClass, Float::class.javaPrimitiveType)
-
-            Logger.i(TAG, "ComposeModifier", "Found UnifiedBatteryKt & AlphaKt classes!")
-
-            // Pre-filter methods that have a Modifier parameter before hooking
-            unifiedBatteryKtClass.declaredMethods
-                .filter { method -> method.parameterTypes.any { modifierClass.isAssignableFrom(it) } }
-                .forEach { method ->
-                    module.hookBefore(method) { chain ->
-                        if (isEnabled) {
-                            runCatching {
-                                val modifierIdx = method.parameterTypes.indexOfFirst { modifierClass.isAssignableFrom(it) }
-                                if (modifierIdx >= 0) {
-                                    val currentModifier = chain.args[modifierIdx] ?: return@runCatching
-                                    val hiddenModifier = alphaMethod.invoke(null, currentModifier, 0f)
-                                    chain.args[modifierIdx] = hiddenModifier
-                                }
-                            }
-                        }
+            unifiedBatteryKtClass.declaredMethods.filter { 
+                it.name == "UnifiedBattery" || 
+                it.name == "BatteryBody" || 
+                it.name == "BatteryCap" || 
+                it.name == "BatteryAttribution" || 
+                it.name == "BatteryLayout"
+            }.forEach { method ->
+                module.hook(method).intercept { chain ->
+                    if (isEnabled) {
+                        Logger.i(TAG, "ComposeModifier", "Intercepted & cancelled composition of ${method.name} in UnifiedBatteryKt")
+                        return@intercept null
                     }
+                    chain.proceed()
                 }
+            }
         }.onFailure { e ->
-            Logger.e(TAG, "ComposeModifier", "UnifiedBatteryKt modifier hook failed", e)
+            Logger.e(TAG, "ComposeModifier", "UnifiedBatteryKt hook failed", e)
         }
     }
 
@@ -342,7 +445,6 @@ object BatteryPercentHook {
         runCatching {
             val binderClassName = "com.android.systemui.statusbar.pipeline.battery.ui.binder.UnifiedBatteryViewBinder" + '$' + "bind" + '$' + "1" + '$' + "1"
             val bindInnerClass = classLoader.loadClass(binderClassName)
-            Logger.i(TAG, "Android17Compose", "Found UnifiedBatteryViewBinder inner binder class!")
 
             bindInnerClass.declaredMethods.filter { it.name == "invokeSuspend" }.forEach { method ->
                 module.hookAfter(method) { chain, _ ->
@@ -352,7 +454,6 @@ object BatteryPercentHook {
                         val composeView = viewField?.get(instance) as? View
                         if (composeView != null) {
                             markAsStockBatteryView(composeView)
-                            Logger.i(TAG, "Android17Compose", "Intercepted UnifiedBatteryViewBinder view field: " + composeView.javaClass.name)
                             trackComposeBatteryView(composeView)
                         }
                     }
@@ -361,27 +462,6 @@ object BatteryPercentHook {
         }.onFailure { e ->
             Logger.e(TAG, "Android17Compose", "UnifiedBatteryViewBinder hook failed", e)
         }
-
-        // 2. Hook View.setVisibility(int) with O(1) tag-based lookup
-        runCatching {
-            val viewClass = classLoader.loadClass("android.view.View")
-            val setVisibilityMethod = viewClass.getDeclaredMethod("setVisibility", Int::class.javaPrimitiveType)
-
-            module.hookBefore(setVisibilityMethod) { chain ->
-                if (isEnabled) {
-                    val view = chain.thisObject as? View ?: return@hookBefore
-                    val child0 = (view as? ViewGroup)?.let { if (it.isNotEmpty()) it.getChildAt(0) else null }
-                    if (isStockBatteryView(view) || (child0 != null && isStockBatteryView(child0))) {
-                        chain.args[0] = View.GONE
-                        view.alpha = 0f
-                        view.scaleX = 0f
-                        view.scaleY = 0f
-                    }
-                }
-            }
-        }.onFailure { e ->
-            Logger.e(TAG, "Android17Compose", "View.setVisibility hook failed", e)
-        }
     }
 
     /**
@@ -389,9 +469,12 @@ object BatteryPercentHook {
      * Hooks StatusIconContainer.onAttachedToWindow directly to manage mIgnoredSlots & paddingEnd.
      */
     private fun applyStatusIconContainerHooks(module: XposedModule, classLoader: ClassLoader) {
+        if (isAndroid17CP3) {
+            return
+        }
+
         runCatching {
             val containerClass = classLoader.loadClass("com.android.systemui.statusbar.phone.StatusIconContainer")
-            Logger.i(TAG, "IconContainer", "Found StatusIconContainer class: " + containerClass.name)
 
             val onAttachedMethod = containerClass.getDeclaredMethod("onAttachedToWindow")
             module.hookBefore(onAttachedMethod) { chain ->
@@ -401,12 +484,75 @@ object BatteryPercentHook {
                     synchronized(trackedStatusIconContainers) {
                         if (trackedStatusIconContainers.none { it.get() == container }) {
                             trackedStatusIconContainers.add(WeakReference(container))
-                            Logger.i(TAG, "IconContainer", "Tracked StatusIconContainer in onAttachedToWindow")
                         }
                     }
                     updateIgnoredSlotsForContainer(container)
                 }
             }
+
+            // Add paddingEnd manipulation in onAttachedToWindow
+            module.hookBefore(onAttachedMethod) { chain ->
+                if (isEnabled) {
+                    val container = chain.thisObject as? ViewGroup ?: return@hookBefore
+                    // Force the StatusIconContainer to WRAP_CONTENT to free up space
+                    val lp = container.layoutParams
+                    if (lp != null && lp.width != ViewGroup.LayoutParams.WRAP_CONTENT) {
+                        lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
+                        container.layoutParams = lp
+                    }
+                }
+            }
+
+            // Restore addView method hook
+            val viewClass = classLoader.loadClass("android.view.View")
+            val layoutParamsClass = classLoader.loadClass("android.view.ViewGroup" + '$' + "LayoutParams")
+            val addViewMethod = containerClass.getMethod("addView", viewClass, Int::class.javaPrimitiveType, layoutParamsClass)
+            
+            module.hookBefore(addViewMethod) { chain ->
+                if (isEnabled) {
+                    val view = chain.args[0] as? View ?: return@hookBefore
+                    if (isStockBatteryView(view) || view.javaClass.name.contains("Battery")) {
+                        view.visibility = View.GONE
+                        view.alpha = 0f
+                        view.scaleX = 0f
+                        view.scaleY = 0f
+                        chain.args[2] = LinearLayout.LayoutParams(0, 0)
+                    }
+                }
+            }
+
+            // Restore onMeasure hook
+            val onMeasureMethod = containerClass.getDeclaredMethod("onMeasure", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+            module.hookAfter(onMeasureMethod) { chain, _ ->
+                if (isEnabled) {
+                    val container = chain.thisObject as? ViewGroup ?: return@hookAfter
+                    val originalWidth = container.measuredWidth
+                    val originalHeight = container.measuredHeight
+
+                    var newWidth = 0
+                    for (i in 0 until container.childCount) {
+                        val child = container.getChildAt(i)
+                        if (child != null && child.visibility != View.GONE && !isStockBatteryView(child)) {
+                            newWidth += child.measuredWidth
+                        }
+                    }
+
+                    if (newWidth in 1 until originalWidth) {
+                        runCatching {
+                            val setMeasuredDimensionMethod = View::class.java.getDeclaredMethod("setMeasuredDimension", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+                            setMeasuredDimensionMethod.isAccessible = true
+                            setMeasuredDimensionMethod.invoke(container, newWidth, originalHeight)
+                        }
+                    } else if (newWidth == 0) {
+                        runCatching {
+                            val setMeasuredDimensionMethod = View::class.java.getDeclaredMethod("setMeasuredDimension", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
+                            setMeasuredDimensionMethod.isAccessible = true
+                            setMeasuredDimensionMethod.invoke(container, 0, 0)
+                        }
+                    }
+                }
+            }
+
         }.onFailure { e ->
             Logger.e(TAG, "IconContainer", "Failed to hook StatusIconContainer", e)
         }
@@ -414,6 +560,8 @@ object BatteryPercentHook {
 
     @Suppress("UNCHECKED_CAST")
     private fun updateIgnoredSlotsForContainer(container: ViewGroup) {
+        if (isAndroid17CP3) return
+
         runCatching {
             val field = findField(container.javaClass, "mIgnoredSlots") ?: return@runCatching
             val ignoredSlots = field.get(container) as? MutableCollection<String> ?: return@runCatching
@@ -422,11 +570,9 @@ object BatteryPercentHook {
                 if (isEnabled) {
                     if ("battery" !in ignoredSlots) {
                         ignoredSlots.add("battery")
-                        Logger.i(TAG, "IconContainer", "Added 'battery' to mIgnoredSlots in StatusIconContainer")
                     }
                 } else {
                     ignoredSlots.remove("battery")
-                    Logger.i(TAG, "IconContainer", "Removed 'battery' from mIgnoredSlots in StatusIconContainer")
                 }
             }
 
@@ -649,6 +795,8 @@ object BatteryPercentHook {
     }
 
     private fun findStatusIconContainersInGroup(group: ViewGroup) {
+        if (isAndroid17CP3) return
+
         runCatching {
             for (i in 0 until group.childCount) {
                 val child = group.getChildAt(i) ?: continue
@@ -667,6 +815,46 @@ object BatteryPercentHook {
         }
     }
 
+    private fun isBatteryViewCandidate(child: View): Boolean {
+        val cName = child.javaClass.name
+        if (child.tag == VIEW_TAG) return false
+
+        // Explicitly protect all system icons and containers
+        if (cName.contains("Wifi") || 
+            cName.contains("Mobile") || 
+            cName.contains("Signal") || 
+            cName.contains("Carrier") || 
+            cName.contains("Satellite") || 
+            cName.contains("StatusIcon") || 
+            cName.contains("User") || 
+            cName.contains("Clock") || 
+            cName.contains("Notification") || 
+            cName.contains("TextView") || 
+            cName.contains("LinearLayout")) {
+            return false
+        }
+
+        // Only match ComposeView or views containing Battery in their name
+        return cName.contains("ComposeView") || cName.contains("Battery") || isStockBatteryView(child)
+    }
+
+    /**
+     * Dynamically queries SystemUI's internal `@dimen` resources for native status bar icon drawing padding.
+     * Falls back to 6dp if dimension resources are unavailable.
+     */
+    private fun getNativeIconPaddingPx(res: android.content.res.Resources, density: Float): Int {
+        val iconPaddingId = res.getIdentifier("status_bar_icon_drawing_padding", "dimen", "com.android.systemui")
+            .takeIf { it > 0 }
+            ?: res.getIdentifier("signal_cluster_battery_padding", "dimen", "com.android.systemui")
+                .takeIf { it > 0 }
+
+        return if (iconPaddingId != null) {
+            runCatching { res.getDimensionPixelSize(iconPaddingId) }.getOrDefault((density * 6f).toInt())
+        } else {
+            (density * 6f).toInt()
+        }
+    }
+
     private fun injectTextViewToFarRight(rootGroup: ViewGroup) {
         rootGroup.post {
             runCatching {
@@ -676,42 +864,127 @@ object BatteryPercentHook {
                 // Scan View tree for pre-existing StatusIconContainer (Safeguard for Late Hook Loading)
                 findStatusIconContainersInGroup(rootGroup)
 
+                val systemIconsContainerId = res.getIdentifier("system_icons_container", "id", "com.android.systemui")
                 val systemIconsId = res.getIdentifier("system_icons", "id", "com.android.systemui")
-                val endSideId = res.getIdentifier("status_bar_end_side_content", "id", "com.android.systemui")
+                val endSideContentId = res.getIdentifier("status_bar_end_side_content", "id", "com.android.systemui")
+                val endSideContainerId = res.getIdentifier("status_bar_end_side_container", "id", "com.android.systemui")
+                val statusIconAreaId = res.getIdentifier("status_icon_area", "id", "com.android.systemui")
 
+                val systemIconsContainer = if (systemIconsContainerId > 0) rootGroup.findViewById(systemIconsContainerId) as? ViewGroup else null
                 val systemIconsGroup = if (systemIconsId > 0) rootGroup.findViewById(systemIconsId) as? ViewGroup else null
-                val targetContainer = systemIconsGroup
-                    ?: (if (endSideId > 0) rootGroup.findViewById(endSideId) as? ViewGroup else null)
-                    ?: rootGroup
+                val endSideContent = if (endSideContentId > 0) rootGroup.findViewById(endSideContentId) as? ViewGroup else null
+                val endSideContainer = if (endSideContainerId > 0) rootGroup.findViewById(endSideContainerId) as? ViewGroup else null
+                val statusIconArea = if (statusIconAreaId > 0) rootGroup.findViewById(statusIconAreaId) as? ViewGroup else null
 
-                // Precision scan inside systemIconsGroup ONLY:
-                // Sibling ComposeViews inside system_icons that are NOT StatusIconContainer and NOT LinearLayout is the stock battery View!
-                if (systemIconsGroup != null) {
-                    for (i in 0 until systemIconsGroup.childCount) {
-                        val child = systemIconsGroup.getChildAt(i) ?: continue
-                        val cName = child.javaClass.name
-                        if (child.tag != VIEW_TAG && !cName.contains("StatusIconContainer") && !cName.contains("LinearLayout")) {
-                            Logger.i(TAG, "Injection", "Found stock battery View inside system_icons: $cName")
-                            trackComposeBatteryView(child)
+                val isKeyguard = rootGroup.javaClass.simpleName.contains("Keyguard", ignoreCase = true) ||
+                                 rootGroup.id == res.getIdentifier("keyguard_header", "id", "com.android.systemui")
+
+                val targetContainer = when {
+                    // CP3 Lockscreen/Keyguard case: status_icon_area is a horizontal LinearLayout used ONLY on CP3
+                    isAndroid17CP3 && isKeyguard && statusIconArea != null -> {
+                        statusIconArea
+                    }
+                    // CP3 case: system_icons is GONE or missing, so system_icons_container / endSideContent is the active container!
+                    systemIconsContainer != null && (systemIconsGroup == null || systemIconsGroup.isGone) -> {
+                        systemIconsContainer
+                    }
+                    endSideContent != null && (systemIconsGroup == null || systemIconsGroup.isGone) -> {
+                        endSideContent
+                    }
+                    // CP2 case: system_icons is VISIBLE
+                    systemIconsGroup != null && systemIconsGroup.visibility != View.GONE -> {
+                        systemIconsGroup
+                    }
+                    systemIconsContainer != null -> systemIconsContainer
+                    endSideContent != null -> endSideContent
+                    endSideContainer != null -> endSideContainer
+                    else -> rootGroup
+                }
+
+                val dumpTarget = systemIconsContainer ?: endSideContent ?: systemIconsGroup
+                if (dumpTarget != null && dumpTarget.tag != "DUMPED") {
+                    dumpTarget.tag = "DUMPED"
+                }
+
+                if (isKeyguard) {
+                    // On Keyguard/Lockscreen, system_icons_container's ComposeView is exclusively the stock battery icon.
+                    val groupsToScan = listOfNotNull(systemIconsGroup, systemIconsContainer).distinct()
+                    for (group in groupsToScan) {
+                        for (i in 0 until group.childCount) {
+                            val child = group.getChildAt(i) ?: continue
+                            if (isBatteryViewCandidate(child)) {
+                                trackComposeBatteryView(child)
+                            }
+                        }
+                    }
+                } else {
+                    // Unlocked Status Bar (PhoneStatusBarView)
+                    // Only process endSideContent if rootGroup is VISIBLE to avoid popping unlocked icons onto Keyguard
+                    if (endSideContent != null && rootGroup.isVisible) {
+                        for (i in 0 until endSideContent.childCount) {
+                            val child = endSideContent.getChildAt(i) ?: continue
+                            val cName = child.javaClass.name
+
+                            // 1. Force system_icons (which holds StatusIconContainer with WiFi & Mobile Signal) to be VISIBLE
+                            if (cName.contains("LinearLayout") || child.id == systemIconsId) {
+                                if (child.visibility != View.VISIBLE || child.alpha != 1.0f) {
+                                    child.visibility = View.VISIBLE
+                                    child.alpha = 1.0f
+                                }
+                            }
+                            // 2. Hide standalone stock Compose battery View inside endSideContent
+                            else if (isBatteryViewCandidate(child)) {
+                                trackComposeBatteryView(child)
+                            }
+                        }
+                    }
+
+                    if (systemIconsGroup != null && !systemIconsGroup.isGone && rootGroup.isVisible) {
+                        // CP2 legacy stock battery Views scan inside systemIconsGroup
+                        for (i in 0 until systemIconsGroup.childCount) {
+                            val child = systemIconsGroup.getChildAt(i) ?: continue
+                            if (isBatteryViewCandidate(child)) {
+                                trackComposeBatteryView(child)
+                            }
                         }
                     }
                 }
 
                 var textView = targetContainer.findViewWithTag<TextView>(VIEW_TAG)
                 if (textView == null) {
-                    textView = TextView(context).apply {
-                        tag = VIEW_TAG
-                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
-                        typeface = Typeface.DEFAULT_BOLD
-                        setTextColor(getEffectiveTextColor())
-                        val paddingStartPx = (resources.displayMetrics.density * 2f).toInt()
-                        setPadding(paddingStartPx, 0, 0, 0)
-                        layoutParams = LinearLayout.LayoutParams(
+                    val lp = when (targetContainer) {
+                        is LinearLayout -> LinearLayout.LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
                         ).apply {
                             gravity = Gravity.CENTER_VERTICAL
                         }
+                        is FrameLayout -> FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        ).apply {
+                            gravity = Gravity.END or Gravity.CENTER_VERTICAL
+                        }
+                        else -> ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                        )
+                    }
+
+                    textView = TextView(context).apply {
+                        tag = VIEW_TAG
+                        setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+                        typeface = Typeface.DEFAULT_BOLD
+                        setTextColor(getEffectiveTextColor())
+
+                        val paddingStartPx = if (isKeyguard || !isAndroid17CP3) {
+                            (resources.displayMetrics.density * 2f).toInt()
+                        } else {
+                            getNativeIconPaddingPx(res, resources.displayMetrics.density)
+                        }
+
+                        setPadding(paddingStartPx, 0, 0, 0)
+                        layoutParams = lp
                     }
 
                     targetContainer.addView(textView)
@@ -731,6 +1004,11 @@ object BatteryPercentHook {
                         textView.includeFontPadding = clockView.includeFontPadding
                         Logger.i(TAG, "Injection", "Copied exact style from Clock: sizePx=${clockView.textSize}")
                     }
+                } else {
+                    // Fallback when Clock View is not found (e.g. on Keyguard/Lockscreen)
+                    textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+                    textView.typeface = Typeface.DEFAULT_BOLD
+                    Logger.i(TAG, "Injection", "Clock View not found, applied lockscreen/keyguard fallback font style (14sp BOLD)")
                 }
 
                 synchronized(trackedPercentTextViews) {

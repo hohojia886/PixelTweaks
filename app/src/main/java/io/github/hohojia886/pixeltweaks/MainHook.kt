@@ -6,6 +6,7 @@ import io.github.hohojia886.pixeltweaks.hooks.battery.EnergyRingHook
 import io.github.hohojia886.pixeltweaks.hooks.gestures.DoubleTapToSleepHook
 import io.github.hohojia886.pixeltweaks.hooks.`interface`.BatteryPercentHook
 import io.github.hohojia886.pixeltweaks.hooks.`interface`.ClearAllButtonHook
+import io.github.hohojia886.pixeltweaks.hooks.`interface`.HideVpnIconHook
 import io.github.hohojia886.pixeltweaks.hooks.`interface`.NetworkTrafficHook
 import io.github.hohojia886.pixeltweaks.hooks.quicksettings.QuickSettingsHook
 import io.github.hohojia886.pixeltweaks.hooks.security.EasyUnlockHook
@@ -131,6 +132,15 @@ private object BatteryPercentEntry : PixelHook {
     }
 }
 
+// 10. HideVpnIcon: Hides the VPN icon from the status bar in SystemUI
+private object HideVpnIconEntry : PixelHook {
+    override val name = "HideVpnIcon"
+    override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
+        HideVpnIconHook.hook(module, classLoader)
+    }
+}
+
 class MainHook : XposedModule() {
 
     private var isSystemServerProcess = false // Tracks if current process is the system_server
@@ -146,7 +156,8 @@ class MainHook : XposedModule() {
         PackageManagerEntry,
         NetworkTrafficEntry,
         EnergyRingEntry,
-        BatteryPercentEntry
+        BatteryPercentEntry,
+        HideVpnIconEntry
     )
 
     // Lifecycle: Initializes logging and identifies process type upon module load

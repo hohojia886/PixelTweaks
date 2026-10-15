@@ -49,3 +49,4 @@ temp/
 *.ap_
 *.dex
 *.flat
+/Backups

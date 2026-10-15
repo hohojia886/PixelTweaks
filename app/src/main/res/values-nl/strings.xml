@@ -28,8 +28,8 @@
     <string name="tablet_mode">Tabletmodus</string>
     <string name="tablet_mode_summary">Tablet-lay-out forceren (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Tablet-lay-out actief (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Batterij-% uiterst rechts op statusbalk</string>
-    <string name="statusbar_battery_percent_summary">Batterijpercentage als tekst uiterst rechts op de statusbalk tonen</string>
+    <string name="statusbar_battery_percent">Batterij-% in statusbalk</string>
+    <string name="statusbar_battery_percent_summary">Batterijpercentage als tekst in de statusbalk tonen</string>
     <string name="enable_battery_info">Batterij-info tonen</string>
     <string name="enable_battery_info_summary">Realtime batterijgegevens tonen (ververst elke 2s, vereist Root)</string>
     <string name="camera_energy_ring">Energie-ring voor camera-uitsparing</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Handtekeningverificatie omzeilen</string>
     <string name="bypass_signature_summary">Apps met andere handtekening installeren (vervalt na 3 min)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Netwerkverkeersindicator</string>
     <string name="network_traffic_summary">Realtime snelheid in statusbalk tonen</string>
     <string name="traffic_interval_format">Ververstellingsinterval: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Drempelwaarde: Altijd tonen</string>
     <string name="traffic_threshold_mb">Drempelwaarde: 1MB/s</string>
     <string name="traffic_threshold_kb">Drempelwaarde: %1$d KB/s</string>
+    <string name="hide_vpn_icon">VPN-pictogram verbergen</string>
+    <string name="hide_vpn_icon_summary">Verberg het sleutelpictogram in de statusbalk (herstart of netwerkwissel vereist)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Hoofd-logging</string>

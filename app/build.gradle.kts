@@ -9,8 +9,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val appVersionName = "1.2.8"
-val appVersionCode = 20
+val appVersionName = "1.2.9"
+val appVersionCode = 21
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -137,6 +137,8 @@ tasks.register<Zip>("backupProject") {
     description = "Creates a zip backup of project source code"
     group = "backup"
 
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     val backupDirStr = localProperties.getProperty("backup.dir")
         ?: localProperties.getProperty("backup.path")
         ?: System.getenv("BACKUP_DIR")
@@ -153,6 +155,7 @@ tasks.register<Zip>("backupProject") {
         exclude("**/.git/**")
         exclude("**/.idea/**")
         exclude("**/.artifacts/**")
+        exclude("**/Backups/**")
         exclude("**/local.properties")
         exclude("**/tmp/**")
         exclude("**/app/keystore/**")

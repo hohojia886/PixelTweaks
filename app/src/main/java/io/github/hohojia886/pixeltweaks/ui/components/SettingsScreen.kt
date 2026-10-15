@@ -177,6 +177,13 @@ fun SettingsScreen(
                 )
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 SwitchSettingItem(
+                    title = stringResource(R.string.hide_vpn_icon),
+                    summary = stringResource(R.string.hide_vpn_icon_summary),
+                    checked = uiState.hideVpnIcon,
+                    onCheckedChange = { onEvent(SettingsEvent.ToggleHideVpnIcon(it)) }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                SwitchSettingItem(
                     title = stringResource(R.string.statusbar_battery_percent),
                     summary = stringResource(R.string.statusbar_battery_percent_summary),
                     checked = uiState.statusbarBatteryPercent,

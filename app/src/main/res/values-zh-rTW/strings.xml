@@ -28,8 +28,8 @@
     <string name="tablet_mode">Tablet 模式</string>
     <string name="tablet_mode_summary">強制切換平板版型 (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">平板版型生效中 (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">狀態欄最右側電量百分比</string>
-    <string name="statusbar_battery_percent_summary">於狀態欄最右側以純文字顯示電量百分比 (如 100%)</string>
+    <string name="statusbar_battery_percent">狀態欄電量百分比</string>
+    <string name="statusbar_battery_percent_summary">於狀態欄以純文字顯示電量百分比 (如 100%)</string>
     <string name="enable_battery_info">顯示電池資訊</string>
     <string name="enable_battery_info_summary">顯示即時電池硬體數據（前台每 2 秒自動刷新，需 Root）</string>
     <string name="camera_energy_ring">前鏡頭環形電量光環</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">繞過簽名驗證</string>
     <string name="bypass_signature_summary">允許安裝不同簽名的應用（3分鐘自動關閉）</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">網路流量指示器</string>
     <string name="network_traffic_summary">在狀態列顯示即時網速</string>
     <string name="traffic_interval_format">刷新間隔: %1$d秒</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">門檻: 總是顯示</string>
     <string name="traffic_threshold_mb">門檻: 1MB/s</string>
     <string name="traffic_threshold_kb">門檻: %1$d KB/s</string>
+    <string name="hide_vpn_icon">隱藏 VPN 圖示</string>
+    <string name="hide_vpn_icon_summary">在狀態列隱藏 VPN 鑰匙圖示（切換後需重開機或切換網路以更新）</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">主日誌開關</string>

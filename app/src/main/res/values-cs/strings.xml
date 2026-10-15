@@ -28,8 +28,8 @@
     <string name="tablet_mode">Režim tabletu</string>
     <string name="tablet_mode_summary">Vynutit rozvržení tabletu (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Rozvržení tabletu aktivní (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Procento baterie zcela vpravo na stavové liště</string>
-    <string name="statusbar_battery_percent_summary">Zobrazit procento baterie jako text zcela vpravo na stavové liště</string>
+    <string name="statusbar_battery_percent">Procento baterie na stavové liště</string>
+    <string name="statusbar_battery_percent_summary">Zobrazit procento baterie jako text na stavové liště</string>
     <string name="enable_battery_info">Zobrazit informace o baterii</string>
     <string name="enable_battery_info_summary">Zobrazit živá data baterie (obnovuje se každé 2s, vyžaduje Root)</string>
     <string name="camera_energy_ring">Energetický kroužek předního fotoaparátu</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Obejít ověření podpisu</string>
     <string name="bypass_signature_summary">Instalovat aplikace s jiným podpisem (vyprší za 3 minuty)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Ukazatel síťového provozu</string>
     <string name="network_traffic_summary">Zobrazit aktuální rychlost ve stavovém řádku</string>
     <string name="traffic_interval_format">Interval obnovení: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Prahová hodnota: Zobrazit vždy</string>
     <string name="traffic_threshold_mb">Prahová hodnota: 1MB/s</string>
     <string name="traffic_threshold_kb">Prahová hodnota: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Skrýt ikonu VPN</string>
+    <string name="hide_vpn_icon_summary">Skrýt ikonu klíče ve stavovém řádku (vyžaduje restart nebo přepnutí sítě pro aktualizaci)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Hlavní protokolování</string>

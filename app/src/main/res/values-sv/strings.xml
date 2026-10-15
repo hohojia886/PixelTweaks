@@ -28,8 +28,8 @@
     <string name="tablet_mode">Surfplatteläge</string>
     <string name="tablet_mode_summary">Tvinga surfplattelayout (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Surfplattelayout aktiv (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Batteriprocent längst till höger i statusfältet</string>
-    <string name="statusbar_battery_percent_summary">Visa batteriprocent som text längst till höger i statusfältet</string>
+    <string name="statusbar_battery_percent">Batteriprocent i statusfältet</string>
+    <string name="statusbar_battery_percent_summary">Visa batteriprocent som text i statusfältet</string>
     <string name="enable_battery_info">Visa batteriinformation</string>
     <string name="enable_battery_info_summary">Visa batteridata i realtid (uppdateras var 2:a sek, kräver Root)</string>
     <string name="camera_energy_ring">Energiring för den främre kameran</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Kringgå signaturverifiering</string>
     <string name="bypass_signature_summary">Installera appar med annan signatur (går ut om 3 min)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Nätverkstrafikindikator</string>
     <string name="network_traffic_summary">Visa realtidshastighet i statusfältet</string>
     <string name="traffic_interval_format">Uppdateringsintervall: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Tröskelvärde: Visa alltid</string>
     <string name="traffic_threshold_mb">Tröskelvärde: 1MB/s</string>
     <string name="traffic_threshold_kb">Tröskelvärde: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Dölj VPN-ikon</string>
+    <string name="hide_vpn_icon_summary">Dölj nyckelikonen i statusfältet (kräver omstart eller nätverksbyte för att uppdatera)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Huvudloggning</string>

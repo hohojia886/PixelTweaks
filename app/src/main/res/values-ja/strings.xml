@@ -28,8 +28,8 @@
     <string name="tablet_mode">タブレットモード</string>
     <string name="tablet_mode_summary">タブレットレイアウトを強制表示 (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">タブレットレイアウト適用中 (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">ステータスバー最右端バッテリー残量表示</string>
-    <string name="statusbar_battery_percent_summary">ステータスバーの最右端にテキストでバッテリー残量を表示 (例: 100%)</string>
+    <string name="statusbar_battery_percent">ステータスバーのバッテリー残量表示</string>
+    <string name="statusbar_battery_percent_summary">ステータスバーにテキストでバッテリー残量を表示 (例: 100%)</string>
     <string name="enable_battery_info">バッテリー情報を表示</string>
     <string name="enable_battery_info_summary">リアルタイムバッテリー情報を表示（フォアグラウンドで2秒ごとに更新、Root必須）</string>
     <string name="camera_energy_ring">インカメラエナジーリング</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">署名検証を回避</string>
     <string name="bypass_signature_summary">異なる署名のアプリインストールを許可（3分後に自動OFF）</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">通信速度インジケーター</string>
     <string name="network_traffic_summary">ステータスバーにリアルタイム速度を表示</string>
     <string name="traffic_interval_format">更新間隔: %1$d秒</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">閾値: 常に表示</string>
     <string name="traffic_threshold_mb">閾値: 1MB/s</string>
     <string name="traffic_threshold_kb">閾値: %1$d KB/s</string>
+    <string name="hide_vpn_icon">VPN アイコンを非表示</string>
+    <string name="hide_vpn_icon_summary">ステータスバーの鍵アイコンを非表示にする（切り替え後に再起動またはネットワーク切替が必要）</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">マスターログ</string>

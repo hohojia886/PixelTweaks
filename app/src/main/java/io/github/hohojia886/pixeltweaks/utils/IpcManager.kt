@@ -126,7 +126,7 @@ object IpcManager {
             val knownBooleans = listOf(
                 PreferenceKeys.ENABLE_EASY_UNLOCK, PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT,
                 PreferenceKeys.ENABLE_QS_WIFI_FIX, PreferenceKeys.ENABLE_QS_DATA_FIX,
-                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_BATTERY_INFO, PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, PreferenceKeys.RING_ONLY_CHARGING, PreferenceKeys.ENABLE_NETWORK_TRAFFIC, PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT,
+                PreferenceKeys.ENABLE_CLEAR_ALL, PreferenceKeys.ENABLE_TABLET_MODE, PreferenceKeys.ENABLE_BATTERY_INFO, PreferenceKeys.ENABLE_CAMERA_ENERGY_RING, PreferenceKeys.RING_ONLY_CHARGING, PreferenceKeys.ENABLE_NETWORK_TRAFFIC, PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, PreferenceKeys.ENABLE_HIDE_VPN_ICON,
                 PreferenceKeys.ENABLE_DT_LAUNCHER, PreferenceKeys.ENABLE_DT_LOCKSCREEN, PreferenceKeys.ENABLE_DT_STATUSBAR,
                 PreferenceKeys.ALLOW_DOWNGRADE, PreferenceKeys.BYPASS_SIGNATURE, PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS,
                 PreferenceKeys.ENABLE_MASTER_LOG, PreferenceKeys.LOG_SECURITY, PreferenceKeys.LOG_INTERFACE,
@@ -141,6 +141,7 @@ object IpcManager {
                 PreferenceKeys.ENABLE_CAMERA_ENERGY_RING,
                 PreferenceKeys.RING_ONLY_CHARGING,
                 PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT,
+                PreferenceKeys.ENABLE_HIDE_VPN_ICON,
                 PreferenceKeys.ENABLE_MASTER_LOG,
             )
             knownBooleans.forEach { key ->
@@ -236,9 +237,10 @@ object IpcManager {
             putExtra(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L))
             putExtra(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L))
 
-            // Traffic & Statusbar Battery Percent
+            // Traffic, Statusbar Battery Percent & Hide VPN Icon
             putExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, prefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true))
             putExtra(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, prefs.getBoolean(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false))
+            putExtra(PreferenceKeys.ENABLE_HIDE_VPN_ICON, prefs.getBoolean(PreferenceKeys.ENABLE_HIDE_VPN_ICON, false))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, prefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1))

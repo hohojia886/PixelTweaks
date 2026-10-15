@@ -28,8 +28,8 @@
     <string name="tablet_mode">Mode Tablette</string>
     <string name="tablet_mode_summary">Forcer la disposition tablette (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Disposition tablette active (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Pourcentage batterie à l\'extrême droite</string>
-    <string name="statusbar_battery_percent_summary">Afficher le pourcentage de batterie en texte tout à droite de la barre d\'état</string>
+    <string name="statusbar_battery_percent">Pourcentage de batterie dans la barre d\'état</string>
+    <string name="statusbar_battery_percent_summary">Afficher le pourcentage de batterie en texte dans la barre d\'état</string>
     <string name="enable_battery_info">Afficher les infos batterie</string>
     <string name="enable_battery_info_summary">Afficher les données en temps réel (rafraîchissement 2s, requis Root)</string>
     <string name="camera_energy_ring">Anneau d\'énergie de la caméra frontale</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Contourner la vérification de signature</string>
     <string name="bypass_signature_summary">Installer des applications avec une signature différente (expire dans 3 min)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Indicateur de trafic réseau</string>
     <string name="network_traffic_summary">Afficher la vitesse en temps réel dans la barre d\'état</string>
     <string name="traffic_interval_format">Intervalle de rafraîchissement: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Seuil: Toujours afficher</string>
     <string name="traffic_threshold_mb">Seuil: 1Mo/s</string>
     <string name="traffic_threshold_kb">Seuil: %1$d Ko/s</string>
+    <string name="hide_vpn_icon">Masquer l\'icône VPN</string>
+    <string name="hide_vpn_icon_summary">Masquer l\'icône de clé dans la barre d\'état (nécessite un redémarrage ou un changement de réseau)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Journalisation principale</string>

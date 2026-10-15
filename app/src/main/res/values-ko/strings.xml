@@ -28,8 +28,8 @@
     <string name="tablet_mode">태블릿 모드</string>
     <string name="tablet_mode_summary">태블릿 레이아웃 강제 적용 (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">태블릿 레이아웃 적용 중 (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">상태 표시줄 우측 끝 배터리 백분율</string>
-    <string name="statusbar_battery_percent_summary">상태 표시줄 최우측에 텍스트로 배터리 백분율 표시 (예: 100%)</string>
+    <string name="statusbar_battery_percent">상태 표시줄 배터리 백분율</string>
+    <string name="statusbar_battery_percent_summary">상태 표시줄에 텍스트로 배터리 백분율 표시 (예: 100%)</string>
     <string name="enable_battery_info">배터리 정보 표시</string>
     <string name="enable_battery_info_summary">실시간 배터리 데이터 표시 (2초마다 자동 새로고침, Root 필요)</string>
     <string name="camera_energy_ring">전면 카메라 에너지 링</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">서명 검증 우회</string>
     <string name="bypass_signature_summary">서명이 다른 앱 설치 허용 (3분 후 자동 종료)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">네트워크 속도 표시기</string>
     <string name="network_traffic_summary">상태 표시줄에 실시간 속도 표시</string>
     <string name="traffic_interval_format">새로고침 간격: %1$d초</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">임계값: 항상 표시</string>
     <string name="traffic_threshold_mb">임계값: 1MB/s</string>
     <string name="traffic_threshold_kb">임계값: %1$d KB/s</string>
+    <string name="hide_vpn_icon">VPN 아이콘 숨기기</string>
+    <string name="hide_vpn_icon_summary">상태 표시줄의 열쇠 아이콘 숨기기 (설정 변경 후 재부팅 또는 네트워크 전환 필요)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">마스터 로그</string>

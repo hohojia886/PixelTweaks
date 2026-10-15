@@ -28,8 +28,8 @@
     <string name="tablet_mode">平板模式</string>
     <string name="tablet_mode_summary">强制切换平板布局 (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">平板布局生效中 (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">状态栏最右侧电量百分比</string>
-    <string name="statusbar_battery_percent_summary">于状态栏最右侧以纯文本显示电量百分比 (如 100%)</string>
+    <string name="statusbar_battery_percent">状态栏电量百分比</string>
+    <string name="statusbar_battery_percent_summary">于状态栏以纯文本显示电量百分比 (如 100%)</string>
     <string name="enable_battery_info">显示电池信息</string>
     <string name="enable_battery_info_summary">显示实时电池硬件数据（前台每 2 秒自动刷新，需要 Root）</string>
     <string name="camera_energy_ring">前置摄像头环形电量光环</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">绕过签名验证</string>
     <string name="bypass_signature_summary">允许安装不同签名的应用（3分钟后自动关闭）</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">网络流量指示器</string>
     <string name="network_traffic_summary">在状态栏显示实时网速</string>
     <string name="traffic_interval_format">刷新间隔: %1$d秒</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">门槛: 总是显示</string>
     <string name="traffic_threshold_mb">门槛: 1MB/s</string>
     <string name="traffic_threshold_kb">门槛: %1$d KB/s</string>
+    <string name="hide_vpn_icon">隐藏 VPN 图标</string>
+    <string name="hide_vpn_icon_summary">在状态栏隐藏 VPN 钥匙图标（切换后需重启或切换网络以更新）</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">主日志开关</string>

@@ -28,8 +28,8 @@
     <string name="tablet_mode">Tryb tabletu</string>
     <string name="tablet_mode_summary">Wymuś układ tabletu (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Układ tabletu aktywne (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Procent baterii po prawej stronie paska stanu</string>
-    <string name="statusbar_battery_percent_summary">Wyświetlaj procent baterii jako tekst po prawej stronie paska stanu</string>
+    <string name="statusbar_battery_percent">Procent baterii na pasku stanu</string>
+    <string name="statusbar_battery_percent_summary">Wyświetlaj procent baterii jako tekst na pasku stanu</string>
     <string name="enable_battery_info">Pokaż informacje o baterii</string>
     <string name="enable_battery_info_summary">Pokaż dane baterii w czasie rzeczywistym (odświeżanie co 2s, wymaga Root)</string>
     <string name="camera_energy_ring">Pierścień energii przedniego aparatu</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Omiń weryfikację podpisu</string>
     <string name="bypass_signature_summary">Instaluj aplikacje z innym podpisem (wygasa za 3 minuty)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Wskaźnik ruchu sieciowego</string>
     <string name="network_traffic_summary">Pokaż prędkość w czasie rzeczywistym na pasku stanu</string>
     <string name="traffic_interval_format">Interwał odświeżania: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Próg: Zawsze pokazuj</string>
     <string name="traffic_threshold_mb">Próg: 1MB/s</string>
     <string name="traffic_threshold_kb">Próg: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Ukryj ikonę VPN</string>
+    <string name="hide_vpn_icon_summary">Ukryj ikonę klucza na pasku stanu (wymaga ponownego uruchomienia lub przełączenia sieci)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Główne logowanie</string>

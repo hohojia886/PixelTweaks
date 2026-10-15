@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- General -->
+    <string name="app_name">Pixel Tweaks</string>
+    <string name="module_active">Modul aktív</string>
+    <string name="countdown_format">%1$s (%2$ds)</string>
+
+    <!-- Language Selection & GitHub -->
+    <string name="language_settings">Nyelv</string>
+    <string name="language_settings_summary">Alkalmazás megjelenítési nyelvének módosítása</string>
+    <string name="lang_system_default">Rendszeralapértelmezett</string>
+    <string name="github_repository">GitHub tárhely</string>
+    <string name="github_repository_summary">Forráskód és kiadások megtekintése</string>
+    <string name="system_build_number">Rendszer build száma</string>
+
+    <!-- Categories -->
+    <string name="category_security">Rendszer és Biztonság</string>
+    <string name="category_interface">Felület és Állapotsor</string>
+    <string name="category_interaction">Gesztusok és Interakciók</string>
+    <string name="category_quick_settings">Gyorsbeállítások</string>
+    <string name="category_battery">Akkumulátor infó</string>
+    <string name="category_debug">Hibakeresési napló</string>
+    <string name="category_others">Egyéb</string>
+
+    <!-- ClearAll, Tablet Mode & Battery Info Toggle -->
+    <string name="clear_all_button">Összes törlése gomb</string>
+    <string name="clear_all_button_summary">Összes törlése gomb hozzáadása az előzményekhez</string>
+    <string name="tablet_mode">Tablet mód</string>
+    <string name="tablet_mode_summary">Tablet elrendezés kényszerítése (%1$d DPI)</string>
+    <string name="tablet_mode_active_summary">Tablet elrendezés aktív (%1$d DPI)</string>
+    <string name="statusbar_battery_percent">Állapotsor akkumulátor %</string>
+    <string name="statusbar_battery_percent_summary">Akkumulátor százalék megjelenítése szövegként az állapotsoron</string>
+    <string name="enable_battery_info">Akkumulátor infó megjelenítése</string>
+    <string name="enable_battery_info_summary">Valós idejű akkumulátor hardveres adatok (automatikus frissítés 2mp-enként, Root szükséges)</string>
+    <string name="camera_energy_ring">Kamera körüli akkumulátor gyűrű</string>
+    <string name="camera_energy_ring_summary">Dinamikus gyűrű rajzolása az előlapi kamera köré az akkumulátor szintjéhez és töltéséhez</string>
+    <string name="ring_only_charging">Csak töltés közben jelenjen meg</string>
+    <string name="ring_only_charging_summary">A kamera körüli gyűrű csak a készülék töltésekor látható</string>
+    <string name="enable_ring_rotation">Gyűrű forgatása az idő múlásával</string>
+    <string name="enable_ring_rotation_summary">Folyamatosan forgatja a gyűrű kezdőszögét a kamera körül</string>
+    <string name="ring_radius_offset_format">Gyűrű sugár eltolás: %1$.1f dp</string>
+    <string name="ring_stroke_width_format">Gyűrű vonalvastagság: %1$.1f dp</string>
+
+    <!-- DT2S -->
+    <string name="dt_launcher">Koppintásos alvás a kezdőképernyőn</string>
+    <string name="dt_launcher_summary">Dupla koppintás a kezdőképernyő üres részére az alváshoz</string>
+    <string name="dt_lockscreen">Koppintásos alvás a zárolási képernyőn</string>
+    <string name="dt_lockscreen_summary">Dupla koppintás a zárolási képernyőre az alváshoz</string>
+    <string name="dt_statusbar">Koppintásos alvás az állapotsoron</string>
+    <string name="dt_statusbar_summary">Dupla koppintás az állapotsorra az alváshoz</string>
+
+    <!-- EasyUnlock -->
+    <string name="easy_unlock">Egyszerű feloldás</string>
+    <string name="easy_unlock_summary">Automata feloldás helyes PIN-kód megadásakor</string>
+    <string name="easy_unlock_reboot">Újraindítási korlátozás kihagyása</string>
+    <string name="easy_unlock_reboot_summary">Automata feloldás engedélyezése újraindítás után</string>
+
+    <!-- QuickSettings -->
+    <string name="qs_wifi_fix">Wi-Fi kényszerített kikapcsolása</string>
+    <string name="qs_wifi_fix_summary">Wi-Fi teljes kikapcsolása átváltáskor</string>
+    <string name="qs_data_fix">Mobiladat közvetlen kapcsoló</string>
+    <string name="qs_data_fix_summary">Mobiladat kapcsolása megerősítő ablak nélkül</string>
+
+    <!-- Screenshot -->
+    <string name="unrestricted_screenshots">Korlátozásmentes képernyőkép</string>
+    <string name="unrestricted_screenshots_summary">Képernyőkép engedélyezése védett alkalmazásokban</string>
+
+    <!-- Security -->
+    <string name="allow_downgrade">Alkalmazás visszalépés engedélyezése</string>
+    <string name="allow_downgrade_summary">Korábbi alkalmazásverziók telepítésének engedélyezése (3 perc után lejár)</string>
+    <string name="bypass_signature">Aláírás-ellenőrzés kihagyása</string>
+    <string name="bypass_signature_summary">Eltérő aláírású alkalmazások telepítésének engedélyezése (3 perc után lejár)</string>
+
+    <!-- Traffic & VPN -->
+    <string name="network_traffic">Hálózati adatforgalom jelző</string>
+    <string name="network_traffic_summary">Valós idejű hálózati sebesség megjelenítése az állapotsoron</string>
+    <string name="traffic_interval_format">Frissítési intervallum: %1$ds</string>
+    <string name="traffic_font_format">Betűméret: %1$dsp</string>
+    <string name="traffic_threshold_always">Küszöbérték: Mindig látható</string>
+    <string name="traffic_threshold_mb">Küszöbérték: 1MB/s</string>
+    <string name="traffic_threshold_kb">Küszöbérték: %1$d KB/s</string>
+    <string name="hide_vpn_icon">VPN ikon elrejtése</string>
+    <string name="hide_vpn_icon_summary">Kulcs ikon elrejtése az állapotsoron (a frissítéshez újraindítás vagy hálózatváltás szükséges)</string>
+
+    <!-- Debug & Logs -->
+    <string name="master_log">Fő naplózás</string>
+    <string name="master_log_summary">Logcat címke: PXTK_</string>
+    <string name="log_security">Rendszer és biztonsági naplók</string>
+    <string name="log_security_summary">Logcat címkék: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_interface">Felület és állapotsor naplók</string>
+    <string name="log_interface_summary">Logcat címkék: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_gestures">Gesztusok és interakciók naplók</string>
+    <string name="log_gestures_summary">Logcat címke: PXTK_DT2S</string>
+    <string name="log_quick_settings">Gyorsbeállítások naplók</string>
+    <string name="log_quick_settings_summary">Logcat címke: PXTK_QuickSettings</string>
+
+    <!-- Battery Info Metrics -->
+    <string name="battery_status">Akkumulátor állapota</string>
+    <string name="battery_power_current">Töltési teljesítmény és sebesség</string>
+    <string name="battery_voltage">Valós idejű akkumulátor feszültség</string>
+    <string name="battery_current_stored">Fennmaradó tárolt töltés</string>
+    <string name="battery_max_limits">Rendszer maximális töltési korlátja</string>
+
+    <string name="battery_cycles">Akkumulátor töltési ciklusok</string>
+    <string name="battery_rated_capacity">Gyári tervezett kapacitás</string>
+    <string name="battery_estimated_capacity">Jelenlegi maximális kapacitás</string>
+    <string name="battery_calculated_health">Kiszámított kapacitási egészség</string>
+    <string name="battery_health_capacity_index">Kapacitás egészségi pontszám</string>
+    <string name="battery_overall_health">Általános egészségi állapot</string>
+    <string name="battery_temperature">Akkumulátor hőmérséklete</string>
+    <string name="battery_resistance_avg">Átlagos belső ellenállás</string>
+    <string name="battery_resistance_now">Valós idejű belső ellenállás</string>
+    <string name="battery_health_impedance_index">Impedancia egészségi pontszám</string>
+    <string name="battery_serial_number">Akkumulátor gyári száma</string>
+    <string name="battery_first_usage">Gyártási dátum és kor</string>
+    <string name="battery_aafv_offset">Öregedésvédelmi feszültség eltolás</string>
+
+    <string name="battery_voltage_format">%1$.3f V (%2$d mV)</string>
+    <string name="battery_power_format">%1$+.2f W (%2$+d mA)</string>
+    <string name="battery_max_limits_format">%1$d mV / %2$d mA</string>
+    <string name="battery_capacity_format">%1$d mAh</string>
+    <string name="battery_cycles_format">%1$d ciklus</string>
+    <string name="battery_health_format">%1$d%%</string>
+    <string name="battery_temp_format">%1$.1f °C</string>
+    <string name="battery_milli_format">%1$.1f mΩ</string>
+    <string name="battery_aafv_format">%1$d mV</string>
+    <string name="battery_first_usage_age_format">%1$s (%2$s)</string>
+    <string name="battery_unknown">N/A</string>
+</resources>

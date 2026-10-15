@@ -28,8 +28,8 @@
     <string name="tablet_mode">Mod Tablet</string>
     <string name="tablet_mode_summary">Paksa susun atur tablet (%1$d DPI)</string>
     <string name="tablet_mode_active_summary">Susun atur tablet aktif (%1$d DPI)</string>
-    <string name="statusbar_battery_percent">Peratusan Bateri Paling Kanan Bar Status</string>
-    <string name="statusbar_battery_percent_summary">Paparkan peratusan bateri dalam bentuk teks di paling kanan bar status</string>
+    <string name="statusbar_battery_percent">Peratusan Bateri Bar Status</string>
+    <string name="statusbar_battery_percent_summary">Paparkan peratusan bateri dalam bentuk teks di bar status</string>
     <string name="enable_battery_info">Tunjukkan Maklumat Bateri</string>
     <string name="enable_battery_info_summary">Tunjukkan data bateri masa nyata (segar semula setiap 2s, memerlukan Root)</string>
     <string name="camera_energy_ring">Cincin Tenaga Kamera Hadapan</string>
@@ -71,7 +71,7 @@
     <string name="bypass_signature">Pintas Pengesahan Tandatangan</string>
     <string name="bypass_signature_summary">Pasang aplikasi dengan tandatangan berbeza (tamat dalam 3 minit)</string>
 
-    <!-- Traffic -->
+    <!-- Traffic & VPN -->
     <string name="network_traffic">Penunjuk Trafik Rangkaian</string>
     <string name="network_traffic_summary">Tunjukkan kelajuan masa nyata pada bar status</string>
     <string name="traffic_interval_format">Selang Segar Semula: %1$ds</string>
@@ -79,6 +79,8 @@
     <string name="traffic_threshold_always">Ambang: Tunjukkan Sentiasa</string>
     <string name="traffic_threshold_mb">Ambang: 1MB/s</string>
     <string name="traffic_threshold_kb">Ambang: %1$d KB/s</string>
+    <string name="hide_vpn_icon">Sembunyikan Ikon VPN</string>
+    <string name="hide_vpn_icon_summary">Sembunyikan ikon kunci dalam bar status (memerlukan mulakan semula atau tukar rangkaian untuk kemas kini)</string>
 
     <!-- Debug & Logs -->
     <string name="master_log">Log Utama</string>

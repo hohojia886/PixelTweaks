@@ -30,6 +30,7 @@ class SettingsRepository(private val context: Context) {
         if (!cePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC) && !dePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC)) {
             savePreference(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
             savePreference(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false)
+            savePreference(PreferenceKeys.ENABLE_HIDE_VPN_ICON, false)
             savePreference(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1)
             savePreference(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
             savePreference(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
@@ -58,13 +59,10 @@ class SettingsRepository(private val context: Context) {
             savePreference(PreferenceKeys.LOG_QUICK_SETTINGS, true)
             syncAll()
         } else {
-            if (cePrefs.all.isNotEmpty() && dePrefs.all.isEmpty()) {
-                cePrefs.all.forEach { (k, v) -> if (v != null) savePreference(k, v) }
-                syncAll()
-            } else if (dePrefs.all.isNotEmpty() && cePrefs.all.isEmpty()) {
-                dePrefs.all.forEach { (k, v) -> if (v != null) savePreference(k, v) }
-                syncAll()
-            }
+            // Bidirectionally sync missing keys between CE and DE storage
+            cePrefs.all.forEach { (k, v) -> if (v != null && !dePrefs.contains(k)) savePreference(k, v) }
+            dePrefs.all.forEach { (k, v) -> if (v != null && !cePrefs.contains(k)) savePreference(k, v) }
+            syncAll()
         }
     }
 
@@ -86,6 +84,7 @@ class SettingsRepository(private val context: Context) {
             tabletMode = dePrefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false),
             networkTraffic = dePrefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true),
             statusbarBatteryPercent = dePrefs.getBoolean(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false),
+            hideVpnIcon = dePrefs.getBoolean(PreferenceKeys.ENABLE_HIDE_VPN_ICON, false),
             trafficInterval = dePrefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_INTERVAL, 1),
             trafficFontSize = dePrefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f),
             trafficThreshold = dePrefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1),
@@ -112,8 +111,8 @@ class SettingsRepository(private val context: Context) {
             is Long -> { ceEdit.putLong(key, value); deEdit.putLong(key, value) }
             is String -> { ceEdit.putString(key, value); deEdit.putString(key, value) }
         }
-        ceEdit.apply()
-        deEdit.apply()
+        ceEdit.commit()
+        deEdit.commit()
     }
 
     fun dispatchUpdateBroadcast(key: String, value: Any) {
