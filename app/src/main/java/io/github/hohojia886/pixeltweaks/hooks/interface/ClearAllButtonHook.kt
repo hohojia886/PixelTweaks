@@ -24,18 +24,24 @@ import java.lang.ref.WeakReference
 import java.lang.reflect.Method
 
 /**
- * ClearAllButtonHook: Adds a "Clear all" button to the Pixel Launcher's Recents screen.
- * Injects a custom TextView into the OverviewActionsView and wires it to the 
- * RecentsView's dismissAllTasks method for a unified cleanup experience.
+ * Injects a persistent "Clear all" action button into the Pixel Launcher Overview / Recents action bar.
+ *
+ * In Phone mode, clones the exact background, margins, and text style of the stock "Screenshot" action button.
+ * In Tablet mode, renders a floating rounded pill container fixed at the bottom-right corner.
  */
 object ClearAllButtonHook {
 
-    private var clearAllButtonRef: WeakReference<TextView>? = null // Reference to the injected button
-    private var isEnabled = true // Feature toggle
-    private var dismissAllTasksMethod: Method? = null // Cached reflection method
+    private var clearAllButtonRef: WeakReference<TextView>? = null
+    private var isEnabled = true
+    private var dismissAllTasksMethod: Method? = null
     private const val TAG = "ClearAll"
 
-    // Entry point: Resolves target methods and hooks Launcher lifecycle
+    /**
+     * Initializes ClearAllButton hooks inside the Pixel Launcher process.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader Pixel Launcher ClassLoader.
+     */
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Init", "Initializing ClearAllButtonHook")
         try {
@@ -45,7 +51,6 @@ object ClearAllButtonHook {
             val recentsViewClass = classLoader.loadClass("com.android.quickstep.views.RecentsView")
             val actionsViewClass = classLoader.loadClass("com.android.quickstep.views.OverviewActionsView")
 
-            // Locates the method responsible for clearing the tasks list
             dismissAllTasksMethod = (findMethod(recentsViewClass, "dismissAllTasks", View::class.java)
                 ?: findMethod(recentsViewClass, "dismissAllTasks"))?.apply { isAccessible = true }
 
@@ -66,14 +71,12 @@ object ClearAllButtonHook {
             }
             IpcDispatcher.initializeOnce(module, classLoader)
 
-            // Syncs our button's visibility with the RecentsView container's state
             findMethod(recentsViewClass, "setVisibility", Int::class.java)?.let { method ->
                 module.hookAfter(method) { chain, _ ->
                     updateButtonVisibility(chain.args[0] as Int)
                 }
             }
 
-            // Hook that triggers the actual button injection after layout inflation
             findMethod(actionsViewClass, "onFinishInflate")?.let { method ->
                 module.hookAfter(method) { chain, _ ->
                     val parent = chain.thisObject as FrameLayout
@@ -85,11 +88,17 @@ object ClearAllButtonHook {
         }
     }
 
-    // Helper: Detects tablet mode (sw >= 600dp or lowered DPI e.g. 480->320dpi) where Launcher action buttons are absent
+    /**
+     * Detects tablet or low DPI mode where standard buttons may be absent.
+     * Evaluates smallestScreenWidthDp against the 600dp threshold.
+     */
     private fun isTabletMode(context: Context): Boolean =
         context.resources.configuration.smallestScreenWidthDp >= 600
 
-    // Creates and adds the "Clear all" button to the Launcher's UI hierarchy
+    /**
+     * Creates and injects the "Clear all" button into Recents actions view.
+     * Clones screenshot button style or creates floating pill layout.
+     */
     private fun injectButton(parent: FrameLayout, recentsViewClass: Class<*>) {
         val context = parent.context
         if (parent.findViewWithTag<View>("pxtk_clear_all") != null) return
@@ -102,8 +111,6 @@ object ClearAllButtonHook {
         val screenshotBtn = if (screenshotId != 0) parent.findViewById<View>(screenshotId) else null
         val selectBtn = if (selectId != 0) parent.findViewById<View>(selectId) else null
 
-        // In tablet mode (or low DPI setups), Launcher removes or restructures default action buttons (action_screenshot/select).
-        // Force fallback pill layout fixed at Gravity.END | Gravity.CENTER_VERTICAL to ensure visibility and prevent disappearing hook points.
         val usePillStyle = isTablet || (screenshotBtn !is TextView)
 
         val clearAllStrId = res.getIdentifier("recents_clear_all", "string", context.packageName)
@@ -117,7 +124,6 @@ object ClearAllButtonHook {
             isAllCaps = false
             
             if (!usePillStyle) {
-                // Stylist: Clones the visual appearance of the factory "Screenshot" button (Phone mode)
                 background = screenshotBtn.background?.constantState?.newDrawable()?.mutate()
                 setTextColor(screenshotBtn.textColors)
                 typeface = screenshotBtn.typeface
@@ -143,7 +149,6 @@ object ClearAllButtonHook {
                     }
                 }
             } else {
-                // Legacy / Tablet mode: Floating rounded pill design fixed at middle-right
                 setTextColor(Color.WHITE)
                 textSize = 14f
                 elevation = 10f
@@ -165,6 +170,8 @@ object ClearAllButtonHook {
                             dismissAllTasksMethod!!.invoke(recentsView)
                         }
                         Logger.i(TAG, "Success", "Tasks dismissed")
+                    }.onFailure { e ->
+                        Logger.e(TAG, "Error", "Failed to invoke dismissAllTasks", e)
                     }
                 }
             }
@@ -201,6 +208,8 @@ object ClearAllButtonHook {
                     val newParams = runCatching {
                         oldParams.javaClass.getConstructor(Int::class.java, Int::class.java)
                             .newInstance(ViewGroup.LayoutParams.WRAP_CONTENT, oldParams.height) as ViewGroup.MarginLayoutParams
+                    }.onFailure { e ->
+                        Logger.e(TAG, "Error", "Failed to instantiate MarginLayoutParams via reflection", e)
                     }.getOrElse { 
                         FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, oldParams.height)
                     }
@@ -227,7 +236,10 @@ object ClearAllButtonHook {
         button.visibility = if (isEnabled && parent.isVisible) View.VISIBLE else View.GONE
     }
 
-    // Climbs the view tree to locate the RecentsView instance needed to trigger dismissal
+    /**
+     * Climbs view hierarchy searching for RecentsView instance.
+     * Evaluates parent group children until matching class type is found.
+     */
     private fun findRecentsView(view: View, recentsViewClass: Class<*>): Any? {
         var current: View? = view
         while (current != null) {
@@ -244,14 +256,20 @@ object ClearAllButtonHook {
         return null
     }
 
-    // Updates the visibility of the custom button based on current settings and system UI state
+    /**
+     * Syncs custom button visibility with user settings and system state.
+     * Evaluates feature enable flag and parent container visibility state.
+     */
     private fun updateButtonVisibility(systemVisibility: Int? = null) {
         val button = clearAllButtonRef?.get() ?: return
         val visibility = systemVisibility ?: (button.parent as? View)?.visibility ?: View.VISIBLE
         button.visibility = if (isEnabled && (visibility == View.VISIBLE)) View.VISIBLE else View.GONE
     }
 
-    // Helper: Safely locates a method in a class or its superclasses
+    /**
+     * Safely locates a declared method within a class hierarchy.
+     * Traverses superclasses returning Accessible method or null on error.
+     */
     private fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
         var c: Class<*>? = clazz
         while (c != null) {
@@ -261,7 +279,10 @@ object ClearAllButtonHook {
         return null
     }
 
-    // Helper: Converts DP values to pixels for layout adjustments
+    /**
+     * Converts DP units to physical pixels based on display metrics.
+     * Applies COMPLEX_UNIT_DIP dimension transformation via Resources.
+     */
     private fun dp(context: Context, value: Int): Int =
         TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value.toFloat(), context.resources.displayMetrics).toInt()
 }

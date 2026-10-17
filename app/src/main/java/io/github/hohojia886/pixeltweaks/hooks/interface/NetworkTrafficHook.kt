@@ -35,9 +35,9 @@ import java.lang.reflect.Method
 import java.util.Collections
 
 /**
- * NetworkTrafficHook: Adds a real-time network speed indicator to the status bar.
- * Injects a custom View into the SystemUI status bar layout and uses a background 
- * polling thread to calculate RX/TX speeds via TrafficStats.
+ * Adds a real-time upload and download network speed indicator to the SystemUI status bar.
+ *
+ * Injects a custom 2-line [TrafficView] next to the status bar Clock, powered by a background [TrafficStats] polling thread.
  */
 object NetworkTrafficHook {
 
@@ -45,20 +45,18 @@ object NetworkTrafficHook {
     private const val MB = KB * KB
     private const val TAG = "Traffic"
 
-    // Thread-safe list of active traffic views across different system bar instances
     private val trafficViews = Collections.synchronizedList(mutableListOf<WeakReference<TrafficView>>())
 
-    private var isEnabled = true // Feature master toggle
-    private var updateInterval = 1000L // Polling frequency in milliseconds
-    private var autoHideThreshold = 1024L // Minimum speed to show the indicator
-    private var fontSizeSp = 8f // Visual scale of the text
-    @Volatile private var currentTint = Color.WHITE // Adaptive color based on status bar theme
+    private var isEnabled = true
+    private var updateInterval = 1000L
+    private var autoHideThreshold = 1024L
+    private var fontSizeSp = 8f
+    @Volatile private var currentTint = Color.WHITE
 
     private val uiHandler = Handler(Looper.getMainLooper())
-    private var workerHandler: Handler? = null // Background thread handler
-    @Volatile private var isPolling = false // Tracking status of the worker thread
+    private var workerHandler: Handler? = null
+    @Volatile private var isPolling = false
 
-    // Background task that calculates speeds and updates UI views
     private val poller = object : Runnable {
         private var lastRxBytes = -1L
         private var lastTxBytes = -1L
@@ -66,6 +64,10 @@ object NetworkTrafficHook {
         private var lastRxSpeed = -1L
         private var lastTxSpeed = -1L
 
+        /**
+         * Resets tracking variables for network speed calculation.
+         * Obtains current total RX/TX bytes from TrafficStats API.
+         */
         fun reset() {
             lastRxBytes = TrafficStats.getTotalRxBytes()
             lastTxBytes = TrafficStats.getTotalTxBytes()
@@ -74,6 +76,10 @@ object NetworkTrafficHook {
             lastTxSpeed = -1L
         }
 
+        /**
+         * Computes transfer speeds and triggers UI updates on handler.
+         * Evaluates delta bytes over time interval and updates views.
+         */
         override fun run() {
             if (!isEnabled || !isPolling) return
             
@@ -96,7 +102,6 @@ object NetworkTrafficHook {
                 return
             }
 
-            // Logic to suppress polling and hide views when the device is locked
             val km = firstView.context.getSystemService(Context.KEYGUARD_SERVICE) as? KeyguardManager
             if (km?.isKeyguardLocked == true) {
                 uiHandler.post {
@@ -137,7 +142,10 @@ object NetworkTrafficHook {
         }
     }
 
-    // Helper: Safely applies an action to all active traffic view instances
+    /**
+     * Utility to cleanly iterate active traffic views.
+     * Safely processes weak references removing stale entries.
+     */
     private fun iterateViews(action: (TrafficView) -> Unit) {
         synchronized(trafficViews) {
             val iterator = trafficViews.iterator()
@@ -152,7 +160,10 @@ object NetworkTrafficHook {
         }
     }
 
-    // Starts the specialized background thread for speed monitoring
+    /**
+     * Initiates background polling thread for speed monitoring.
+     * Spawns worker handler thread and posts poller runnable.
+     */
     @Synchronized
     private fun startPolling() {
         if (isPolling) return
@@ -166,14 +177,22 @@ object NetworkTrafficHook {
         workerHandler?.post(poller)
     }
 
-    // Stops background processing to conserve system resources
+    /**
+     * Halts background polling thread to conserve system resources.
+     * Removes poller callbacks from background worker handler.
+     */
     @Synchronized
     private fun stopPolling() {
         isPolling = false
         workerHandler?.removeCallbacks(poller)
     }
 
-    // Entry point: Decides when and where to inject the traffic view
+    /**
+     * Entry point for initializing NetworkTraffic hooks inside SystemUI.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
+     */
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Started", "Initializing NetworkTrafficHook (Robust Edition)")
         try {
@@ -186,7 +205,6 @@ object NetworkTrafficHook {
             val rawThreshold = bundle.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1)
             autoHideThreshold = (if (rawThreshold >= 0) rawThreshold else 1) * 1024L
 
-            // Injection: Targets the 'Clock' view attachment to anchor the indicator
             val clockClass = classLoader.loadClass("com.android.systemui.statusbar.policy.Clock")
             val onAttachedMethod = findMethod(clockClass, "onAttachedToWindow")
             if (onAttachedMethod != null) {
@@ -206,7 +224,6 @@ object NetworkTrafficHook {
                 Logger.e(TAG, "Error", "onAttachedToWindow method not found on Clock class hierarchy")
             }
 
-            // Centralized Dark Mode Sync via StatusBarTintManager
             StatusBarTintManager.register(module, classLoader) { tint ->
                 applyTint(tint)
             }
@@ -249,7 +266,10 @@ object NetworkTrafficHook {
         }
     }
 
-    // Filters out notification clocks and other non-status bar clock instances
+    /**
+     * Determines whether view belongs to main status bar.
+     * Traverses parent hierarchy looking for status bar views.
+     */
     private fun isStatusBarClock(clock: View): Boolean {
         var current = clock.parent
         while (current != null) {
@@ -264,7 +284,10 @@ object NetworkTrafficHook {
         return false
     }
 
-    // Handles the actual view creation and layout parameter adjustments for injection
+    /**
+     * Instantiates and attaches traffic indicator into UI hierarchy.
+     * Creates TrafficView instance and inserts into parent container.
+     */
     private fun attachToClock(clock: View, clockParent: ViewGroup) {
         val context = clock.context
         val res = context.resources
@@ -295,6 +318,8 @@ object NetworkTrafficHook {
                             if (targetContainer != null) break
                         } catch (_: NoSuchFieldException) {}
                     }
+                }.onFailure { e ->
+                    Logger.e(TAG, "Error", "Failed to parse PhoneStatusBarView StartSideContainer", e)
                 }
                 break
             }
@@ -347,13 +372,19 @@ object NetworkTrafficHook {
         Logger.i(TAG, "Success", "Precision-injected to ${container.javaClass.simpleName}")
     }
 
-    // Updates the text color of all active traffic views to match the status bar
+    /**
+     * Recolors traffic views with dynamic status bar theme tint.
+     * Updates current tint color and refreshes active views.
+     */
     private fun applyTint(tint: Int) {
         currentTint = tint
         uiHandler.post { iterateViews { it.updateColor(currentTint) } }
     }
 
-    // Batch updates all configuration variables during a full sync event
+    /**
+     * Handles bulk property synchronization from IPC events.
+     * Updates enabled state, font size, interval, and threshold.
+     */
     private fun handleSync(intent: Intent) {
         isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
         val rawFont = intent.getFlexibleFloatExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f)
@@ -367,7 +398,10 @@ object NetworkTrafficHook {
         updateState()
     }
 
-    // Adjusts polling and view visibility based on the current feature state
+    /**
+     * Toggles visibility and background polling based on enablement.
+     * Starts or stops polling thread and updates view visibility.
+     */
     private fun updateState() {
         if (isEnabled) startPolling() else stopPolling()
         uiHandler.post {
@@ -376,8 +410,16 @@ object NetworkTrafficHook {
         }
     }
 
+    /**
+     * Converts DP units to physical pixels based on display metrics.
+     * Applies COMPLEX_UNIT_DIP dimension transformation via Resources.
+     */
     private fun dp(context: Context, value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
 
+    /**
+     * Locates declared method within class hierarchy via reflection.
+     * Traverses superclasses returning Accessible method instance.
+     */
     private fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
         var c: Class<*>? = clazz
         while (c != null) {
@@ -388,7 +430,8 @@ object NetworkTrafficHook {
     }
 
     /**
-     * TrafficView: A specialized custom view for rendering the two-line RX/TX text.
+     * Specialized custom view for rendering two-line RX/TX speeds.
+     * Draws upload and download transfer rate text using Paint.
      */
     @SuppressLint("ViewConstructor")
     private class TrafficView(context: Context) : View(context) {
@@ -401,12 +444,20 @@ object NetworkTrafficHook {
         private var rxText = "0 B"
         private var fontSizePx = 0f
 
+        /**
+         * Reapplies tint and starts polling when view is attached.
+         * Updates paint color and initiates background speed polling.
+         */
         override fun onAttachedToWindow() {
             super.onAttachedToWindow()
             updateColor(StatusBarTintManager.currentTint)
             startPolling()
         }
         
+        /**
+         * Refreshes text size and coloring based on user preferences.
+         * Sets paint size and color before requesting layout and invalidate.
+         */
         fun updateStyle(sizeSp: Float, color: Int) {
             fontSizePx = sizeSp * resources.displayMetrics.scaledDensity
             paint.textSize = fontSizePx
@@ -415,11 +466,19 @@ object NetworkTrafficHook {
             invalidate()
         }
 
+        /**
+         * Directly sets internal paint color for system tint changes.
+         * Updates paint color and triggers view invalidation.
+         */
         fun updateColor(color: Int) {
             paint.color = color
             invalidate()
         }
 
+        /**
+         * Updates physical text size and requests view relayout.
+         * Calculates font size in pixels and requests layout and invalidate.
+         */
         fun updateFontSize(sizeSp: Float) {
             fontSizePx = sizeSp * resources.displayMetrics.scaledDensity
             paint.textSize = fontSizePx
@@ -427,6 +486,10 @@ object NetworkTrafficHook {
             invalidate()
         }
 
+        /**
+         * Pushes newly computed transfer speeds to traffic view.
+         * Formats RX and TX byte rates and requests layout and invalidate.
+         */
         fun setSpeeds(tx: Long, rx: Long) {
             txText = formatSpeed(tx)
             rxText = formatSpeed(rx)
@@ -434,6 +497,10 @@ object NetworkTrafficHook {
             invalidate()
         }
 
+        /**
+         * Calculates required view dimensions based on text length.
+         * Measures max text width and font height to set measured dimension.
+         */
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
             val txWidth = paint.measureText(txText)
             val rxWidth = paint.measureText(rxText)
@@ -443,6 +510,10 @@ object NetworkTrafficHook {
             setMeasuredDimension(maxWidth + 8, (fontHeight * 2.2).toInt())
         }
 
+        /**
+         * Renders two lines of RX and TX speed text on canvas.
+         * Draws upload and download speed strings using paint alignment.
+         */
         override fun onDraw(canvas: Canvas) {
             val centerX = width / 2f
             val fm = paint.fontMetrics
@@ -454,6 +525,10 @@ object NetworkTrafficHook {
             canvas.drawText(rxText, centerX, startY + singleLineHeight, paint)
         }
 
+        /**
+         * Formats raw byte counts into human-readable speed strings.
+         * Evaluates rate magnitude and converts to B, KB, or MB format.
+         */
         private fun formatSpeed(bytesPerSec: Long): String {
             return when {
                 bytesPerSec >= MB -> formatValue(bytesPerSec, MB, "M")
@@ -462,6 +537,10 @@ object NetworkTrafficHook {
             }
         }
 
+        /**
+         * Formats numerical value with units like MB or KB.
+         * Calculates integral and decimal digits with unit suffix.
+         */
         private fun formatValue(bytes: Long, unit: Int, suffix: String): String {
             val integral = bytes / unit
             return if (integral >= 10) "$integral$suffix" else {

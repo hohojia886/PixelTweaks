@@ -86,9 +86,9 @@
     <string name="master_log">Journalisation principale</string>
     <string name="master_log_summary">Balise Logcat: PXTK_</string>
     <string name="log_security">Journaux système &amp; sécurité</string>
-    <string name="log_security_summary">Balises Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Balises Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">Journaux d\'interface</string>
-    <string name="log_interface_summary">Balises Logcat: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Balises Logcat: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">Journaux de gestes</string>
     <string name="log_gestures_summary">Balise Logcat: PXTK_DT2S</string>
     <string name="log_quick_settings">Journaux de paramètres rapides</string>

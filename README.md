@@ -8,8 +8,9 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**Version:** v1.2.9 (Stable Release)  
+**Version:** v1.3.0 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
+**Tested Build Number:** CP3A.261005.005
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
 
@@ -28,7 +29,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.2.9)
+## ✨ Features (v1.3.0)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -47,7 +48,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Unrestricted Screenshots**: Force-enable screenshots and recordings in restricted apps (Banking, Incognito).
 
 ### 📱 System UI Settings
-- **Camera Hole Energy Ring**: Dynamic battery energy ring rendered around the front camera cutout (`DisplayCutout`) featuring color status thresholds (<=20% Yellow, <=10% Red, >20% Cyan/Green), 3s HSV rainbow gradient pulse animation during charging, system Battery Saver mode orange sync (`#FF9500`), smooth 1-minute clock rotation, fine-tuning sliders for offset & stroke width, "Show Only While Charging" toggle, and automatic screen-off power saving.
+- **Camera Hole Energy Ring**: Dynamic battery energy ring rendered around the front camera cutout (`DisplayCutout`) featuring color status thresholds (<=20% Yellow, <=10% Red, >20% Cyan/Green), 3s unlock neon glow surge (1.3x stroke pulse + 5dp outer aura), low-battery (<10%) once-per-minute 1.5s pulse alert, 3s HSV rainbow gradient pulse animation during charging, system Battery Saver mode orange sync (`#FF9500`), smooth 1-minute clock rotation, fine-tuning sliders for offset & stroke width, "Show Only While Charging" toggle, and automatic screen-off power saving.
 - **Status Bar Battery Percent**: Displays a clean text battery percentage (e.g., "100%") on the far-right side of the status bar. Suppresses Android 17 stock battery views while dynamically matching status bar clock typography, theme colors, and charging pulse gradient.
 - **Clear All Button**: Adds a native-style "Clear all" button to the Pixel Launcher recents screen.
 - **Tablet Mode**: Dynamically calculates and applies target display density (`sw >= 600dp`) for tablet UI layout via pure LSPosed system server integration.
@@ -80,7 +81,7 @@ See [ChangeLogs.md](ChangeLogs.md) for the complete version release history and 
 - **Static Scope Enforcement**: System Framework, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-v1.2.9-<buildType>.apk`.
+1. Build or download `pixel-tweaks-v1.3.0-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
 4. Reboot your device.

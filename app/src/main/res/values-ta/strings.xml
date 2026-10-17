@@ -86,9 +86,9 @@
     <string name="master_log">முதன்மை பதிவேடு</string>
     <string name="master_log_summary">Logcat குறிச்சொல்: PXTK_</string>
     <string name="log_security">அமைப்பு &amp; பாதுகாப்பு பதிவுகள்</string>
-    <string name="log_security_summary">Logcat குறிச்சொற்கள்: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Logcat குறிச்சொற்கள்: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">இடைமுகப் பதிவுகள்</string>
-    <string name="log_interface_summary">Logcat குறிச்சொற்கள்: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Logcat குறிச்சொற்கள்: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">சைகைப் பதிவுகள்</string>
     <string name="log_gestures_summary">Logcat குறிச்சொல்: PXTK_DT2S</string>
     <string name="log_quick_settings">விரைவு அமைப்புகள் பதிவுகள்</string>

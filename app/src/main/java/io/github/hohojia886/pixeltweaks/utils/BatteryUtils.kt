@@ -4,6 +4,11 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.round
 
+/**
+ * Data class representing parsed battery information from sysfs nodes.
+ *
+ * Holds real-time metrics including voltage, current, power, capacity, resistance, and serial dates.
+ */
 data class BatteryData(
     val status: String = "N/A",
     val voltageMv: Int = -1,
@@ -29,11 +34,16 @@ data class BatteryData(
 )
 
 /**
- * BatteryUtils: Executes pure Root (`su -c "cat /sys/class/power_supply/battery/<node>"`)
- * inside the App process when SettingsActivity opens.
+ * Utility for fetching low-level hardware battery metrics from Linux sysfs nodes using Root shell commands.
  */
 object BatteryUtils {
 
+    /**
+     * Executes Root shell script to read battery sysfs nodes (`/sys/class/power_supply/battery`)
+     * and computes health metrics, resistance, and first usage age.
+     *
+     * @return A populated [BatteryData] containing parsed metrics or fallback values on failure.
+     */
     fun fetchBatteryInfoWithRoot(): BatteryData {
         return runCatching {
             val sysfs = "/sys/class/power_supply/battery"
@@ -141,9 +151,15 @@ object BatteryUtils {
                 batteryAge = batteryAge,
                 aafvMilli = aafvMilli
             )
+        }.onFailure { e ->
+            Logger.e("Battery", "Error", "Failed to fetch battery info via Root shell", e)
         }.getOrDefault(BatteryData())
     }
 
+    /**
+     * Parses the manufacturing date and calculates age from serial number.
+     * Matches yyyyMMdd pattern in serial string and computes days/years.
+     */
     fun parseDateFromSerialNumber(serial: String): Pair<String, String> {
         if (serial.isEmpty() || serial == "N/A") return Pair("N/A", "N/A")
 

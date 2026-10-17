@@ -15,24 +15,16 @@ import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * RemotePrefProvider: A bridge between Credential-Encrypted (CE) and Device-Protected (DE) storage.
- * Provides a secure mechanism for hook processes (SystemUI, Dialer, SystemServer) to read/write module settings 
- * before the user has unlocked the device (FBE support).
- * 
- * Security & Multi-User Architecture:
- * 1. Thread-safe App ID caching via ConcurrentHashMap.newKeySet().
- * 2. Multi-user compatible via (uid % 100000) App ID resolution.
- * 3. Strict write whitelist filtering for external callers.
+ * Bridge between Credential-Encrypted and Device-Protected storage.
+ * Secures IPC preference reads and writes before device unlock.
  */
 class RemotePrefProvider : ContentProvider() {
 
-    // Thread-safe cache for authorized component App IDs (uid % 100000)
     private val trustedAppIds = ConcurrentHashMap.newKeySet<Int>()
 
     companion object {
         private const val TAG = "Security"
 
-        // Whitelist of keys that external trusted callers (SystemUI, SystemServer UID 1000) are allowed to write.
         private val ALLOWED_EXTERNAL_WRITE_KEYS = setOf(
             PreferenceKeys.EXPECTED_PASS_LEN,
             PreferenceKeys.IS_FIRST_UNLOCK_DONE,
@@ -54,9 +46,16 @@ class RemotePrefProvider : ContentProvider() {
         )
     }
 
+    /**
+     * Initializes the content provider during process startup.
+     * Returns true indicating successful provider initialization.
+     */
     override fun onCreate(): Boolean = true
 
-    // Resolves and caches App IDs (uid % 100000) for core system components and specific app packages
+    /**
+     * Resolves and caches App IDs for authorized components.
+     * Queries package manager for SystemUI and launcher UIDs.
+     */
     private fun updateTrustedAppIds() {
         if (trustedAppIds.isNotEmpty()) return
         val ctx = context ?: return
@@ -79,7 +78,14 @@ class RemotePrefProvider : ContentProvider() {
         }
     }
 
-    // Handles incoming ContentProvider calls with strict UID/AppID-based access control
+    /**
+     * Handles incoming ContentProvider IPC method calls (`get` / `put`) with UID-based access control.
+     *
+     * @param method Method string (`get` for reading DE storage, `put` for writing DE storage).
+     * @param arg Optional string argument.
+     * @param extras [Bundle] containing payload data for `put` operations.
+     * @return A [Bundle] containing results, or null if the calling process is unauthorized.
+     */
     override fun call(method: String, arg: String?, extras: Bundle?): Bundle? {
         val callingUid = Binder.getCallingUid()
         val callingAppId = callingUid % 100000
@@ -89,7 +95,6 @@ class RemotePrefProvider : ContentProvider() {
         val isModule = callingAppId == moduleAppId
         val isTrusted = callingAppId == 0 || callingAppId == 1000 || trustedAppIds.contains(callingAppId)
 
-        // Write Authorization: Module writes everything; trusted callers write ONLY whitelisted keys
         if (method == "put") {
             if (isModule) {
                 Logger.d(TAG, "Sync", "Allowed MODULE WRITE from UID: $callingUid")
@@ -104,7 +109,6 @@ class RemotePrefProvider : ContentProvider() {
             return null
         }
 
-        // Read Authorization: Whitelisted components & system components can read DE settings
         if (method == "get") {
             val isWhitelisted = isModule || isTrusted || callingAppId < 1000
             if (!isWhitelisted) {
@@ -117,7 +121,10 @@ class RemotePrefProvider : ContentProvider() {
         return null
     }
 
-    // Internal read logic that bundles DE SharedPreferences into a Bundle for IPC
+    /**
+     * Internal read logic bundling DE preferences for IPC.
+     * Reads all device protected storage entries into Bundle.
+     */
     private fun handleGet(): Bundle {
         val ctx = context?.createDeviceProtectedStorageContext() ?: return Bundle()
         val prefs = ctx.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
@@ -135,7 +142,10 @@ class RemotePrefProvider : ContentProvider() {
         return bundle
     }
 
-    // Internal write logic that persists data into DE storage
+    /**
+     * Internal write logic persisting input bundle into DE storage.
+     * Writes whitelisted extras into device protected storage.
+     */
     @Suppress("DEPRECATION")
     private fun handlePut(extras: Bundle?, filterKeys: Boolean): Bundle {
         val ctx = context?.createDeviceProtectedStorageContext() ?: return Bundle()
@@ -152,16 +162,40 @@ class RemotePrefProvider : ContentProvider() {
                         is String -> putString(key, value)
                     }
                 } else {
-                    Logger.e(TAG, "BlockedKey", "Blocked external write to restricted key: $key")
+                    Logger.e(TAG, "Blocked", "Blocked external write to restricted key: $key")
                 }
             }
         }
         return Bundle().apply { putBoolean("success", true) }
     }
 
+    /**
+     * Query operation unsupported by this preference provider.
+     * Always returns null as database queries are not implemented.
+     */
     override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? = null
+
+    /**
+     * getType operation unsupported by this preference provider.
+     * Always returns null as MIME types are not implemented.
+     */
     override fun getType(uri: Uri): String? = null
+
+    /**
+     * Insert operation unsupported by this preference provider.
+     * Always returns null as database inserts are not implemented.
+     */
     override fun insert(uri: Uri, values: ContentValues?): Uri? = null
+
+    /**
+     * Delete operation unsupported by this preference provider.
+     * Always returns zero as database deletes are not implemented.
+     */
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int = 0
+
+    /**
+     * Update operation unsupported by this preference provider.
+     * Always returns zero as database updates are not implemented.
+     */
     override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int = 0
 }

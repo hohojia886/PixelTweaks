@@ -12,6 +12,13 @@ import androidx.compose.ui.platform.LocalContext
 private val DarkColorScheme = darkColorScheme()
 private val LightColorScheme = lightColorScheme()
 
+/**
+ * Configures the Material3 composable theme for the PixelTweaks application UI.
+ *
+ * @param darkTheme True if system is in dark mode or dark mode is requested.
+ * @param dynamicColor True to enable Android 12+ Material You dynamic color scheme.
+ * @param content Target Composable UI hierarchy content block.
+ */
 @Composable
 fun PixelTweaksTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

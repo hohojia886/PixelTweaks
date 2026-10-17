@@ -8,20 +8,61 @@ import android.util.Log
 import io.github.libxposed.api.XposedModule
 
 /**
- * Logger: Standardized logging utility for the PixelTweaks module.
- * Features centralized toggles for each functional category, auto-prefixing with "PXTK_",
- * and a Master switch that controls all non-critical output across processes.
+ * Standardized logging utility for the PixelTweaks module.
+ * Features centralized toggles for each functional log category (Security, Interface, Gestures, QuickSettings).
  */
 object Logger {
 
+    /**
+     * Logger interface to abstract logging backends (Logcat or file-based).
+     */
     interface Logger {
+        /**
+         * Logs a verbose level message.
+         *
+         * @param tag Logcat tag string.
+         * @param msg Log message text.
+         */
         fun v(tag: String, msg: String)
+
+        /**
+         * Logs a debug level message.
+         *
+         * @param tag Logcat tag string.
+         * @param msg Log message text.
+         */
         fun d(tag: String, msg: String)
+
+        /**
+         * Logs an info level message.
+         *
+         * @param tag Logcat tag string.
+         * @param msg Log message text.
+         */
         fun i(tag: String, msg: String)
+
+        /**
+         * Logs a warning level message.
+         *
+         * @param tag Logcat tag string.
+         * @param msg Log message text.
+         */
         fun w(tag: String, msg: String)
+
+        /**
+         * Logs an error level message with optional stacktrace exception.
+         *
+         * @param tag Logcat tag string.
+         * @param msg Log message text.
+         * @param tr Optional throwable exception instance.
+         */
         fun e(tag: String, msg: String, tr: Throwable?)
     }
 
+    /**
+     * Default logger using android.util.Log.
+     * Routes internal logging calls to standard logcat.
+     */
     private object AndroidLogger : Logger {
         override fun v(tag: String, msg: String) { Log.v(tag, msg) }
         override fun d(tag: String, msg: String) { Log.d(tag, msg) }
@@ -32,19 +73,21 @@ object Logger {
 
     @Volatile var logger: Logger = AndroidLogger
 
-    @Volatile var isMasterEnabled = false // Master toggle for all logs
-    @Volatile var logSecurity = true // Security & System logs
-    @Volatile var logInterface = true // Interface & Status bar logs
-    @Volatile var logGestures = true // Gestures logs
-    @Volatile var logQuickSettings = true // Quick Settings logs
+    @Volatile var isMasterEnabled = false
+    @Volatile var logSecurity = true
+    @Volatile var logInterface = true
+    @Volatile var logGestures = true
+    @Volatile var logQuickSettings = true
 
-    private var lastSyncTime = 0L // Debounce caching for syncSettings
+    private var lastSyncTime = 0L
 
-    // Initializes logging state from DE storage / RemotePreferences during process attachment
+    /**
+     * Initializes logging state from storage during process attachment.
+     * Synchronizes logging toggles from preferences bundle.
+     */
     fun sync(module: XposedModule, classLoader: ClassLoader? = null) {
         val now = SystemClock.elapsedRealtime()
         if (now - lastSyncTime < 2000L) {
-            // Already synced recently within this process, skip to avoid IPC spam
             return
         }
         lastSyncTime = now
@@ -68,7 +111,10 @@ object Logger {
     private var lastBroadcastKey = ""
     private var lastBroadcastTime = 0L
 
-    // Handles real-time log toggle updates via IPC broadcasts
+    /**
+     * Handles real-time log toggle updates via IPC broadcasts.
+     * Updates master and category logging flags dynamically.
+     */
     fun handleBroadcast(intent: Intent) {
         val action = intent.action ?: return
         
@@ -101,7 +147,6 @@ object Logger {
 
         val now = SystemClock.elapsedRealtime()
         if (isChanged && (isMasterEnabled || targetKey == PreferenceKeys.ENABLE_MASTER_LOG)) {
-            // Debounce identical logs from multiple hooks receiving the same broadcast
             if (targetKey != lastBroadcastKey || now - lastBroadcastTime > 2000L) {
                 lastBroadcastKey = targetKey
                 lastBroadcastTime = now
@@ -110,6 +155,10 @@ object Logger {
         }
     }
 
+    /**
+     * Logs debug message.
+     * Checks master and category toggles before logging.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun d(tag: String, msg: String) {
         if (isMasterEnabled && isSubEnabled(tag)) {
@@ -117,7 +166,10 @@ object Logger {
         }
     }
 
-    // Debug: Only logs if Master and Sub-toggle are both enabled
+    /**
+     * Logs debug message with status if master and sub-toggle are enabled.
+     * Appends status prefix to message payload.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun d(tag: String, status: String, msg: String) {
         if (isMasterEnabled && isSubEnabled(tag)) {
@@ -125,6 +177,10 @@ object Logger {
         }
     }
 
+    /**
+     * Logs info message.
+     * Checks master and category toggles before logging.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun i(tag: String, msg: String) {
         if (isMasterEnabled && isSubEnabled(tag)) {
@@ -132,7 +188,10 @@ object Logger {
         }
     }
 
-    // Info: Only logs if Master and Sub-toggle are both enabled
+    /**
+     * Logs info message with status if master and sub-toggle are enabled.
+     * Appends status prefix to message payload.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun i(tag: String, status: String, msg: String) {
         if (isMasterEnabled && isSubEnabled(tag)) {
@@ -140,6 +199,10 @@ object Logger {
         }
     }
 
+    /**
+     * Logs error message with optional throwable.
+     * Critical hook failures are always logged regardless of toggles.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun e(tag: String, msg: String, tr: Throwable? = null) {
         if (isMasterEnabled || tag == "Hook") {
@@ -147,7 +210,10 @@ object Logger {
         }
     }
 
-    // Error: Critical hook failures are always logged, others respect the master switch
+    /**
+     * Logs error message with status and optional throwable.
+     * Critical hook failures are always logged regardless of toggles.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun e(tag: String, status: String, msg: String, tr: Throwable? = null) {
         if (isMasterEnabled || tag == "Hook") {
@@ -155,6 +221,10 @@ object Logger {
         }
     }
 
+    /**
+     * Logs warning message.
+     * Checks master and category toggles before logging.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun w(tag: String, msg: String) {
         if (isMasterEnabled && isSubEnabled(tag)) {
@@ -162,7 +232,10 @@ object Logger {
         }
     }
 
-    // Warning: Only logs if Master and Sub-toggle are both enabled
+    /**
+     * Logs warning message with status if master and sub-toggle are enabled.
+     * Appends status prefix to message payload.
+     */
     @Suppress("NOTHING_TO_INLINE")
     inline fun w(tag: String, status: String, msg: String) {
         if (isMasterEnabled && isSubEnabled(tag)) {
@@ -170,11 +243,14 @@ object Logger {
         }
     }
 
-    // Helper: Maps functional tags to their respective toggle states
+    /**
+     * Maps functional tags to their respective toggle states.
+     * Evaluates tag against security, interface, gestures, and QS flags.
+     */
     fun isSubEnabled(tag: String): Boolean {
         return when (tag) {
-            "Security", "EasyUnlock", "Screenshot" -> logSecurity
-            "ClearAll", "Traffic", "Battery" -> logInterface
+            "Security", "EasyUnlock", "Screenshot", "HideVpn" -> logSecurity
+            "ClearAll", "Traffic", "Battery", "EnergyRing" -> logInterface
             "DT2S" -> logGestures
             "QuickSettings" -> logQuickSettings
             else -> true

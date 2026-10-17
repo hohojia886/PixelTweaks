@@ -15,20 +15,27 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 /**
- * EasyUnlockHook: Enables "Auto PIN Confirm" for any PIN length on Google Pixel keyguard.
- * Hijacks LockPatternUtils to spoof auto-confirm status and expected PIN length.
- * Automatically learns the correct PIN length on password check and persists it to DE storage.
+ * Enables Auto PIN Confirm for any PIN length on Keyguard without requiring the user to press Enter.
+ *
+ * Intercepts LockPatternUtils and automatically learns the user's PIN length
+ * upon the first successful unlock attempt in a session.
  */
 object EasyUnlockHook {
 
     private const val TAG = "EasyUnlock"
-    @Volatile private var isEnabled = true // Enable the overall feature
-    @Volatile private var isBypassActive = false // Bypass the reboot restriction
-    @Volatile private var isFirstUnlockDone = false // Local session state
-    @Volatile private var learnedPinLength = -1 // The PIN length learned from previous successful unlock
+    @Volatile private var isEnabled = true
+    @Volatile private var isBypassActive = false
+    @Volatile private var isFirstUnlockDone = false
+    @Volatile private var learnedPinLength = -1
     @Volatile private var processPackageName: String? = null
 
-    // Entry point: Syncs settings and hooks the Application lifecycle
+    /**
+     * Initializes EasyUnlock hooks inside SystemUI keyguard.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
+     * @param packageName Target process package name.
+     */
     fun hook(module: XposedModule, classLoader: ClassLoader, packageName: String) {
         processPackageName = packageName
         syncSettings(module, classLoader)
@@ -39,7 +46,10 @@ object EasyUnlockHook {
         applyNativeHijack(module, classLoader)
     }
 
-    // Synchronously loads settings from DE ContentProvider first (for Direct Boot / pre-unlock availability)
+    /**
+     * Loads DE/CE settings synchronously prioritizing Direct Boot.
+     * Queries ContentProvider or RemotePreferences for auto confirm settings.
+     */
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
         val loadedFromDe = runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: IpcManager.getSystemContext(classLoader) ?: return@runCatching false
@@ -67,7 +77,10 @@ object EasyUnlockHook {
         }
     }
 
-    // Processes incoming IPC broadcasts to update feature states in real-time
+    /**
+     * Re-evaluates settings upon receiving IPC broadcast intents.
+     * Updates enabled, bypass active, and learned PIN length properties.
+     */
     private fun handleBroadcast(intent: Intent) {
         when (intent.action) {
             IpcManager.ACTION_SETTINGS_SYNC -> {
@@ -98,12 +111,14 @@ object EasyUnlockHook {
         }
     }
 
-    // Applies core hijacks to the system's lockscreen policy and password checking logic
+    /**
+     * Implements native hijacks bypassing PIN length and confirm checks.
+     * Spoofs isAutoPinConfirmEnabled and getPinLength in LockPatternUtils.
+     */
     private fun applyNativeHijack(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val lpuClass = classLoader.loadClass("com.android.internal.widget.LockPatternUtils")
 
-            // Forces the system to believe "Auto PIN Confirm" is enabled if we have a learned length
             module.hook(lpuClass.getDeclaredMethod("isAutoPinConfirmEnabled", Int::class.javaPrimitiveType)).intercept { chain ->
                 if (isEnabled && learnedPinLength > 0) {
                     if (isBypassActive || isFirstUnlockDone) return@intercept true
@@ -111,7 +126,6 @@ object EasyUnlockHook {
                 chain.proceed()
             }
 
-            // Spoofs the expected PIN length to the system to trigger auto-unlock at the right moment
             module.hook(lpuClass.getDeclaredMethod("getPinLength", Int::class.javaPrimitiveType)).intercept { chain ->
                 if (isEnabled && learnedPinLength > 0) {
                     if (isBypassActive || isFirstUnlockDone) {
@@ -122,12 +136,10 @@ object EasyUnlockHook {
                 chain.proceed()
             }
 
-            // Always returns true for 6-digit PIN checks to enable advanced unlock UI features
             lpuClass.declaredMethods.find { it.name == "userHas6DigitPin" }?.let { m ->
                 module.hook(m).intercept { if (isEnabled) true else it.proceed() }
             }
 
-            // Learner: Intercepts successful password checks to capture and save the current PIN length
             val securityCtrlClass = classLoader.loadClass("com.android.keyguard.KeyguardAbsKeyInputViewController")
             securityCtrlClass.declaredMethods.find { it.name == "onPasswordChecked" }?.let { m ->
                 module.hookBefore(m) { chain ->
@@ -150,6 +162,8 @@ object EasyUnlockHook {
                                 Logger.i(TAG, "Success", "Learned PIN length: $learnedPinLength")
                                 saveLearnedLength(classLoader, learnedPinLength)
                             }
+                        }.onFailure { e ->
+                            Logger.e(TAG, "Learner", "Failed to learn PIN length during onPasswordChecked", e)
                         }
                     }
                 }
@@ -159,7 +173,10 @@ object EasyUnlockHook {
         }
     }
 
-    // Persists the learned PIN length to the device-protected storage via ContentProvider
+    /**
+     * Saves auto-learned PIN length securely to DE storage via ContentProvider.
+     * Dispatches update broadcast to sync learned length across processes.
+     */
     private fun saveLearnedLength(classLoader: ClassLoader, len: Int) {
         runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: return@runCatching
@@ -167,10 +184,15 @@ object EasyUnlockHook {
             val bundle = Bundle().apply { putInt(PreferenceKeys.EXPECTED_PASS_LEN, len) }
             ctx.contentResolver.call(uri, "put", null, bundle)
             IpcManager.sendUpdateBroadcast(ctx, PreferenceKeys.EXPECTED_PASS_LEN, len)
+        }.onFailure { e ->
+            Logger.e(TAG, "Save", "Failed to persist learned PIN length", e)
         }
     }
 
-    // Reflection Helper: Finds a method in the class hierarchy
+    /**
+     * Helper to find methods safely within class hierarchy via reflection.
+     * Traverses superclasses searching for getText declared method.
+     */
     private fun findMethod(clazz: Class<*>): Method? {
         var curr: Class<*>? = clazz
         while (curr != null) {
@@ -180,7 +202,10 @@ object EasyUnlockHook {
         return null
     }
 
-    // Reflection Helper: Finds a field in the class hierarchy
+    /**
+     * Helper to find fields safely within class hierarchy via reflection.
+     * Traverses superclasses returning Accessible field instance.
+     */
     private fun findField(clazz: Class<*>, name: String): Field? {
         var curr: Class<*>? = clazz
         while (curr != null) {

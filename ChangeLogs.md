@@ -1,3 +1,8 @@
+### v1.3.0
+- 🔋 **Energy Ring Visual Effects**: Added 3s unlock neon glow pulse and low-battery (<10%) once-per-minute 1.5s breathing alert.
+- 📝 **Code Quality & Log Normalization**: Standardized logcat tags (`PXTK_`) across all 32 source files and created `Logger.md` & `Comments.md` standards.
+- 🧪 **Test Suite Expansion**: Added unit tests for Logger, Energy Ring, and documentation guards (76 tests passed).
+
 ### v1.2.9
 - 🔋 **Battery Percentage Refactoring**: Updated status bar battery percentage implementation to support new Android 17 builds (`CP3A` firmwares). Note: Pixel 11 series builds with different build tags may not be compatible.
 - 🛡️ **Hide VPN Icon**: Added feature to hide the system VPN status bar icon (18 languages supported).

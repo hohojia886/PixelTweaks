@@ -4,12 +4,8 @@ import android.graphics.Color
 import androidx.core.graphics.toColorInt
 
 /**
- * BatteryColorManager: Unified single source of truth for battery color determination across the module.
- * Centralizes the exact color logic shared between EnergyRingHook and BatteryPercentHook:
- * - Charging: 3-second HSV rainbow gradient pulse (throttled to 30 FPS for LTPO 30Hz VRR power savings)
- * - Critical (<= 10%): Red (#FF3B30)
- * - Power Save Mode: Orange-Yellow (#FF9500)
- * - Normal: Green (#00E676) for Energy Ring, or Status Bar Theme Tint (defaultTint) for Battery Percentage Text
+ * BatteryColorManager: Unified single source of truth for battery colors.
+ * Centralizes color determination shared between EnergyRing and BatteryPercent.
  */
 object BatteryColorManager {
 
@@ -18,7 +14,13 @@ object BatteryColorManager {
     val COLOR_GREEN: Int = "#00E676".toColorInt()
 
     /**
-     * Resolves the exact color for the Energy Ring.
+     * Resolves the exact ARGB color for the Energy Ring around the camera cutout.
+     *
+     * @param isCharging True if the device is currently charging.
+     * @param isPowerSave True if system battery saver mode is active.
+     * @param level Current battery percentage level (0-100).
+     * @param animHue Animated hue value used for HSV rainbow pulse while charging.
+     * @return Calculated integer ARGB color value.
      */
     fun getRingColor(isCharging: Boolean, isPowerSave: Boolean, level: Int, animHue: Float): Int {
         return when {
@@ -30,7 +32,14 @@ object BatteryColorManager {
     }
 
     /**
-     * Resolves the exact color for the Status Bar Battery Percentage Text.
+     * Resolves the exact ARGB color for the Status Bar Battery Percentage Text.
+     *
+     * @param isCharging True if the device is currently charging.
+     * @param isPowerSave True if system battery saver mode is active.
+     * @param level Current battery percentage level (0-100).
+     * @param animHue Animated hue value used for HSV rainbow pulse while charging.
+     * @param defaultTint Status bar theme tint color used as default non-charging color.
+     * @return Calculated integer ARGB color value.
      */
     fun getPercentTextColor(isCharging: Boolean, isPowerSave: Boolean, level: Int, animHue: Float, defaultTint: Int): Int {
         return when {

@@ -9,10 +9,16 @@ import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 
 /**
- * BootReceiver: Seeds default DE preferences upon boot/unlock/package-installation and
- * broadcasts full settings synchronization across all active module hooks.
+ * BroadcastReceiver responsible for seeding default preferences and executing Direct Boot sync upon system boot.
+ * Resets security switches on boot and triggers a full settings synchronization IPC broadcast to active hooks.
  */
 class BootReceiver : BroadcastReceiver() {
+    /**
+     * Handles system boot completed, unlock, and package modification intent broadcasts.
+     *
+     * @param context Host process Context.
+     * @param intent Received broadcast [Intent] containing target action.
+     */
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
         
@@ -27,7 +33,6 @@ class BootReceiver : BroadcastReceiver() {
             val prefs = deContext.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
             val cePrefs = runCatching { context.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE) }.getOrNull()
 
-            // Unconditionally reset security switches on boot in both DE and CE storage
             if ((action == Intent.ACTION_BOOT_COMPLETED) || (action == Intent.ACTION_LOCKED_BOOT_COMPLETED)) {
                 prefs.edit(commit = true) {
                     putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
@@ -46,7 +51,6 @@ class BootReceiver : BroadcastReceiver() {
             }
             
             if ((action == Intent.ACTION_USER_UNLOCKED) && (cePrefs != null)) {
-                // When user unlocks, CE storage is accessible. Sync CE preferences over to DE preferences to preserve user settings.
                 if (cePrefs.all.isNotEmpty()) {
                     prefs.edit(commit = true) {
                         cePrefs.all.forEach { (k, v) ->
@@ -58,7 +62,6 @@ class BootReceiver : BroadcastReceiver() {
                                 is String -> putString(k, v)
                             }
                         }
-                        // Ensure security switches remain off during unlock sync
                         putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
                         putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
                         putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
@@ -68,7 +71,6 @@ class BootReceiver : BroadcastReceiver() {
                 }
             }
 
-            // Seed DE defaults if keys are absent
             if (!prefs.contains(PreferenceKeys.ENABLE_EASY_UNLOCK)) {
                 prefs.edit(commit = true) {
                     putBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true)
@@ -85,7 +87,6 @@ class BootReceiver : BroadcastReceiver() {
                     putBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
                     putBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true)
 
-                    // Security Reset on boot
                     putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
                     putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
                     putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
@@ -94,7 +95,6 @@ class BootReceiver : BroadcastReceiver() {
                 }
             }
             
-            // Actively broadcast full settings sync to SystemUI, Launcher, and SystemServer
             IpcManager.syncAllSettings(context, prefs)
             Logger.i("BootReceiver", "Sync", "Self-healing sync performed for action: $action")
         }

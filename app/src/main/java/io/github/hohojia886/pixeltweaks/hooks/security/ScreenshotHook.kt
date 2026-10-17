@@ -13,17 +13,22 @@ import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
 
 /**
- * ScreenshotHook: Bypasses screenshot restrictions (FLAG_SECURE) system-wide.
- * Hijacks SurfaceControl to prevent secure surface creation in apps, and WMS 
- * to strip the FLAG_SECURE from windows during registration and rendering.
+ * Bypasses `FLAG_SECURE` system-wide to enable unrestricted screenshots and screen recordings in restricted apps.
+ *
+ * Hooks `SurfaceControl.Builder.setSecure()` at app level, and `WindowManagerService` and `WindowState` at system level.
  */
 object ScreenshotHook {
 
     private const val TAG = "Screenshot"
-    @Volatile private var isEnabled = false // Feature master toggle
-    @Volatile private var isSystemHooked = false // Prevent duplicate hooking in system_server
+    @Volatile private var isEnabled = false
+    @Volatile private var isSystemHooked = false
 
-    // Intercepts app-level surface creation to force non-secure surfaces
+    /**
+     * Intercepts application-level surface creation to suppress secure flags.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader Application process ClassLoader.
+     */
     fun hookApp(module: XposedModule, classLoader: ClassLoader) {
         syncSettings(module, classLoader)
         runCatching {
@@ -37,16 +42,24 @@ object ScreenshotHook {
                     chain.proceed()
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook SurfaceControl.Builder", e)
         }
     }
 
-    // Secondary entry for SystemUI to ensure its own settings are synchronized
+    /**
+     * Injects system UI settings specific to screenshots.
+     * Synchronizes module preferences for SystemUI process instance.
+     */
     fun hookSystemUI(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Init", "Initializing ScreenshotHook for [SystemUI]")
         syncSettings(module, classLoader)
     }
 
-    // Injects logic into WindowManagerService to strip FLAG_SECURE from all incoming windows
+    /**
+     * Removes FLAG_SECURE layer properties within WindowManager.
+     * Hooks WindowManagerService and WindowState to strip secure flags.
+     */
     fun hookSystemServer(module: XposedModule, classLoader: ClassLoader) {
         if (isSystemHooked) return
         
@@ -60,7 +73,6 @@ object ScreenshotHook {
         runCatching {
             val wmsClass = realClassLoader.loadClass("com.android.server.wm.WindowManagerService")
             
-            // Strips the FLAG_SECURE bit from WindowManager.LayoutParams during add/relayout
             val windowMethods = listOf("addWindow", "relayoutWindow")
             wmsClass.declaredMethods.filter { it.name in windowMethods }.forEach { method ->
                 module.hookBefore(method) { chain ->
@@ -76,7 +88,6 @@ object ScreenshotHook {
                 }
             }
 
-            // Spoofs isSecureLocked to always return false, enabling screenshots of restricted windows
             val wsClass = realClassLoader.loadClass("com.android.server.wm.WindowState")
             wsClass.declaredMethods.filter { it.name == "isSecureLocked" }.forEach { method ->
                 module.hook(method).intercept { chain ->
@@ -93,10 +104,15 @@ object ScreenshotHook {
             isSystemHooked = true
             Logger.i(TAG, "Init", "Successfully initialized ScreenshotHook for [SystemServer]")
             syncSettings(module, realClassLoader)
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to apply WindowManagerService hooks", e)
         }
     }
 
-    // Loads settings from DE storage/RemotePreferences and registers a receiver for real-time updates
+    /**
+     * Receives settings adjustments synchronously and via broadcast.
+     * Updates unrestricted screenshots enablement state property.
+     */
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader?) {
         val bundle = if (classLoader != null) IpcManager.loadPreferences(module, classLoader) else Bundle()
         val prefs = if (bundle.isEmpty) module.getRemotePreferences(IpcManager.PREF_NAME) else null

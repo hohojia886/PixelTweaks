@@ -18,29 +18,33 @@ import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * PackageManagerHook: Manages security policy bypasses in the system process.
- * Features time-limited "App Downgrade" and "Signature Verification Bypass".
- * Automatically disables sensitive bypasses after 3 minutes for security,
- * and restricts signature bypass to active package installation operations.
+ * Manages time-limited security policy bypasses inside system_server (`PackageManagerService`).
+ *
+ * Provides temporary 3-minute active windows for App Version Downgrade (injecting `installFlags` 0x82)
+ * and Package Signature Verification Bypass during active app installations.
  */
 object PackageManagerHook {
 
     private const val TAG = "Security"
-    private const val TIMEOUT_MS = 3 * 60 * 1000L // Auto-disable timeout duration (3 minutes)
-    private const val ACTIVE_INSTALL_WINDOW_MS = 60 * 1000L // Active install operation window (1 minute)
+    private const val TIMEOUT_MS = 3 * 60 * 1000L
+    private const val ACTIVE_INSTALL_WINDOW_MS = 60 * 1000L
 
-    @Volatile private var isDowngradeEnabled = false // Toggle for downgrade bypass
-    @Volatile private var isSignatureBypassEnabled = false // Toggle for signature bypass
+    @Volatile private var isDowngradeEnabled = false
+    @Volatile private var isSignatureBypassEnabled = false
 
-    @Volatile private var downgradeTimestamp = 0L // Wall-clock start time of downgrade bypass
-    @Volatile private var signatureTimestamp = 0L // Wall-clock start time of signature bypass
-    @Volatile private var lastInstallSessionTime = 0L // Monotonic timestamp of last active install operation
-    private val activeInstallSessions = ConcurrentHashMap<Int, Long>() // Active package installer session IDs
-    @Volatile private var isHooked = false // Prevent duplicate hooking
+    @Volatile private var downgradeTimestamp = 0L
+    @Volatile private var signatureTimestamp = 0L
+    @Volatile private var lastInstallSessionTime = 0L
+    private val activeInstallSessions = ConcurrentHashMap<Int, Long>()
+    @Volatile private var isHooked = false
     @Volatile private var lastSignatureActiveState = false
 
-    // Entry point: Initializes settings and applies core system hijacks.
-    // Guaranteed to execute idempotently exactly ONCE per process.
+    /**
+     * Initializes PackageManager hooks inside system_server.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemServer ClassLoader.
+     */
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         if (isHooked) return
         isHooked = true
@@ -51,6 +55,10 @@ object PackageManagerHook {
         Logger.i(TAG, "Init", "Successfully initialized Policy Hijack PackageManager")
     }
 
+    /**
+     * Loads settings to memory to start enforcing rules immediately.
+     * Queries preferences bundle for downgrade and signature bypass flags.
+     */
     private fun refreshSettings(module: XposedModule, classLoader: ClassLoader?) {
         runCatching {
             val bundle = if (classLoader != null) IpcManager.loadPreferences(module, classLoader) else Bundle()
@@ -63,14 +71,20 @@ object PackageManagerHook {
         }
     }
 
-    // Evaluates if a security bypass feature is currently active and within wall-clock timeout
+    /**
+     * Verifies whether requested bypass is within allowed active window.
+     * Evaluates toggle state and elapsed time against 3-minute timeout.
+     */
     private fun isFeatureActive(enabled: Boolean, wallTimestampMs: Long): Boolean {
         if (!enabled || wallTimestampMs <= 0L) return false
         val elapsed = System.currentTimeMillis() - wallTimestampMs
         return elapsed in 0L..<TIMEOUT_MS
     }
 
-    // Evaluates if signature bypass is active AND restricted to an active package installation operation
+    /**
+     * Verifies signature bypass is unexpired and tracking active installs.
+     * Evaluates active install sessions and recent session timestamp window.
+     */
     private fun isSignatureBypassActiveForInstall(): Boolean {
         if (!isFeatureActive(isSignatureBypassEnabled, signatureTimestamp)) {
             if (activeInstallSessions.isNotEmpty()) {
@@ -79,7 +93,6 @@ object PackageManagerHook {
             return false
         }
 
-        // Purge expired session IDs older than 5 minutes
         val nowRealtime = SystemClock.elapsedRealtime()
         val iterator = activeInstallSessions.entries.iterator()
         while (iterator.hasNext()) {
@@ -95,7 +108,10 @@ object PackageManagerHook {
         return hasActiveSession || recentInstall
     }
 
-    // Subscribes to process-level IPC dispatcher to track real-time security state changes
+    /**
+     * Listens to IPC for dynamic enablement of downgrade and signature features.
+     * Updates timestamps and density settings upon broadcast intent arrival.
+     */
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
         IpcDispatcher.addListener { intent ->
             when (intent.action) {
@@ -142,8 +158,10 @@ object PackageManagerHook {
         IpcDispatcher.initializeOnce(module, classLoader)
     }
 
-    // Injects logic into PackageManager components to ignore signature mismatches and version downgrades.
-    // Each hijack section (A, B, C, D) is isolated in its own independent runCatching block.
+    /**
+     * Injects logic into package managers enforcing downgrade/signature overrides.
+     * Hooks PackageInstallerService, InstallPackageHelper, and ComputerEngine.
+     */
     private fun applyHijacks(module: XposedModule, classLoader: ClassLoader) {
         val realClassLoader = runCatching {
             val smClass = classLoader.loadClass("android.os.ServiceManager")
@@ -152,11 +170,9 @@ object PackageManagerHook {
             binder.javaClass.classLoader
         }.getOrNull() ?: classLoader
 
-        // A. PackageInstallerService: Injects flags (0x82) to permit version downgrades BEFORE createSession & records active install session ID AFTER createSession
         runCatching {
             val piClass = realClassLoader.loadClass("com.android.server.pm.PackageInstallerService")
             
-            // 1. Inject downgrade flags (0x82) BEFORE createSession executes
             piClass.declaredMethods.filter { it.name == "createSession" }.forEach { m ->
                 module.hookBefore(m) { chain ->
                     if (isFeatureActive(isDowngradeEnabled, downgradeTimestamp)) {
@@ -166,13 +182,14 @@ object PackageManagerHook {
                                 val f = params.javaClass.getDeclaredField("installFlags").apply { isAccessible = true }
                                 f.setInt(params, f.getInt(params) or 0x00000082)
                                 Logger.i(TAG, "Active", "Injected Downgrade flags (0x82)")
+                            }.onFailure { e ->
+                                Logger.e(TAG, "Error", "Failed to inject installFlags", e)
                             }
                         }
                     }
                 }
             }
 
-            // 2. Track created session ID AFTER createSession executes
             piClass.declaredMethods.filter { it.name == "createSession" }.forEach { m ->
                 module.hookAfter(m) { _, result ->
                     lastInstallSessionTime = SystemClock.elapsedRealtime()
@@ -184,7 +201,6 @@ object PackageManagerHook {
                 }
             }
 
-            // Cleanup completed/abandoned sessions
             piClass.declaredMethods.filter { it.name == "abandonSession" || it.name == "cleanupSession" }.forEach { m ->
                 module.hookBefore(m) { chain ->
                     val sessionId = chain.args.getOrNull(0) as? Int ?: -1
@@ -198,7 +214,6 @@ object PackageManagerHook {
             Logger.e(TAG, "SectionA", "PackageInstallerService hook skipped/failed", e)
         }
 
-        // B. Installer Helpers: Forcefully returns true for internal downgrade permission checks & records active install session
         runCatching {
             listOf(
                 "com.android.server.pm.InstallPackageHelper",
@@ -222,13 +237,14 @@ object PackageManagerHook {
                             chain.proceed()
                         }
                     }
+                }.onFailure { e ->
+                    Logger.e(TAG, "SectionB", "Failed to hook Installer Helpers for $className", e)
                 }
             }
         }.onFailure { e ->
             Logger.e(TAG, "SectionB", "Installer Helpers hook skipped/failed", e)
         }
 
-        // C. ComputerEngine: Hijacks signature matching to return SIGNATURE_MATCH (0) ONLY during active install operations
         runCatching {
             listOf(
                 "com.android.server.pm.ComputerEngine",
@@ -246,18 +262,19 @@ object PackageManagerHook {
                             }
 
                             if (isActive) {
-                                return@intercept 0 // SIGNATURE_MATCH
+                                return@intercept 0
                             }
                             chain.proceed()
                         }
                     }
+                }.onFailure { e ->
+                    Logger.e(TAG, "SectionC", "Failed to hook ComputerEngine for $className", e)
                 }
             }
         }.onFailure { e ->
             Logger.e(TAG, "SectionC", "ComputerEngine hook skipped/failed", e)
         }
 
-        // D. SigningDetails: Low-level safety net to ignore signature verification failures ONLY during active install operations
         runCatching {
             val detailsClass = classLoader.loadClass("android.content.pm.SigningDetails")
             detailsClass.declaredMethods.filter {
@@ -280,6 +297,10 @@ object PackageManagerHook {
     @Volatile private var cachedSetDpiMethod: Method? = null
     @Volatile private var cachedClearDpiMethod: Method? = null
 
+    /**
+     * Obtains core WindowManager binder instance using ServiceManager.
+     * Reflectively calls getService and converts IBinder to IWindowManager.
+     */
     private fun getIWindowManager(): Any? {
         if (cachedWms != null) return cachedWms
         return runCatching {
@@ -294,6 +315,10 @@ object PackageManagerHook {
         }.getOrNull()
     }
 
+    /**
+     * Configures system density settings for tablet-like interfaces.
+     * Calls setForcedDisplayDensityForUser or updates Settings.Secure fallback.
+     */
     private fun updateSystemServerDensity(context: Context, enabled: Boolean) {
         runCatching {
             val wms = getIWindowManager()
@@ -306,8 +331,8 @@ object PackageManagerHook {
                         cachedSetDpiMethod = wms.javaClass.methods.firstOrNull { it.name == "setForcedDisplayDensityForUser" }
                     }
                     if (cachedSetDpiMethod != null) {
-                        cachedSetDpiMethod!!.invoke(wms, 0, targetDpi, -2) // 0 = Display.DEFAULT_DISPLAY, -2 = USER_CURRENT
-                        Logger.i("Density", "SystemServer", "Successfully called setForcedDisplayDensityForUser(0, $targetDpi, USER_CURRENT)")
+                        cachedSetDpiMethod!!.invoke(wms, 0, targetDpi, -2)
+                        Logger.i("Density", "Success", "Successfully called setForcedDisplayDensityForUser(0, $targetDpi, USER_CURRENT)")
                         return
                     }
                 } else {
@@ -315,8 +340,8 @@ object PackageManagerHook {
                         cachedClearDpiMethod = wms.javaClass.methods.firstOrNull { it.name == "clearForcedDisplayDensityForUser" }
                     }
                     if (cachedClearDpiMethod != null) {
-                        cachedClearDpiMethod!!.invoke(wms, 0, -2) // 0 = Display.DEFAULT_DISPLAY, -2 = USER_CURRENT
-                        Logger.i("Density", "SystemServer", "Successfully called clearForcedDisplayDensityForUser(0, USER_CURRENT)")
+                        cachedClearDpiMethod!!.invoke(wms, 0, -2)
+                        Logger.i("Density", "Success", "Successfully called clearForcedDisplayDensityForUser(0, USER_CURRENT)")
                         return
                     }
                 }
@@ -327,13 +352,13 @@ object PackageManagerHook {
                 val minPx = minOf(dm.widthPixels, dm.heightPixels)
                 val targetDpi = (minPx * 160) / 600
                 Settings.Secure.putInt(context.contentResolver, "display_density_forced", targetDpi)
-                Logger.i("Density", "SystemServer", "Fallback: Set display_density_forced = $targetDpi")
+                Logger.i("Density", "Active", "Fallback: Set display_density_forced = $targetDpi")
             } else {
                 Settings.Secure.putString(context.contentResolver, "display_density_forced", null)
-                Logger.i("Density", "SystemServer", "Fallback: Cleared display_density_forced")
+                Logger.i("Density", "Active", "Fallback: Cleared display_density_forced")
             }
         }.onFailure { e ->
-            Logger.e("Density", "SystemServer", "Failed to update display density in SystemServer", e)
+            Logger.e("Density", "Error", "Failed to update display density in SystemServer", e)
         }
     }
 }

@@ -16,18 +16,24 @@ import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Field
 
 /**
- * QuickSettingsHook: Enhances Quick Settings tile behaviors.
- * Fixes the WiFi "Pause" behavior by forcing a complete power-off,
- * and bypasses the confirmation dialog when enabling Mobile Data via Pre-Show Zero-Flicker Interception.
+ * Enhances Quick Settings tile behaviors inside SystemUI.
+ *
+ * Forces immediate WiFi power-off on pause tile click and provides zero-flicker pre-show interception
+ * to bypass the Mobile Data confirmation dialog.
  */
 object QuickSettingsHook {
 
     private const val TAG = "QuickSettings"
     
-    @Volatile private var isWifiFixEnabled = true // Enable WiFi force-off
-    @Volatile private var isDataFixEnabled = true // Enable data confirmation bypass
+    @Volatile private var isWifiFixEnabled = true
+    @Volatile private var isDataFixEnabled = true
 
-    // Entry point: Loads settings and hooks tile interactors & dialogs
+    /**
+     * Initializes Quick Settings tile hooks inside SystemUI.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
+     */
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Started", "Initializing QuickSettingsHook")
         
@@ -56,7 +62,6 @@ object QuickSettingsHook {
             isDataFixEnabled = false
         }
 
-        // Subscribe to process-level IPC broadcasts via IpcDispatcher for real-time sync
         IpcDispatcher.addListener { intent ->
             when (intent.action) {
                 IpcManager.ACTION_SETTINGS_SYNC -> {
@@ -73,7 +78,7 @@ object QuickSettingsHook {
                             Logger.i(TAG, "Sync", "Setting [enable_qs_data_fix] updated to $isDataFixEnabled")
                         }
                         PreferenceKeys.ENABLE_QS_WIFI_FIX -> {
-                            isWifiFixEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, true)
+                            isWifiFixEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
                             Logger.i(TAG, "Sync", "Setting [enable_qs_wifi_fix] updated to $isWifiFixEnabled")
                         }
                     }
@@ -82,7 +87,6 @@ object QuickSettingsHook {
         }
         IpcDispatcher.initializeOnce(module, classLoader)
 
-        // WiFi Fix: Intercepts 'pauseWifi' and executes 'setWifiEnabled(false)' instead
         runCatching {
             val wifiRepoClass = classLoader.loadClass("com.android.systemui.statusbar.pipeline.wifi.data.repository.prod.WifiRepositoryImpl")
             wifiRepoClass.declaredMethods.filter { it.name == "pauseWifi" }.forEach { method ->
@@ -105,7 +109,7 @@ object QuickSettingsHook {
                         if (wifiManager != null) {
                             Logger.i(TAG, "Success", "WiFi Fix Active -> Forcing setWifiEnabled(false)")
                             wifiManager.setWifiEnabled(false)
-                            return@intercept null // Skip original pause logic
+                            return@intercept null
                         }
                     } catch (e: Exception) {
                         Logger.e(TAG, "Error", "WiFi force-off logic failed", e)
@@ -117,7 +121,6 @@ object QuickSettingsHook {
             Logger.e(TAG, "Error", "Failed to hook WiFiRepositoryImpl#pauseWifi", e)
         }
 
-        // Mobile Data Fix: Pre-show Zero-Flicker Interception for Mobile Data dialogs
         runCatching {
             val dialogClass = classLoader.loadClass("android.app.Dialog")
             val showMethod = dialogClass.getDeclaredMethod("show")
@@ -125,7 +128,6 @@ object QuickSettingsHook {
                 val dialog = chain.thisObject as? Dialog
 
                 if (isDataFixEnabled && dialog != null) {
-                    // Check StackTrace BEFORE chain.proceed() to suppress window attachment entirely
                     val isMobileDataStack = Throwable().stackTrace.any { element ->
                         val cls = element.className
                         cls.contains("MobileData") || cls.contains("Cellular") || cls.contains("MobileConnections") || cls.contains("cell.domain")
@@ -134,7 +136,6 @@ object QuickSettingsHook {
                     if (isMobileDataStack) {
                         Logger.i(TAG, "Success", "Bypassed Mobile Data confirmation dialog PRE-SHOW (Zero-Flicker)")
                         
-                        // 1. Force Absolute Window Transparency, Zero Alpha, & Invisible Attributes
                         runCatching {
                             dialog.window?.let { win ->
                                 win.setDimAmount(0f)
@@ -145,13 +146,14 @@ object QuickSettingsHook {
                                 }
                                 win.decorView.visibility = android.view.View.INVISIBLE
                             }
+                        }.onFailure { e ->
+                            Logger.e(TAG, "Error", "Failed to force dialog window transparency", e)
                         }
 
-                        // 2. Try triggering positive listener directly without rendering window
                         var triggered = false
                         runCatching {
                             if (dialog is AlertDialog) {
-                                dialog.create() // Ensure AlertController is initialized
+                                dialog.create()
                                 val alertField = findField(AlertDialog::class.java, "mAlert")
                                 val alertController = alertField?.get(dialog)
                                 if (alertController != null) {
@@ -163,16 +165,19 @@ object QuickSettingsHook {
                                     }
                                 }
                             }
+                        }.onFailure { e ->
+                            Logger.e(TAG, "Error", "Failed to trigger dialog positive listener directly", e)
                         }
 
                         if (triggered) {
-                            return@intercept null // Skip chain.proceed() completely
+                            return@intercept null
                         }
 
-                        // 3. Fallback: Proceed with 100% transparent window, then perform instant click & dismiss
                         val res = chain.proceed()
                         runCatching {
                             (dialog as? AlertDialog)?.getButton(DialogInterface.BUTTON_POSITIVE)?.performClick() ?: dialog.dismiss()
+                        }.onFailure { e ->
+                            Logger.e(TAG, "Error", "Failed to fallback-click dialog positive button", e)
                         }
                         return@intercept res
                     }
@@ -187,7 +192,10 @@ object QuickSettingsHook {
 
     private var wifiManagerFieldCached: Field? = null
 
-    // Helper: Finds a field in class hierarchy
+    /**
+     * Retrieves declared field from class hierarchy via reflection.
+     * Traverses superclasses returning Accessible field instance.
+     */
     private fun findField(clazz: Class<*>, name: String): Field? {
         var curr: Class<*>? = clazz
         while (curr != null) {

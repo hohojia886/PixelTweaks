@@ -9,11 +9,8 @@ import java.util.Collections
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * IpcDispatcher: Centralized process-level IPC Broadcast Dispatcher and Application Lifecycle Manager.
- * Ensures that each target process (SystemUI, Launcher, SystemServer) registers ONLY ONE BroadcastReceiver.
- * Supports both cold boot (Application.onCreate hook) and LSPosed autoHotReload/late hook load (ActivityThread.currentApplication).
- * 
- * Individual hooks subscribe to IpcDispatcher via addListener { intent -> ... }.
+ * Centralized process-level IPC Broadcast Dispatcher and Manager.
+ * Ensures that each target process registers ONLY ONE BroadcastReceiver to prevent duplicate listeners.
  */
 object IpcDispatcher {
 
@@ -23,15 +20,22 @@ object IpcDispatcher {
     @Volatile private var cachedAppContext: Context? = null
 
     /**
-     * Subscribes a listener to receive process-level IPC broadcast updates.
+     * Subscribes a listener lambda to receive process-level IPC broadcast updates.
+     *
+     * @param listener Callback lambda invoked when an IPC broadcast arrives in this process.
      */
     fun addListener(listener: (Intent) -> Unit) {
         listeners.add(listener)
     }
 
     /**
-     * Initializes process-level Application.onCreate hook or immediate receiver registration
-     * if Application is already active (supports autoHotReload / late hook loading).
+     * Initializes process-level hook or immediate receiver registration.
+     * Guarantees single-receiver registration per process lifecycle using atomic flags.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader Target process ClassLoader.
+     * @param extraActions Optional additional broadcast action strings to register.
+     * @param onContextReady Optional callback invoked as soon as Application Context is acquired.
      */
     fun initializeOnce(
         module: XposedModule,
@@ -68,7 +72,6 @@ object IpcDispatcher {
                     moduleUid = module.getModuleApplicationInfo().uid,
                     extraActions = extraActions
                 ) { intent ->
-                    // Dispatch to all subscribed hooks in this process
                     synchronized(listeners) {
                         val iterator = listeners.iterator()
                         while (iterator.hasNext()) {

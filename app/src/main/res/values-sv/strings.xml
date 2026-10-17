@@ -86,9 +86,9 @@
     <string name="master_log">Huvudloggning</string>
     <string name="master_log_summary">Logcat-tagg: PXTK_</string>
     <string name="log_security">System- &amp; Säkerhetsloggar</string>
-    <string name="log_security_summary">Logcat-taggar: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Logcat-taggar: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">Gränssnittsloggar</string>
-    <string name="log_interface_summary">Logcat-taggar: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Logcat-taggar: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">Gesterloggar</string>
     <string name="log_gestures_summary">Logcat-tagg: PXTK_DT2S</string>
     <string name="log_quick_settings">Snabbinställningsloggar</string>

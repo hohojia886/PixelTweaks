@@ -16,14 +16,10 @@ import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
 
 /**
- * IpcManager: Orchestrates cross-process communication and settings synchronization.
- * Manages secure broadcast registration, system context retrieval via reflection, 
- * and ensures that all hook instances across different processes stay in sync with the UI.
- * 
- * Security & Reliability Improvements:
- * 1. Multi-layer getSenderUid resolution (getSentFromUid API 34+, getSendingUid AOSP, sender_uid extra, Binder calling UID).
- * 2. Multi-user compatible via (uid % 100000) App ID resolution + module package App ID lookup.
- * 3. Secure receiver registration without broadcastPermission restrictions so non-signature system apps (SystemUI, Launchers) can receive IPC.
+ * Orchestrates cross-process communication (IPC) and settings synchronization.
+ *
+ * Manages secure broadcast registration, sender UID verification, and RemotePreferences/ContentProvider fallbacks.
+ * Ensures settings changes in the UI app are reliably propagated to hooks running in SystemUI, Launcher, and SystemServer.
  */
 object IpcManager {
     const val PREF_NAME = "io.github.hohojia886.pixeltweaks"
@@ -31,10 +27,15 @@ object IpcManager {
     const val ACTION_SETTINGS_SYNC = "io.github.hohojia886.pixeltweaks.SETTINGS_SYNC"
     const val ACTION_REQUEST_SLEEP = "io.github.hohojia886.pixeltweaks.REQUEST_SLEEP"
 
-    private var sysContextRef: WeakReference<Context>? = null // Cached system context
+    private var sysContextRef: WeakReference<Context>? = null
     @Volatile private var cachedModulePkgAppId = -1
 
-    // Resolves sender UID using trusted system APIs (Android 14+ getSentFromUid & AOSP getSendingUid)
+    /**
+     * Resolves the real sender UID of an incoming broadcast using framework APIs.
+     *
+     * @param receiver The active [BroadcastReceiver] executing inside [BroadcastReceiver.onReceive].
+     * @return The integer UID of the process that sent the broadcast, or -1 if unable to resolve.
+     */
     fun resolveSenderUid(receiver: BroadcastReceiver): Int {
         // 1. Try Android 14+ (API 34) public getSentFromUid API
         runCatching {
@@ -54,7 +55,10 @@ object IpcManager {
         return -1
     }
 
-    // Resolves and caches the App ID of the PixelTweaks package
+    /**
+     * Resolves and caches the App ID of the PixelTweaks package.
+     * Queries PackageManager for package info and extracts App ID.
+     */
     private fun getModulePackageAppId(context: Context): Int {
         if (cachedModulePkgAppId > 0) return cachedModulePkgAppId
         val appId = runCatching {
@@ -66,7 +70,12 @@ object IpcManager {
         return cachedModulePkgAppId
     }
 
-    // Retrieves the underlying system context using ActivityThread reflection
+    /**
+     * Retrieves the underlying system context using ActivityThread reflection.
+     *
+     * @param classLoader The target process ClassLoader used to reflectively load ActivityThread.
+     * @return A cached [Context] reference associated with system_server, or null on failure.
+     */
     fun getSystemContext(classLoader: ClassLoader): Context? {
         sysContextRef?.get()?.let { return it }
         return runCatching {
@@ -75,10 +84,18 @@ object IpcManager {
             val context = atClass.getDeclaredMethod("getSystemContext").invoke(at) as? Context
             context?.let { sysContextRef = WeakReference(it) }
             context
+        }.onFailure { e ->
+            Logger.e("IpcManager", "Error", "Failed to getSystemContext", e)
         }.getOrNull()
     }
 
-    // Obtains a context suitable for ContentProvider calls, matching the current process identity
+    /**
+     * Obtains a process-safe Context matching caller identity for ContentProvider calls.
+     *
+     * @param classLoader The target process ClassLoader.
+     * @param packageName Optional package name override for package context creation.
+     * @return A safe [Context] instance matching process scope.
+     */
     fun getSafeContext(classLoader: ClassLoader, packageName: String? = null): Context? {
         return runCatching {
             val atClass = classLoader.loadClass("android.app.ActivityThread")
@@ -102,14 +119,22 @@ object IpcManager {
             } else {
                 sysContext
             }
+        }.onFailure { e ->
+            Logger.e("IpcManager", "Error", "Failed to getSafeContext", e)
         }.getOrNull()
     }
 
-    // Unified preference loader: Prioritizes RemotePreferences, falls back to DE ContentProvider if RemotePreferences is empty or missing
+    /**
+     * Unified preference loader for Xposed modules across target processes.
+     *
+     * @param module The active LSPosed [XposedModule] instance.
+     * @param classLoader Optional ClassLoader for ContentProvider fallback queries.
+     * @param packageName Optional target package name.
+     * @return A [Bundle] containing populated preference key-value pairs.
+     */
     fun loadPreferences(module: XposedModule, classLoader: ClassLoader? = null, packageName: String? = null): Bundle {
         val bundle = Bundle()
         
-        // 1. Primary: Xposed/LSPosed RemotePreferences
         val prefs = runCatching { module.getRemotePreferences(PREF_NAME) }.getOrNull()
         if (prefs != null) {
             runCatching {
@@ -161,7 +186,6 @@ object IpcManager {
             }
         }
 
-        // 2. Fallback / Overlay: Direct DE Storage ContentProvider query if RemotePreferences is empty or missing
         if (classLoader != null && (bundle.isEmpty || prefs == null || prefs.all.isEmpty())) {
             runCatching {
                 val ctx = getSafeContext(classLoader, packageName) ?: getSystemContext(classLoader)
@@ -186,17 +210,25 @@ object IpcManager {
         return bundle
     }
 
+    /**
+     * Creates basic broadcast options with share identity enabled.
+     * Returns Bundle containing configured BroadcastOptions.
+     */
     private fun makeBroadcastOptions(): Bundle {
         return android.app.BroadcastOptions.makeBasic().apply {
             isShareIdentityEnabled = true
         }.toBundle()
     }
 
-    // Dispatches a full settings synchronization broadcast to all active hook processes
+    /**
+     * Dispatches full settings synchronization broadcast to all active hook processes.
+     *
+     * @param context Host process Context used to send the broadcast.
+     * @param prefs The [SharedPreferences] instance containing current settings.
+     */
     @SuppressLint("WrongConstant")
     fun syncAllSettings(context: Context, prefs: SharedPreferences) {
         val intent = Intent(ACTION_SETTINGS_SYNC).apply {
-            // ClearAll, Tablet Mode & Battery Info
             putExtra(PreferenceKeys.ENABLE_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true))
             putExtra(PreferenceKeys.ENABLE_TABLET_MODE, prefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false))
             putExtra(PreferenceKeys.ENABLE_BATTERY_INFO, prefs.getBoolean(PreferenceKeys.ENABLE_BATTERY_INFO, false))
@@ -206,12 +238,10 @@ object IpcManager {
             putExtra(PreferenceKeys.RING_ONLY_CHARGING, prefs.getBoolean(PreferenceKeys.RING_ONLY_CHARGING, false))
             putExtra(PreferenceKeys.ENABLE_RING_ROTATION, prefs.getBoolean(PreferenceKeys.ENABLE_RING_ROTATION, false))
 
-            // DT2S
             putExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true))
             putExtra(PreferenceKeys.ENABLE_DT_LOCKSCREEN, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true))
             putExtra(PreferenceKeys.ENABLE_DT_STATUSBAR, prefs.getBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true))
 
-            // EasyUnlock
             val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
                 if (inMemoryLen > 0) inMemoryLen else runCatching {
                     val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
@@ -224,20 +254,16 @@ object IpcManager {
             putExtra(PreferenceKeys.EXPECTED_PASS_LEN, expectedPassLen)
             putExtra(PreferenceKeys.IS_FIRST_UNLOCK_DONE, prefs.getBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false))
 
-            // QuickSettings
             putExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, prefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true))
             putExtra(PreferenceKeys.ENABLE_QS_DATA_FIX, prefs.getBoolean(PreferenceKeys.ENABLE_QS_DATA_FIX, true))
 
-            // Screenshot
             putExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, prefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true))
 
-            // Security
             putExtra(PreferenceKeys.ALLOW_DOWNGRADE, prefs.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false))
             putExtra(PreferenceKeys.BYPASS_SIGNATURE, prefs.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false))
             putExtra(PreferenceKeys.DOWNGRADE_TIMESTAMP, prefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L))
             putExtra(PreferenceKeys.SIGNATURE_TIMESTAMP, prefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L))
 
-            // Traffic, Statusbar Battery Percent & Hide VPN Icon
             putExtra(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, prefs.getBoolean(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true))
             putExtra(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, prefs.getBoolean(PreferenceKeys.ENABLE_STATUSBAR_BATTERY_PERCENT, false))
             putExtra(PreferenceKeys.ENABLE_HIDE_VPN_ICON, prefs.getBoolean(PreferenceKeys.ENABLE_HIDE_VPN_ICON, false))
@@ -245,19 +271,22 @@ object IpcManager {
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, prefs.getFloat(PreferenceKeys.NETWORK_TRAFFIC_FONT_SIZE, 8f))
             putExtra(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, prefs.getInt(PreferenceKeys.NETWORK_TRAFFIC_THRESHOLD, 1))
 
-            // General / Debug Logs (4 Categories)
             putExtra(PreferenceKeys.ENABLE_MASTER_LOG, prefs.getBoolean(PreferenceKeys.ENABLE_MASTER_LOG, false))
             putExtra(PreferenceKeys.LOG_SECURITY, prefs.getBoolean(PreferenceKeys.LOG_SECURITY, true))
             putExtra(PreferenceKeys.LOG_INTERFACE, prefs.getBoolean(PreferenceKeys.LOG_INTERFACE, true))
             putExtra(PreferenceKeys.LOG_GESTURES, prefs.getBoolean(PreferenceKeys.LOG_GESTURES, true))
             putExtra(PreferenceKeys.LOG_QUICK_SETTINGS, prefs.getBoolean(PreferenceKeys.LOG_QUICK_SETTINGS, true))
 
-            addFlags(0x01000000) // FLAG_RECEIVER_INCLUDE_BACKGROUND
+            addFlags(0x01000000)
         }
         context.sendBroadcast(intent, null, makeBroadcastOptions())
     }
 
-    // Sends a high-priority request to SystemUI to put the device to sleep
+    /**
+     * Sends a high-priority request to SystemUI to put device to sleep.
+     *
+     * @param context Host process Context used to send sleep broadcast.
+     */
     @SuppressLint("WrongConstant")
     fun sendSleepRequest(context: Context) {
         val intent = Intent(ACTION_REQUEST_SLEEP).apply {
@@ -266,7 +295,13 @@ object IpcManager {
         context.sendBroadcast(intent, null, makeBroadcastOptions())
     }
 
-    // Dispatches a broadcast for a single preference change to minimize IPC overhead
+    /**
+     * Dispatches a broadcast for a single preference change to minimize IPC overhead.
+     *
+     * @param context Host process Context used to send the update broadcast.
+     * @param key The setting key identifier defined in [PreferenceKeys].
+     * @param value The primitive value (Boolean, Int, Float, Long) being updated.
+     */
     @SuppressLint("WrongConstant")
     fun sendUpdateBroadcast(context: Context, key: String, value: Any) {
         val intent = Intent(ACTION_SETTING_CHANGED).apply {
@@ -277,12 +312,19 @@ object IpcManager {
                 is Float -> putExtra(PreferenceKeys.EXTRA_VALUE, value)
                 is Long -> putExtra(PreferenceKeys.EXTRA_VALUE, value)
             }
-            addFlags(0x01000000) // FLAG_RECEIVER_INCLUDE_BACKGROUND
+            addFlags(0x01000000)
         }
         context.sendBroadcast(intent, null, makeBroadcastOptions())
     }
 
-    // Registers a receiver with multi-layer UID verification
+    /**
+     * Registers a receiver with multi-layer UID verification to prevent spoofing.
+     *
+     * @param context Application Context used to register the receiver.
+     * @param moduleUid Module application UID.
+     * @param extraActions Additional intent actions to listen for.
+     * @param onVerifiedBroadcast Callback invoked when a broadcast passes UID verification.
+     */
     fun registerSecureReceiver(
         context: Context,
         moduleUid: Int,
@@ -324,7 +366,10 @@ object IpcManager {
         }
     }
 
-    // Specialized receiver for sleep requests with strict sender identity validation
+    /**
+     * Specialized receiver for sleep requests with strict identity validation.
+     * Validates sender UID against trusted launchers and system apps.
+     */
     fun registerSleepReceiver(context: Context, moduleUid: Int, onReceive: () -> Unit) {
         try {
             val filter = IntentFilter(ACTION_REQUEST_SLEEP)

@@ -86,9 +86,9 @@
     <string name="master_log">Hlavní protokolování</string>
     <string name="master_log_summary">Logcat značka: PXTK_</string>
     <string name="log_security">Protokoly systému a zabezpečení</string>
-    <string name="log_security_summary">Logcat značky: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Logcat značky: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">Protokoly rozhraní</string>
-    <string name="log_interface_summary">Logcat značky: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Logcat značky: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">Protokoly gest</string>
     <string name="log_gestures_summary">Logcat značka: PXTK_DT2S</string>
     <string name="log_quick_settings">Protokoly rychlého nastavení</string>

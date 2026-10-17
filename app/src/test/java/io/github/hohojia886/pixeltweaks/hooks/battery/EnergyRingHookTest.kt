@@ -47,6 +47,7 @@ class EnergyRingHookTest {
                 "ringRotation" -> field.set(instance, false)
                 "ringRadiusOffset" -> field.set(instance, 0f)
                 "ringStrokeWidth" -> field.set(instance, 2.0f)
+                "batteryLevel" -> field.set(instance, 100)
             }
         }
     }
@@ -96,5 +97,16 @@ class EnergyRingHookTest {
 
         val enabledField = clazz.getDeclaredField("isEnabled").apply { isAccessible = true }
         assertTrue(enabledField.get(instance) as Boolean)
+    }
+
+    @Test
+    fun testLowBatteryStateTracking() {
+        val clazz = EnergyRingHook::class.java
+        val instance = clazz.getField("INSTANCE").get(null)
+
+        val batteryLevelField = clazz.getDeclaredField("batteryLevel").apply { isAccessible = true }
+        batteryLevelField.set(instance, 8)
+
+        assertEquals(8, batteryLevelField.get(instance) as Int)
     }
 }

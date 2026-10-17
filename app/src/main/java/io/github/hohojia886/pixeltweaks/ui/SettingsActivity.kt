@@ -17,9 +17,10 @@ import io.github.hohojia886.pixeltweaks.ui.components.SettingsScreen
 import io.github.hohojia886.pixeltweaks.ui.theme.PixelTweaksTheme
 
 /**
- * SettingsActivity: Clean View Layer in MVVM + UDF architecture.
- * Binds SettingsViewModel's StateFlow to Jetpack Compose UI and forwards user/lifecycle events.
- * Registers Screen ON/OFF BroadcastReceiver for instant battery timer power-saving.
+ * Main Settings Activity hosting the Jetpack Compose user interface.
+ *
+ * Binds [SettingsViewModel] state to [SettingsScreen] and registers screen state receivers
+ * to pause/resume background battery polling when screen turns off/on.
  */
 class SettingsActivity : AppCompatActivity() {
 
@@ -34,6 +35,11 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Initializes the Activity, constructs dependencies, and sets up Compose UI content.
+     *
+     * @param savedInstanceState Bundle containing previously saved activity state.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -58,16 +64,28 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Resumes background tasks when activity becomes visible.
+     * Triggers OnResume event to restart ViewModel timers.
+     */
     override fun onResume() {
         super.onResume()
         viewModel.onEvent(SettingsEvent.OnResume)
     }
 
+    /**
+     * Pauses background tasks when activity loses user focus.
+     * Triggers OnPause event to halt ViewModel polling jobs.
+     */
     override fun onPause() {
         super.onPause()
         viewModel.onEvent(SettingsEvent.OnPause)
     }
 
+    /**
+     * Cleans up registered receivers to prevent memory leaks.
+     * Unregisters screenStateReceiver on activity destruction.
+     */
     override fun onDestroy() {
         super.onDestroy()
         runCatching { unregisterReceiver(screenStateReceiver) }

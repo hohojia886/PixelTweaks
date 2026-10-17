@@ -4,13 +4,15 @@ import android.content.Context
 import android.view.WindowManager
 
 /**
- * DensityUtils: Utility functions for detecting screen physical resolution
- * and calculating target DPI for tablet mode (sw >= 600dp).
+ * Utility functions for calculating physical display dimensions and target DPI for Tablet Mode.
  */
 object DensityUtils {
 
     /**
-     * Obtains physical screen bounds in pixels (width, height).
+     * Obtains physical display bounds in pixels as a (width, height) Pair.
+     *
+     * @param context Host process Context used to resolve [WindowManager].
+     * @return A [Pair] containing physical screen width and height in pixels.
      */
     fun getRealScreenBounds(context: Context): Pair<Int, Int> {
         val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as? WindowManager
@@ -20,7 +22,10 @@ object DensityUtils {
     }
 
     /**
-     * Gets the minimum physical screen dimension in pixels.
+     * Calculates the minimum physical screen dimension in pixels.
+     *
+     * @param context Host process Context.
+     * @return The smaller pixel dimension between screen width and height.
      */
     fun getRealMinPx(context: Context): Int {
         val (width, height) = getRealScreenBounds(context)
@@ -28,11 +33,14 @@ object DensityUtils {
     }
 
     /**
-     * Calculates the exact DPI needed to achieve smallest width sw >= 600dp for tablet mode.
-     * Formula: sw = (minPx * 160) / densityDpi => targetDpi = (minPx * 160) / 600
+     * Calculates target DPI required to force smallest width (`sw >= 600dp`) for Tablet Mode.
+     * Formula: `targetDpi = (minPx * 160) / 600`.
+     *
+     * @param minPx The minimum physical screen pixel width.
+     * @return Calculated integer DPI value.
      */
     fun calculateTabletDpi(minPx: Int): Int {
-        if (minPx <= 0) return 320 // Fallback DPI
+        if (minPx <= 0) return 320
         return (minPx * 160) / 600
     }
 }

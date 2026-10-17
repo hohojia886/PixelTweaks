@@ -86,9 +86,9 @@
     <string name="master_log">Fő naplózás</string>
     <string name="master_log_summary">Logcat címke: PXTK_</string>
     <string name="log_security">Rendszer és biztonsági naplók</string>
-    <string name="log_security_summary">Logcat címkék: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Logcat címkék: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">Felület és állapotsor naplók</string>
-    <string name="log_interface_summary">Logcat címkék: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Logcat címkék: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">Gesztusok és interakciók naplók</string>
     <string name="log_gestures_summary">Logcat címke: PXTK_DT2S</string>
     <string name="log_quick_settings">Gyorsbeállítások naplók</string>

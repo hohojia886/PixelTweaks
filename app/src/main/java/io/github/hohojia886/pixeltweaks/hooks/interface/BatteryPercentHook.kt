@@ -42,17 +42,14 @@ import java.util.Collections
 import java.util.WeakHashMap
 
 /**
- * BatteryPercentHook: Renders a clean text battery percentage (e.g., "100%") at the far-right side of the status bar.
- * Designed exclusively for Android 17 (Pixel SystemUIGoogle):
- * 1. Targets ModernStatusBarView (slot="battery") via setVisibleState(2 - STATE_HIDDEN).
- * 2. Targets Compose Battery Views (UnifiedBatteryViewBinder & UnifiedBatteryKt).
- * 3. Zeros paddingEnd on StatusIconContainer to eliminate WiFi-battery spacing.
- * 4. Injects matching Clock-style text on both PhoneStatusBarView and KeyguardStatusBarView.
- * 5. Matches Energy Ring color dynamics (charging HSV pulse, Power Save mode red, low battery yellow/green).
+ * Renders a standalone text battery percentage indicator at the far-right of the status bar in SystemUI.
+ *
+ * Supports both legacy (Android 17 CP2A.*.*) and modern Compose-based (Android 17 CP3A.*.*) SystemUI architectures.
+ * Dynamically hides the stock graphic battery icon and copies status bar Clock font styles.
  */
 object BatteryPercentHook {
 
-    private const val TAG = "Battery" // Functional category for Logger (PXTK_Battery)
+    private const val TAG = "Battery"
     private const val VIEW_TAG = "PX_RIGHT_BATTERY_PERCENT_TAG"
 
     @Volatile private var isEnabled = false
@@ -69,10 +66,18 @@ object BatteryPercentHook {
 
     private val stockBatteryViews = Collections.synchronizedMap(WeakHashMap<View, Boolean>())
 
+    /**
+     * Marks a given View as a stock battery component in map.
+     * Records view in synchronized map to track stock components.
+     */
     private fun markAsStockBatteryView(view: View) {
         stockBatteryViews[view] = true
     }
 
+    /**
+     * Checks if a given View is marked as a stock battery component.
+     * Returns true if view exists in stock battery component map.
+     */
     private fun isStockBatteryView(view: View): Boolean {
         return stockBatteryViews[view] == true
     }
@@ -84,71 +89,70 @@ object BatteryPercentHook {
     private val trackedComposeBatteryViews = Collections.synchronizedList(mutableListOf<WeakReference<View>>())
     private val trackedModernBatteryViews = Collections.synchronizedList(mutableListOf<WeakReference<View>>())
 
-    // Memory-safe map to hold original paddingEnd for StatusIconContainer
     private val originalPaddingEndMap = Collections.synchronizedMap(WeakHashMap<ViewGroup, Int>())
 
     @Volatile private var cachedClassLoader: ClassLoader? = null
     
-    // Android 17 CP3 / CP2 Version Detection Flag
-    @Volatile private var isAndroid17CP3 = false
+    @Volatile private var isAndroid17CP3A = false
 
+    /**
+     * Main entry point to apply battery percentage hooks and UI injection inside SystemUI.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
+     */
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         cachedClassLoader = classLoader
         processPackageName = "com.android.systemui"
         
         /**
          * Dynamically probe Android 17 system version using [SystemVersion]:
-         * - CP2A builds & CD1A builds before 260905: Use legacy/CP2 layout strategy (isAndroid17CP3 = false)
-         * - CP3A builds: Use unified Compose layout strategy (isAndroid17CP3 = true)
+         * - CP2A builds & CD1A builds before 260905: Use CP2A layout strategy (isAndroid17CP3A = false)
+         * - CP3A builds: Use unified Compose layout strategy (isAndroid17CP3A = true)
          * - Other builds: Fallback to class probing for SingleBindableStatusBarComposeIconView
          */
         val buildDisplay = SystemVersion.display
 
-        isAndroid17CP3 = when {
+        isAndroid17CP3A = when {
             SystemVersion.isCp2a() || SystemVersion.isCd1aBefore260905() -> false
             SystemVersion.isCp3a() -> true
             else -> runCatching { 
                 classLoader.loadClass("com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView") != null
             }.getOrDefault(false)
         }
-        Logger.i(TAG, "VersionProbe", "Resolved strategy: isAndroid17CP3=$isAndroid17CP3 (display=$buildDisplay)")
+        Logger.i(TAG, "VersionProbe", "Resolved strategy: isAndroid17CP3A=$isAndroid17CP3A (display=$buildDisplay)")
 
         syncSettings(module, classLoader)
 
-        // Subscribe to process-level IPC broadcasts via IpcDispatcher
         IpcDispatcher.addListener { intent ->
             handleBroadcast(intent)
         }
 
-        // Register sticky battery receiver on Application Context when ready
         IpcDispatcher.initializeOnce(module, classLoader) { app ->
             registerBatteryReceiver(app)
         }
 
-        // Apply Android 17 ModernStatusBarView Battery Hooks (slot="battery")
         applyModernStatusBarViewBatteryHooks(module, classLoader)
 
-        // Apply Android 17 CP3 SingleBindableStatusBarComposeIconView Hooks
         applySingleBindableIconViewBatteryHooks(module, classLoader)
 
-        // Apply Android 17 Compose Battery View Hooks (UnifiedBatteryViewBinder$bind$1$1)
         applyAndroid17ComposeBatteryHooks(module, classLoader)
 
-        // Apply Compose Modifier Alpha 0f Hooks for UnifiedBatteryKt
         applyComposeUnifiedBatteryModifierHooks(module, classLoader)
 
-        // Apply Status Bar Right-Side View Injection (Supports Unlocked + Lockscreen)
         applyViewInjectionHooks(module, classLoader)
 
-        // Apply Direct StatusIconContainer Hooks (mIgnoredSlots & Padding Zeroing Strategy)
         applyStatusIconContainerHooks(module, classLoader)
 
-        // Centralized Dark Mode Sync via StatusBarTintManager
         StatusBarTintManager.register(module, classLoader) { tint ->
             applyTint(tint)
         }
     }
 
+    /**
+     * Loads settings from DE or CE storage fallback.
+     * Queries ContentProvider or RemotePreferences for percentage toggle.
+     */
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
         val loadedFromDe = runCatching {
             val ctx = IpcManager.getSafeContext(classLoader, processPackageName) ?: IpcManager.getSystemContext(classLoader) ?: return@runCatching false
@@ -172,6 +176,10 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Responds to IPC setting broadcasts for dynamic toggling.
+     * Processes full sync and setting changed intents to update UI.
+     */
     private fun handleBroadcast(intent: Intent, @Suppress("UNUSED_PARAMETER") appCtx: Context? = null) {
         when (intent.action) {
             IpcManager.ACTION_SETTINGS_SYNC -> {
@@ -193,8 +201,8 @@ object BatteryPercentHook {
     }
 
     /**
-     * Android 17 ModernStatusBarView Strategy:
-     * Hooks ModernStatusBarView.initView (filters slot="battery") and ModernStatusBarView.setVisibleState.
+     * Hooks ModernStatusBarView on Android 17 for battery slot visibility.
+     * Intercepts initView and setVisibleState methods for slot="battery".
      */
     private fun applyModernStatusBarViewBatteryHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
@@ -214,6 +222,8 @@ object BatteryPercentHook {
                             }
                             applyVisibilityToModernBatteryView(view)
                         }
+                    }.onFailure { e ->
+                        Logger.e(TAG, "ModernBattery", "Failed during initView hook processing", e)
                     }
                 }
             }
@@ -223,7 +233,7 @@ object BatteryPercentHook {
                     if (isEnabled) {
                         val view = chain.thisObject as? View ?: return@hookBefore
                         if (isStockBatteryView(view)) {
-                            chain.args[0] = 2 // 2 = STATE_HIDDEN
+                            chain.args[0] = 2
                         }
                     }
                 }
@@ -234,8 +244,8 @@ object BatteryPercentHook {
     }
 
     /**
-     * Android 17 CP3 Strategy:
-     * Hooks SingleBindableStatusBarComposeIconView, SingleBindableStatusBarIconView, and ModernStatusBarView.
+     * Hooks Compose Icon Views for the CP3A strategy.
+     * Intercepts initView method for SingleBindableStatusBarComposeIconView.
      */
     private fun applySingleBindableIconViewBatteryHooks(module: XposedModule, classLoader: ClassLoader) {
         val classNames = listOf(
@@ -248,7 +258,6 @@ object BatteryPercentHook {
             runCatching {
                 val clazz = classLoader.loadClass(className)
 
-                // Hook initView(String, Function0) strictly for slot="battery" or "status_bar_battery"
                 clazz.declaredMethods.filter { it.name == "initView" }.forEach { method ->
                     module.hookBefore(method) { chain ->
                         runCatching {
@@ -260,13 +269,21 @@ object BatteryPercentHook {
                                 applyVisibilityToModernBatteryView(view)
                                 applyVisibilityToComposeView(view)
                             }
+                        }.onFailure { e ->
+                            Logger.e(TAG, "ComposeBattery", "Failed during SingleBindableIconView initView hook", e)
                         }
                     }
                 }
+            }.onFailure { e ->
+                Logger.e(TAG, "ComposeBattery", "Failed to hook $className", e)
             }
         }
     }
 
+    /**
+     * Updates visibility and dimensions for Modern Battery View.
+     * Invokes setVisibleState and sets layout parameters accordingly.
+     */
     private fun applyVisibilityToModernBatteryView(view: View) {
         mainHandler.post {
             runCatching {
@@ -298,6 +315,10 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Starts tracking a Compose Battery view if not already cached.
+     * Adds reference to weak list and applies initial visibility state.
+     */
     private fun trackComposeBatteryView(view: View) {
         if (view.tag == VIEW_TAG) return
         if (!isBatteryViewCandidate(view)) {
@@ -312,12 +333,12 @@ object BatteryPercentHook {
         applyVisibilityToComposeView(view)
     }
 
+    /**
+     * Hides outer and inner elements of Compose-based battery UI.
+     * Manages alpha, scale, and layout params for compose battery views.
+     */
     private fun applyVisibilityToComposeView(view: View) {
-        // On Android 17 CP3, the outer ComposeView is a UNIFIED CONTAINER for Battery + WiFi + Cellular.
-        // We MUST NOT set view.visibility = View.GONE on the outer ComposeView, because doing so
-        // hides WiFi and Cellular along with the battery!
-        // Battery hiding is handled inside Compose by cancelling UnifiedBatteryKt execution.
-        if (isAndroid17CP3) {
+        if (isAndroid17CP3A) {
             return
         }
 
@@ -325,7 +346,6 @@ object BatteryPercentHook {
             runCatching {
                 val hide = isEnabled
 
-                // Hide outer ComposeView
                 view.visibility = if (hide) View.GONE else View.VISIBLE
                 view.alpha = if (hide) 0f else 1f
                 view.scaleX = if (hide) 0f else 1f
@@ -357,7 +377,6 @@ object BatteryPercentHook {
                     }
                 }
 
-                // Hide inner AndroidComposeView child if present
                 if (view is ViewGroup && view.isNotEmpty()) {
                     for (i in 0 until view.childCount) {
                         val child = view.getChildAt(i) ?: continue
@@ -407,9 +426,8 @@ object BatteryPercentHook {
     }
 
     /**
-     * Android 17 Compose Modifier Hook:
-     * Intercepts UnifiedBatteryKt Composable methods (UnifiedBattery, BatteryBody, BatteryCap, etc.)
-     * and cancels their composition by returning null without calling chain.proceed().
+     * Intercepts UnifiedBatteryKt composables directly to cancel.
+     * Returns null on intercepted composable methods to prevent render.
      */
     private fun applyComposeUnifiedBatteryModifierHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
@@ -437,11 +455,10 @@ object BatteryPercentHook {
     }
 
     /**
-     * Android 17 Strategy:
-     * Hooks UnifiedBatteryViewBinder$bind$1$1.invokeSuspend and View.setVisibility.
+     * Hooks UnifiedBatteryViewBinder to capture the generated View.
+     * Intercepts invokeSuspend method and tracks the resulting view.
      */
     private fun applyAndroid17ComposeBatteryHooks(module: XposedModule, classLoader: ClassLoader) {
-        // 1. Hook UnifiedBatteryViewBinder$bind$1$1.invokeSuspend
         runCatching {
             val binderClassName = "com.android.systemui.statusbar.pipeline.battery.ui.binder.UnifiedBatteryViewBinder" + '$' + "bind" + '$' + "1" + '$' + "1"
             val bindInnerClass = classLoader.loadClass(binderClassName)
@@ -465,11 +482,11 @@ object BatteryPercentHook {
     }
 
     /**
-     * Direct StatusIconContainer Lifecycle Strategy:
-     * Hooks StatusIconContainer.onAttachedToWindow directly to manage mIgnoredSlots & paddingEnd.
+     * Hooks StatusIconContainer to adjust layout sizing and ignored slots.
+     * Manages paddingEnd and intercepts addView/onMeasure calls.
      */
     private fun applyStatusIconContainerHooks(module: XposedModule, classLoader: ClassLoader) {
-        if (isAndroid17CP3) {
+        if (isAndroid17CP3A) {
             return
         }
 
@@ -487,14 +504,14 @@ object BatteryPercentHook {
                         }
                     }
                     updateIgnoredSlotsForContainer(container)
+                }.onFailure { e ->
+                    Logger.e(TAG, "IconContainer", "Failed during onAttachedToWindow hook", e)
                 }
             }
 
-            // Add paddingEnd manipulation in onAttachedToWindow
             module.hookBefore(onAttachedMethod) { chain ->
                 if (isEnabled) {
                     val container = chain.thisObject as? ViewGroup ?: return@hookBefore
-                    // Force the StatusIconContainer to WRAP_CONTENT to free up space
                     val lp = container.layoutParams
                     if (lp != null && lp.width != ViewGroup.LayoutParams.WRAP_CONTENT) {
                         lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -503,7 +520,6 @@ object BatteryPercentHook {
                 }
             }
 
-            // Restore addView method hook
             val viewClass = classLoader.loadClass("android.view.View")
             val layoutParamsClass = classLoader.loadClass("android.view.ViewGroup" + '$' + "LayoutParams")
             val addViewMethod = containerClass.getMethod("addView", viewClass, Int::class.javaPrimitiveType, layoutParamsClass)
@@ -521,7 +537,6 @@ object BatteryPercentHook {
                 }
             }
 
-            // Restore onMeasure hook
             val onMeasureMethod = containerClass.getDeclaredMethod("onMeasure", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
             module.hookAfter(onMeasureMethod) { chain, _ ->
                 if (isEnabled) {
@@ -542,12 +557,16 @@ object BatteryPercentHook {
                             val setMeasuredDimensionMethod = View::class.java.getDeclaredMethod("setMeasuredDimension", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
                             setMeasuredDimensionMethod.isAccessible = true
                             setMeasuredDimensionMethod.invoke(container, newWidth, originalHeight)
+                        }.onFailure { e ->
+                            Logger.e(TAG, "IconContainer", "Failed to shrink StatusIconContainer width", e)
                         }
                     } else if (newWidth == 0) {
                         runCatching {
                             val setMeasuredDimensionMethod = View::class.java.getDeclaredMethod("setMeasuredDimension", Int::class.javaPrimitiveType, Int::class.javaPrimitiveType)
                             setMeasuredDimensionMethod.isAccessible = true
                             setMeasuredDimensionMethod.invoke(container, 0, 0)
+                        }.onFailure { e ->
+                            Logger.e(TAG, "IconContainer", "Failed to collapse StatusIconContainer", e)
                         }
                     }
                 }
@@ -558,9 +577,13 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Safely updates mIgnoredSlots reflection array for target container.
+     * Adds or removes "battery" from container's ignored slots list.
+     */
     @Suppress("UNCHECKED_CAST")
     private fun updateIgnoredSlotsForContainer(container: ViewGroup) {
-        if (isAndroid17CP3) return
+        if (isAndroid17CP3A) return
 
         runCatching {
             val field = findField(container.javaClass, "mIgnoredSlots") ?: return@runCatching
@@ -593,8 +616,11 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Triggers a refresh of visibility states for all tracked battery views.
+     * Iterates modern views, compose views, and status icon containers.
+     */
     private fun updateAllBatteryVisibility() {
-        // 1. Update all tracked ModernStatusBarViews
         synchronized(trackedModernBatteryViews) {
             val iterator = trackedModernBatteryViews.iterator()
             while (iterator.hasNext()) {
@@ -607,7 +633,6 @@ object BatteryPercentHook {
             }
         }
 
-        // 2. Update all tracked Compose Battery Views
         synchronized(trackedComposeBatteryViews) {
             val iterator = trackedComposeBatteryViews.iterator()
             while (iterator.hasNext()) {
@@ -620,7 +645,6 @@ object BatteryPercentHook {
             }
         }
 
-        // 3. Update all tracked StatusIconContainers
         synchronized(trackedStatusIconContainers) {
             val iterator = trackedStatusIconContainers.iterator()
             while (iterator.hasNext()) {
@@ -634,12 +658,20 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Computes final text color using system tint and battery state.
+     * Evaluates charging, power save mode, level, and current tint.
+     */
     private fun getEffectiveTextColor(): Int {
         return BatteryColorManager.getPercentTextColor(isCharging, isPowerSaveMode, currentLevel, animHue, currentTint)
     }
 
     @Volatile private var lastPulseInvalidateTime = 0L
 
+    /**
+     * Animates hue values to provide a pulsing charging indicator.
+     * Runs ValueAnimator on UI thread throttled to 30 FPS for LTPO.
+     */
     private fun startPulseAnimation() {
         if (!isScreenOn || pulseAnimator != null) return
         mainHandler.post {
@@ -649,7 +681,7 @@ object BatteryPercentHook {
                 interpolator = LinearInterpolator()
                 addUpdateListener {
                     val now = SystemClock.uptimeMillis()
-                    if (now - lastPulseInvalidateTime >= 33L) { // Throttle to 30 FPS max (33ms) for LTPO 30Hz VRR
+                    if (now - lastPulseInvalidateTime >= 33L) {
                         lastPulseInvalidateTime = now
                         animHue = it.animatedValue as Float
                         updatePercentTextColors()
@@ -660,6 +692,10 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Terminates hue pulse animation and resets animator reference.
+     * Cancels active pulseAnimator and refreshes text colors on UI thread.
+     */
     private fun stopPulseAnimation() {
         mainHandler.post {
             pulseAnimator?.cancel()
@@ -668,6 +704,10 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Applies current text colors to all tracked percentage text views.
+     * Iterates weak references and updates TextView text colors.
+     */
     private fun updatePercentTextColors() {
         val color = getEffectiveTextColor()
         synchronized(trackedPercentTextViews) {
@@ -679,6 +719,10 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Subscribes to battery framework intents for state updates.
+     * Listens for battery changed, screen off/on, and power save intents.
+     */
     private fun registerBatteryReceiver(context: Context) {
         runCatching {
             val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
@@ -744,11 +788,19 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Applies dynamic tint color to the percent text views.
+     * Updates currentTint variable and refreshes percent text colors.
+     */
     private fun applyTint(tint: Int) {
         currentTint = tint
         updatePercentTextColors()
     }
 
+    /**
+     * Hooks Status Bar containers to inject the new percent text view.
+     * Targets PhoneStatusBarView and KeyguardStatusBarView lifecycle.
+     */
     private fun applyViewInjectionHooks(module: XposedModule, classLoader: ClassLoader) {
         val candidateClasses = listOf(
             "com.android.systemui.statusbar.phone.PhoneStatusBarView",
@@ -774,10 +826,16 @@ object BatteryPercentHook {
                         }
                     }
                 }
+            }.onFailure { e ->
+                Logger.e(TAG, "ViewInjection", "Failed to hook $className for view injection", e)
             }
         }
     }
 
+    /**
+     * Recursively searches for the system clock text view.
+     * Traverses view hierarchy until a Clock TextView instance is found.
+     */
     private fun findClockInGroup(group: ViewGroup): TextView? {
         runCatching {
             for (i in 0 until group.childCount) {
@@ -790,12 +848,18 @@ object BatteryPercentHook {
                     if (found != null) return found
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "ClockProbe", "Failed while searching for Clock view", e)
         }
         return null
     }
 
+    /**
+     * Recursively caches pre-existing StatusIconContainers.
+     * Traverses view group hierarchy and adds containers to weak list.
+     */
     private fun findStatusIconContainersInGroup(group: ViewGroup) {
-        if (isAndroid17CP3) return
+        if (isAndroid17CP3A) return
 
         runCatching {
             for (i in 0 until group.childCount) {
@@ -812,14 +876,19 @@ object BatteryPercentHook {
                     findStatusIconContainersInGroup(child)
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "IconContainer", "Failed while searching for StatusIconContainers", e)
         }
     }
 
+    /**
+     * Determines whether a given view fits criteria for stock battery.
+     * Protects WiFi, Mobile, Clock, and Notification icon view classes.
+     */
     private fun isBatteryViewCandidate(child: View): Boolean {
         val cName = child.javaClass.name
         if (child.tag == VIEW_TAG) return false
 
-        // Explicitly protect all system icons and containers
         if (cName.contains("Wifi") || 
             cName.contains("Mobile") || 
             cName.contains("Signal") || 
@@ -834,13 +903,12 @@ object BatteryPercentHook {
             return false
         }
 
-        // Only match ComposeView or views containing Battery in their name
         return cName.contains("ComposeView") || cName.contains("Battery") || isStockBatteryView(child)
     }
 
     /**
-     * Dynamically queries SystemUI's internal `@dimen` resources for native status bar icon drawing padding.
-     * Falls back to 6dp if dimension resources are unavailable.
+     * Dynamically queries system padding for status bar icons in px.
+     * Queries status_bar_icon_drawing_padding or falls back to 6dp.
      */
     private fun getNativeIconPaddingPx(res: android.content.res.Resources, density: Float): Int {
         val iconPaddingId = res.getIdentifier("status_bar_icon_drawing_padding", "dimen", "com.android.systemui")
@@ -855,13 +923,16 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Orchestrates injecting and styling percentage text into status bar.
+     * Finds active container, instantiates TextView, and copies Clock style.
+     */
     private fun injectTextViewToFarRight(rootGroup: ViewGroup) {
         rootGroup.post {
             runCatching {
                 val context = rootGroup.context
                 val res = context.resources
 
-                // Scan View tree for pre-existing StatusIconContainer (Safeguard for Late Hook Loading)
                 findStatusIconContainersInGroup(rootGroup)
 
                 val systemIconsContainerId = res.getIdentifier("system_icons_container", "id", "com.android.systemui")
@@ -880,18 +951,15 @@ object BatteryPercentHook {
                                  rootGroup.id == res.getIdentifier("keyguard_header", "id", "com.android.systemui")
 
                 val targetContainer = when {
-                    // CP3 Lockscreen/Keyguard case: status_icon_area is a horizontal LinearLayout used ONLY on CP3
-                    isAndroid17CP3 && isKeyguard && statusIconArea != null -> {
+                    isAndroid17CP3A && isKeyguard && statusIconArea != null -> {
                         statusIconArea
                     }
-                    // CP3 case: system_icons is GONE or missing, so system_icons_container / endSideContent is the active container!
                     systemIconsContainer != null && (systemIconsGroup == null || systemIconsGroup.isGone) -> {
                         systemIconsContainer
                     }
                     endSideContent != null && (systemIconsGroup == null || systemIconsGroup.isGone) -> {
                         endSideContent
                     }
-                    // CP2 case: system_icons is VISIBLE
                     systemIconsGroup != null && systemIconsGroup.visibility != View.GONE -> {
                         systemIconsGroup
                     }
@@ -907,7 +975,6 @@ object BatteryPercentHook {
                 }
 
                 if (isKeyguard) {
-                    // On Keyguard/Lockscreen, system_icons_container's ComposeView is exclusively the stock battery icon.
                     val groupsToScan = listOfNotNull(systemIconsGroup, systemIconsContainer).distinct()
                     for (group in groupsToScan) {
                         for (i in 0 until group.childCount) {
@@ -918,21 +985,17 @@ object BatteryPercentHook {
                         }
                     }
                 } else {
-                    // Unlocked Status Bar (PhoneStatusBarView)
-                    // Only process endSideContent if rootGroup is VISIBLE to avoid popping unlocked icons onto Keyguard
                     if (endSideContent != null && rootGroup.isVisible) {
                         for (i in 0 until endSideContent.childCount) {
                             val child = endSideContent.getChildAt(i) ?: continue
                             val cName = child.javaClass.name
 
-                            // 1. Force system_icons (which holds StatusIconContainer with WiFi & Mobile Signal) to be VISIBLE
                             if (cName.contains("LinearLayout") || child.id == systemIconsId) {
                                 if (child.visibility != View.VISIBLE || child.alpha != 1.0f) {
                                     child.visibility = View.VISIBLE
                                     child.alpha = 1.0f
                                 }
                             }
-                            // 2. Hide standalone stock Compose battery View inside endSideContent
                             else if (isBatteryViewCandidate(child)) {
                                 trackComposeBatteryView(child)
                             }
@@ -940,7 +1003,6 @@ object BatteryPercentHook {
                     }
 
                     if (systemIconsGroup != null && !systemIconsGroup.isGone && rootGroup.isVisible) {
-                        // CP2 legacy stock battery Views scan inside systemIconsGroup
                         for (i in 0 until systemIconsGroup.childCount) {
                             val child = systemIconsGroup.getChildAt(i) ?: continue
                             if (isBatteryViewCandidate(child)) {
@@ -977,7 +1039,7 @@ object BatteryPercentHook {
                         typeface = Typeface.DEFAULT_BOLD
                         setTextColor(getEffectiveTextColor())
 
-                        val paddingStartPx = if (isKeyguard || !isAndroid17CP3) {
+                        val paddingStartPx = if (isKeyguard || !isAndroid17CP3A) {
                             (resources.displayMetrics.density * 2f).toInt()
                         } else {
                             getNativeIconPaddingPx(res, resources.displayMetrics.density)
@@ -991,7 +1053,6 @@ object BatteryPercentHook {
                     Logger.i(TAG, "Injection", "Injected right-side battery percent TextView into container: ${targetContainer.javaClass.simpleName}")
                 }
 
-                // Copy exact font size, typeface, and style from status bar Clock View
                 val clockId = res.getIdentifier("clock", "id", "com.android.systemui")
                 val clockView = (if (clockId > 0) rootGroup.findViewById(clockId) as? TextView else null)
                     ?: findClockInGroup(rootGroup)
@@ -1003,9 +1064,10 @@ object BatteryPercentHook {
                         textView.letterSpacing = clockView.letterSpacing
                         textView.includeFontPadding = clockView.includeFontPadding
                         Logger.i(TAG, "Injection", "Copied exact style from Clock: sizePx=${clockView.textSize}")
+                    }.onFailure { e ->
+                        Logger.e(TAG, "Injection", "Failed to copy Clock style", e)
                     }
                 } else {
-                    // Fallback when Clock View is not found (e.g. on Keyguard/Lockscreen)
                     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
                     textView.typeface = Typeface.DEFAULT_BOLD
                     Logger.i(TAG, "Injection", "Clock View not found, applied lockscreen/keyguard fallback font style (14sp BOLD)")
@@ -1020,10 +1082,16 @@ object BatteryPercentHook {
                 textView.text = currentPercentText
                 textView.setTextColor(getEffectiveTextColor())
                 textView.visibility = if (isEnabled) View.VISIBLE else View.GONE
+            }.onFailure { e ->
+                Logger.e(TAG, "Injection", "Failed during TextView injection sequence", e)
             }
         }
     }
 
+    /**
+     * Updates literal percent text string for tracked text views.
+     * Posts update to UI thread and sets text and visibility on views.
+     */
     private fun updatePercentText() {
         mainHandler.post {
             synchronized(trackedPercentTextViews) {
@@ -1042,6 +1110,10 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Shows or hides custom text views based on user preferences.
+     * Updates visibility on UI thread for all tracked percentage views.
+     */
     private fun updateViewVisibility() {
         mainHandler.post {
             synchronized(trackedPercentTextViews) {
@@ -1059,6 +1131,10 @@ object BatteryPercentHook {
         }
     }
 
+    /**
+     * Reflectively locates a declared field traversing class hierarchy.
+     * Traverses superclasses until field with specified name is found.
+     */
     private fun findField(clazz: Class<*>, name: String): Field? {
         var curr: Class<*>? = clazz
         while (curr != null) {

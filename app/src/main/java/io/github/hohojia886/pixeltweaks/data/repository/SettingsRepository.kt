@@ -8,8 +8,12 @@ import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
 
 /**
- * SettingsRepository: Data access layer handling dual SharedPreferences persistence (CE/DE)
- * and cross-process IPC broadcast dispatches.
+ * SettingsRepository: Data access layer handling dual SharedPreferences persistence.
+ *
+ * Coordinates credential-encrypted (CE) and device-protected (DE) preferences storage.
+ * Direct Boot requires DE storage so settings are accessible before the user unlocks the screen.
+ *
+ * @param context Application context used to create device-protected storage contexts.
  */
 class SettingsRepository(private val context: Context) {
 
@@ -26,6 +30,10 @@ class SettingsRepository(private val context: Context) {
         initDefaultsIfNeeded()
     }
 
+    /**
+     * Initializes default preferences if they don't exist and syncs CE/DE storage.
+     * Seeds missing default keys and performs bidirectional synchronization between CE and DE storage.
+     */
     private fun initDefaultsIfNeeded() {
         if (!cePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC) && !dePrefs.contains(PreferenceKeys.ENABLE_NETWORK_TRAFFIC)) {
             savePreference(PreferenceKeys.ENABLE_NETWORK_TRAFFIC, true)
@@ -59,13 +67,17 @@ class SettingsRepository(private val context: Context) {
             savePreference(PreferenceKeys.LOG_QUICK_SETTINGS, true)
             syncAll()
         } else {
-            // Bidirectionally sync missing keys between CE and DE storage
             cePrefs.all.forEach { (k, v) -> if (v != null && !dePrefs.contains(k)) savePreference(k, v) }
             dePrefs.all.forEach { (k, v) -> if (v != null && !cePrefs.contains(k)) savePreference(k, v) }
             syncAll()
         }
     }
 
+    /**
+     * Loads the initial settings state from DE preferences into state holder.
+     *
+     * @return A populated [SettingsUiState] data class containing current preference values.
+     */
     fun loadInitialState(): SettingsUiState {
         return SettingsUiState(
             currentLanguageTag = dePrefs.getString(PreferenceKeys.APP_LANGUAGE, "") ?: "",
@@ -101,6 +113,13 @@ class SettingsRepository(private val context: Context) {
         )
     }
 
+    /**
+     * Saves a preference value to both CE and DE storage.
+     * Commits values synchronously to prevent cross-process state desync across Direct Boot transitions.
+     *
+     * @param key The setting key identifier defined in [PreferenceKeys].
+     * @param value The primitive value (Boolean, Int, Float, Long, String) to persist.
+     */
     fun savePreference(key: String, value: Any) {
         val ceEdit = cePrefs.edit()
         val deEdit = dePrefs.edit()
@@ -115,15 +134,35 @@ class SettingsRepository(private val context: Context) {
         deEdit.commit()
     }
 
+    /**
+     * Dispatches an update broadcast to notify other processes of a setting change.
+     *
+     * @param key The setting key identifier modified.
+     * @param value The updated value dispatched via IPC.
+     */
     fun dispatchUpdateBroadcast(key: String, value: Any) {
         IpcManager.sendUpdateBroadcast(context, key, value)
     }
 
+    /**
+     * Synchronizes all settings to other processes via a bulk IPC broadcast.
+     * Sends a full state intent containing all DE preferences to active module hooks.
+     */
     fun syncAll() {
         IpcManager.syncAllSettings(context, dePrefs)
     }
 
+    /**
+     * Gets the downgrade timestamp from DE preferences.
+     *
+     * @return The wall-clock timestamp in milliseconds when downgrade bypass was activated.
+     */
     fun getDowngradeTimestamp(): Long = dePrefs.getLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
 
+    /**
+     * Gets the signature timestamp from DE preferences.
+     *
+     * @return The wall-clock timestamp in milliseconds when signature bypass was activated.
+     */
     fun getSignatureTimestamp(): Long = dePrefs.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
 }

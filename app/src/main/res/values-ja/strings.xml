@@ -86,9 +86,9 @@
     <string name="master_log">マスターログ</string>
     <string name="master_log_summary">Logcat タグ: PXTK_</string>
     <string name="log_security">システム＆セキュリティログ</string>
-    <string name="log_security_summary">Logcat タグ: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Logcat タグ: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">UI＆ステータスバーログ</string>
-    <string name="log_interface_summary">Logcat タグ: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Logcat タグ: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">ジェスチャー＆操作ログ</string>
     <string name="log_gestures_summary">Logcat タグ: PXTK_DT2S</string>
     <string name="log_quick_settings">クイック設定ログ</string>

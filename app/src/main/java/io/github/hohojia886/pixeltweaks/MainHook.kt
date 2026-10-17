@@ -25,125 +25,255 @@ private val LAUNCHER_PKGS = setOf(
 )
 
 /**
- * MainHook: The primary entry point for the LSPosed module.
- * Responsible for process identification, global log synchronization, 
- * and dispatching specific hook modules to their target packages.
+ * ClearAllButton: "Clear all" button entry in Pixel Launcher Recents.
+ * Handles process matching for Launcher packages and applies hook logic.
  */
-
-// 1. ClearAllButton: "Clear all" button in Pixel Launcher Recents
 private object ClearAllButtonEntry : PixelHook {
     override val name = "ClearAllButton"
+    /**
+     * Checks if the package matches the launcher packages.
+     * Evaluates package name against the allowed launcher package set.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName in LAUNCHER_PKGS
+    /**
+     * Applies the ClearAllButton hook to the target package.
+     * Delegates hook initialization to ClearAllButtonHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         ClearAllButtonHook.hook(module, classLoader)
     }
 }
 
-// 2. DoubleTapToSleep: Gesture handling in SystemUI and Launchers
+/**
+ * DoubleTapToSleep: Gesture handling entry in SystemUI and Launchers.
+ * Handles process matching for SystemUI and Launcher packages.
+ */
 private object DoubleTapToSleepEntry : PixelHook {
     override val name = "DoubleTapToSleep"
+    /**
+     * Checks if the package matches SystemUI or launcher packages.
+     * Evaluates package name against SystemUI and launcher package set.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) =
         packageName == SYSTEMUI_PKG || packageName in LAUNCHER_PKGS
+    /**
+     * Applies the DoubleTapToSleep hook to the target package.
+     * Delegates hook initialization to DoubleTapToSleepHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         DoubleTapToSleepHook.hook(module, classLoader)
     }
 }
 
-// 3. EasyUnlock: Auto PIN confirm and learning
+/**
+ * EasyUnlock: Auto PIN confirm and learning feature entry point.
+ * Handles process matching for SystemUI and applies keyguard hooks.
+ */
 private object EasyUnlockEntry : PixelHook {
     override val name = "EasyUnlock"
+    /**
+     * Checks if the package matches the SystemUI package name.
+     * Returns true if the package matches com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    /**
+     * Applies the EasyUnlock hook to the target package.
+     * Delegates hook initialization to EasyUnlockHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         EasyUnlockHook.hook(module, classLoader, param.packageName)
     }
 }
 
-// 4. QuickSettings: WiFi and Mobile Data tile fixes
+/**
+ * QuickSettings: WiFi and Mobile Data tile fixes feature entry point.
+ * Handles process matching for SystemUI and applies tile hooks.
+ */
 private object QuickSettingsEntry : PixelHook {
     override val name = "QuickSettings"
+    /**
+     * Checks if the package matches the SystemUI package name.
+     * Returns true if the package matches com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    /**
+     * Applies the QuickSettings hook to the target package.
+     * Delegates hook initialization to QuickSettingsHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         QuickSettingsHook.hook(module, classLoader)
     }
 }
 
-// 5. Screenshot: Bypassing FLAG_SECURE (Server level)
+/**
+ * Screenshot-Server: Bypassing FLAG_SECURE at System Server level.
+ * Handles process matching for root system server process.
+ */
 private object ScreenshotServerEntry : PixelHook {
     override val name = "Screenshot-Server"
+    /**
+     * Checks if the target process is the root system server process.
+     * Evaluates isRootSystemServer or UID 1000 process identity.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = 
         isRootSystemServer || (Process.myUid() == 1000)
+    /**
+     * Applies the system server screenshot hook to the target process.
+     * Delegates hook initialization to ScreenshotHook.hookSystemServer.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         ScreenshotHook.hookSystemServer(module, classLoader)
     }
 }
 
-// 5. Screenshot: Bypassing FLAG_SECURE (SystemUI level)
+/**
+ * Screenshot-SystemUI: Bypassing FLAG_SECURE at SystemUI level.
+ * Handles process matching for SystemUI package.
+ */
 private object ScreenshotSystemUIEntry : PixelHook {
     override val name = "Screenshot-SystemUI"
+    /**
+     * Checks if the package matches the SystemUI package name.
+     * Returns true if the package matches com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    /**
+     * Applies the SystemUI screenshot hook to the target package.
+     * Delegates hook initialization to ScreenshotHook.hookSystemUI.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         ScreenshotHook.hookSystemUI(module, classLoader)
     }
 }
 
-// 5. Screenshot: Bypassing FLAG_SECURE (App level)
+/**
+ * Screenshot-App: Bypassing FLAG_SECURE at application level.
+ * Handles process matching for third-party app packages.
+ */
 private object ScreenshotAppEntry : PixelHook {
     override val name = "Screenshot-App"
+    /**
+     * Checks if the package is a non-SystemUI application package.
+     * Returns true for all packages except com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName != SYSTEMUI_PKG
+    /**
+     * Applies the application-level screenshot hook to the target package.
+     * Delegates hook initialization to ScreenshotHook.hookApp.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         ScreenshotHook.hookApp(module, classLoader)
     }
 }
 
-// 6. PackageManager: Downgrade and Signature bypass (Security)
+/**
+ * PackageManager: Downgrade and Signature bypass security feature entry.
+ * Handles process matching for system server process.
+ */
 private object PackageManagerEntry : PixelHook {
     override val name = "PackageManager"
+    /**
+     * Checks if the target process is the root system server process.
+     * Evaluates isRootSystemServer or UID 1000 process identity.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = 
         isRootSystemServer || (Process.myUid() == 1000)
+    /**
+     * Applies the PackageManager security bypass hooks to system server.
+     * Delegates hook initialization to PackageManagerHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         PackageManagerHook.hook(module, classLoader)
     }
 }
 
-// 7. NetworkTraffic: Traffic indicator in SystemUI
+/**
+ * NetworkTraffic: Real-time traffic indicator in SystemUI status bar.
+ * Handles process matching for SystemUI package.
+ */
 private object NetworkTrafficEntry : PixelHook {
     override val name = "NetworkTraffic"
+    /**
+     * Checks if the package matches the SystemUI package name.
+     * Returns true if the package matches com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    /**
+     * Applies the NetworkTraffic hook to the target package.
+     * Delegates hook initialization to NetworkTrafficHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         NetworkTrafficHook.hook(module, classLoader)
     }
 }
 
-// 8. EnergyRing: Camera cutout energy ring in SystemUI
+/**
+ * EnergyRing: Camera cutout battery energy ring in SystemUI.
+ * Handles process matching for SystemUI package.
+ */
 private object EnergyRingEntry : PixelHook {
     override val name = "EnergyRing"
+    /**
+     * Checks if the package matches the SystemUI package name.
+     * Returns true if the package matches com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    /**
+     * Applies the EnergyRing hook to the target package.
+     * Delegates hook initialization to EnergyRingHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         EnergyRingHook.hook(module, classLoader, param.packageName)
     }
 }
 
-// 9. BatteryPercent: Text battery percentage at far-right of status bar in SystemUI
+/**
+ * BatteryPercent: Text battery percentage at far-right of status bar in SystemUI.
+ * Handles process matching for SystemUI package.
+ */
 private object BatteryPercentEntry : PixelHook {
     override val name = "BatteryPercent"
+    /**
+     * Checks if the package matches the SystemUI package name.
+     * Returns true if the package matches com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    /**
+     * Applies the BatteryPercent hook to the target package.
+     * Delegates hook initialization to BatteryPercentHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         BatteryPercentHook.hook(module, classLoader)
     }
 }
 
-// 10. HideVpnIcon: Hides the VPN icon from the status bar in SystemUI
+/**
+ * HideVpnIcon: Hides the VPN icon from the status bar in SystemUI.
+ * Handles process matching for SystemUI package.
+ */
 private object HideVpnIconEntry : PixelHook {
     override val name = "HideVpnIcon"
+    /**
+     * Checks if the package matches the SystemUI package name.
+     * Returns true if the package matches com.android.systemui.
+     */
     override fun matches(packageName: String, isRootSystemServer: Boolean) = packageName == SYSTEMUI_PKG
+    /**
+     * Applies the HideVpnIcon hook to the target package.
+     * Delegates hook initialization to HideVpnIconHook implementation.
+     */
     override fun apply(module: XposedModule, classLoader: ClassLoader, param: PackageLoadedParam) {
         HideVpnIconHook.hook(module, classLoader)
     }
 }
 
+/**
+ * Main entry point class for the LSPosed module handling dispatching.
+ * Listens for module loading and package attachment events.
+ */
 class MainHook : XposedModule() {
 
-    private var isSystemServerProcess = false // Tracks if current process is the system_server
+    private var isSystemServerProcess = false
 
     private val allHooks: List<PixelHook> = listOf(
         ClearAllButtonEntry,
@@ -160,7 +290,10 @@ class MainHook : XposedModule() {
         HideVpnIconEntry
     )
 
-    // Lifecycle: Initializes logging and identifies process type upon module load
+    /**
+     * Initializes logging and identifies process type upon module load.
+     * Evaluates whether current process is system_server or UID 1000.
+     */
     override fun onModuleLoaded(param: XposedModuleInterface.ModuleLoadedParam) {
         super.onModuleLoaded(param)
         isSystemServerProcess = param.isSystemServer || Process.myUid() == 1000
@@ -171,7 +304,10 @@ class MainHook : XposedModule() {
         )
     }
 
-    // Lifecycle: Iterates through defined hooks and applies those matching the current package
+    /**
+     * Iterates through defined hooks and applies those matching current package.
+     * Invokes apply method on matching hook entries with target ClassLoader.
+     */
     override fun onPackageLoaded(param: PackageLoadedParam) {
         super.onPackageLoaded(param)
         val pkgName = param.packageName

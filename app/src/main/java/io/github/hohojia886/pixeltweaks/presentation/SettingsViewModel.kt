@@ -19,9 +19,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * SettingsViewModel: Manages UI state and business logic in Unidirectional Data Flow (UDF).
- * Encapsulates battery auto-refresh and security timeout Coroutine loops, completely decoupling
- * Activity lifecycle from background tasks.
+ * ViewModel managing UI state and UDF (Unidirectional Data Flow) logic for the Settings screen.
+ * Handles battery info auto-refresh coroutine polling and security bypass auto-disable timers.
+ *
+ * @param repository Data layer repository handling CE/DE SharedPreferences and IPC dispatches.
  */
 class SettingsViewModel(
     private val repository: SettingsRepository
@@ -37,6 +38,7 @@ class SettingsViewModel(
     private var securityTimerJob: Job? = null
 
     init {
+        // Dynamically resolve and apply the current locale tag upon ViewModel creation
         val currentLocales = AppCompatDelegate.getApplicationLocales()
         val currentTag = if (!currentLocales.isEmpty) currentLocales.get(0)?.toLanguageTag() ?: "" else ""
         if (currentTag.isNotEmpty()) {
@@ -44,6 +46,12 @@ class SettingsViewModel(
         }
     }
 
+    /**
+     * Processes incoming user actions and system lifecycle [SettingsEvent]s.
+     * Updates [uiState], persists preferences, and dispatches IPC updates to hook processes.
+     *
+     * @param event The [SettingsEvent] intent triggered by UI components or lifecycle events.
+     */
     fun onEvent(event: SettingsEvent) {
         when (event) {
             is SettingsEvent.ChangeLanguage -> {
@@ -149,7 +157,7 @@ class SettingsViewModel(
             }
 
             is SettingsEvent.ToggleTabletMode -> {
-                Logger.i("Density", "SettingsViewModel", "onTabletModeChanged triggered: enabled=${event.enabled}")
+                Logger.i("Density", "Active", "Tablet mode toggle changed: enabled=${event.enabled}")
                 _uiState.update { it.copy(tabletMode = event.enabled) }
                 repository.savePreference(PreferenceKeys.ENABLE_TABLET_MODE, event.enabled)
                 repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_TABLET_MODE, event.enabled)
@@ -264,17 +272,21 @@ class SettingsViewModel(
             }
 
             is SettingsEvent.OnScreenOff -> {
-                Logger.i("Battery", "SettingsViewModel", "Screen OFF -> Pausing battery refresh")
+                Logger.i("Battery", "Active", "Screen OFF -> Pausing battery auto-refresh")
                 stopBatteryAutoRefresh()
             }
 
             is SettingsEvent.OnScreenOn -> {
-                Logger.i("Battery", "SettingsViewModel", "Screen ON -> Resuming battery refresh")
+                Logger.i("Battery", "Active", "Screen ON -> Resuming battery auto-refresh")
                 startBatteryAutoRefresh()
             }
         }
     }
 
+    /**
+     * Starts a background coroutine job to continuously poll battery sysfs info.
+     * Cancels any existing refresh job before starting a new periodic polling loop.
+     */
     private fun startBatteryAutoRefresh() {
         if (!_uiState.value.enableBatteryInfo) return
         stopBatteryAutoRefresh()
@@ -287,11 +299,18 @@ class SettingsViewModel(
         }
     }
 
+    /**
+     * Halts the active battery info polling coroutine job to save resources.
+     */
     private fun stopBatteryAutoRefresh() {
         batteryJob?.cancel()
         batteryJob = null
     }
 
+    /**
+     * Executes root shell battery status query on IO dispatcher and updates state.
+     * Asynchronously fetches sysfs metrics and updates StateFlow on main thread.
+     */
     private fun fetchBatteryInfo() {
         viewModelScope.launch {
             val data = withContext(Dispatchers.IO) {
@@ -325,6 +344,10 @@ class SettingsViewModel(
         }
     }
 
+    /**
+     * Starts background timer loop checking security bypass auto-disable timeouts.
+     * Automatically turns off downgrade and signature bypasses after 3 minutes for security.
+     */
     private fun startSecurityTimers() {
         stopSecurityTimers()
         securityTimerJob = viewModelScope.launch {
@@ -332,7 +355,6 @@ class SettingsViewModel(
                 val now = System.currentTimeMillis()
                 val currentState = _uiState.value
 
-                // Downgrade timer check
                 if (currentState.allowDowngrade) {
                     val dgTime = repository.getDowngradeTimestamp()
                     val remaining = timeoutMillis - (now - dgTime)
@@ -349,7 +371,6 @@ class SettingsViewModel(
                     }
                 }
 
-                // Signature timer check
                 if (currentState.bypassSignature) {
                     val sigTime = repository.getSignatureTimestamp()
                     val remaining = timeoutMillis - (now - sigTime)
@@ -371,11 +392,18 @@ class SettingsViewModel(
         }
     }
 
+    /**
+     * Halts background security timer coroutine job.
+     */
     private fun stopSecurityTimers() {
         securityTimerJob?.cancel()
         securityTimerJob = null
     }
 
+    /**
+     * Lifecycle callback invoked when the ViewModel is destroyed.
+     * Cleans up running coroutines and background polling loops.
+     */
     override fun onCleared() {
         super.onCleared()
         stopBatteryAutoRefresh()

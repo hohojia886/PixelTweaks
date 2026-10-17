@@ -71,6 +71,12 @@ import io.github.hohojia886.pixeltweaks.presentation.SettingsUiState
 import io.github.hohojia886.pixeltweaks.utils.DensityUtils
 import kotlin.math.abs
 
+/**
+ * Main Jetpack Compose screen for the Settings UI.
+ *
+ * @param uiState Current immutable [SettingsUiState] state instance.
+ * @param onEvent Event callback lambda to dispatch user intents to [SettingsViewModel].
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -103,7 +109,6 @@ fun SettingsScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
 
-            // Section: System & Security
             CategoryHeader(stringResource(R.string.category_security), Icons.Outlined.Security)
             SettingsCard {
                 SwitchSettingItem(
@@ -150,7 +155,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section: Interface & Status Bar
             CategoryHeader(stringResource(R.string.category_interface), Icons.Outlined.Settings)
             SettingsCard {
                 SwitchSettingItem(
@@ -203,7 +207,6 @@ fun SettingsScreen(
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                         )
                         
-                        // Interval Slider
                         val intervalValues = listOf(1, 2, 3, 4, 5)
                         Text(
                             text = context.getString(R.string.traffic_interval_format, uiState.trafficInterval),
@@ -219,7 +222,6 @@ fun SettingsScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Font Size Slider
                         val fontValues = listOf(6f, 7f, 8f, 9f, 10f)
                         Text(
                             text = context.getString(R.string.traffic_font_format, uiState.trafficFontSize.toInt()),
@@ -235,7 +237,6 @@ fun SettingsScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Threshold Slider
                         val thresholdValues = listOf(0, 1, 10, 100, 1024)
                         val thresholdText = when (uiState.trafficThreshold) {
                             0 -> stringResource(R.string.traffic_threshold_always)
@@ -259,7 +260,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section: Interaction & Gestures
             CategoryHeader(stringResource(R.string.category_interaction), Icons.Outlined.Gesture)
             SettingsCard {
                 SwitchSettingItem(
@@ -286,7 +286,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section: Quick Settings
             CategoryHeader(stringResource(R.string.category_quick_settings), Icons.Outlined.Tune)
             SettingsCard {
                 SwitchSettingItem(
@@ -308,7 +307,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section: Battery Info (Toggle & 18 Metrics - All 2-Line Layout)
             CategoryHeader(stringResource(R.string.category_battery), Icons.Outlined.BatteryChargingFull)
             SettingsCard {
                 SwitchSettingItem(
@@ -339,7 +337,6 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                             )
 
-                        // 1. Radius Offset Slider
                         val radiusValues = listOf(-2.0f, -1.0f, 0.0f, 1.0f, 2.0f)
                         val radiusIndex = radiusValues.minByOrNull { abs(it - uiState.ringRadiusOffset) }?.let { radiusValues.indexOf(it) } ?: 2
                         Text(
@@ -356,7 +353,6 @@ fun SettingsScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // 2. Stroke Width Slider
                         val strokeValues = listOf(1.0f, 1.5f, 2.0f, 2.5f, 3.0f)
                         val strokeIndex = strokeValues.minByOrNull { abs(it - uiState.ringStrokeWidth) }?.let { strokeValues.indexOf(it) } ?: 2
                         Text(
@@ -384,30 +380,25 @@ fun SettingsScreen(
                 if (uiState.enableBatteryInfo) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 1. Charging Status
                     BatteryMetricItem(stringResource(R.string.battery_status), uiState.batteryStatus, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 2. Real-time Power & Current
                     val powerStr = stringResource(R.string.battery_power_format, uiState.batteryPowerWatts, uiState.batteryCurrentMa)
                     BatteryMetricItem(stringResource(R.string.battery_power_current), powerStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 3. Real-time Voltage
                     val voltStr = if (uiState.batteryVoltageMv > 0) stringResource(R.string.battery_voltage_format, uiState.batteryVoltageMv / 1000.0f, uiState.batteryVoltageMv) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_voltage), voltStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 4. Current Stored Charge
                     val chargeStr = if (uiState.batteryCurrentChargeMah > 0) stringResource(R.string.battery_capacity_format, uiState.batteryCurrentChargeMah) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_current_stored), chargeStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 5. Max Charge Limits
                     val limitsStr = if (uiState.batteryMaxChargeVoltageMv > 0 && uiState.batteryMaxChargeCurrentMa > 0) {
                         stringResource(R.string.battery_max_limits_format, uiState.batteryMaxChargeVoltageMv, uiState.batteryMaxChargeCurrentMa)
                     } else stringResource(R.string.battery_unknown)
@@ -415,83 +406,69 @@ fun SettingsScreen(
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 6. Cycle Count
                     val cyclesStr = if (uiState.batteryCycles >= 0) stringResource(R.string.battery_cycles_format, uiState.batteryCycles) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_cycles), cyclesStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 7. Design Capacity
                     val ratedStr = if (uiState.batteryRated > 0) stringResource(R.string.battery_capacity_format, uiState.batteryRated) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_rated_capacity), ratedStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 8. Full Charge Capacity
                     val estStr = if (uiState.batteryEstimated > 0) stringResource(R.string.battery_capacity_format, uiState.batteryEstimated) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_estimated_capacity), estStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 9. Calculated Capacity Health
                     val calcHealthStr = if (uiState.batteryCalculatedHealth > 0) stringResource(R.string.battery_health_format, uiState.batteryCalculatedHealth) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_calculated_health), calcHealthStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 10. Health Capacity Index
                     val healthCapStr = if (uiState.batteryHealthCapIndex > 0) stringResource(R.string.battery_health_format, uiState.batteryHealthCapIndex) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_health_capacity_index), healthCapStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 11. Overall Health
                     BatteryMetricItem(stringResource(R.string.battery_overall_health), uiState.batteryOverallHealth, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 12. Temperature
                     val tempStr = if (uiState.batteryTemp > 0) stringResource(R.string.battery_temp_format, uiState.batteryTemp) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_temperature), tempStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 13. Average Resistance
                     val resAvgStr = if (uiState.batteryResistanceAvg > 0) stringResource(R.string.battery_milli_format, uiState.batteryResistanceAvg) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_resistance_avg), resAvgStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 14. Current Resistance
                     val resNowStr = if (uiState.batteryResistanceNow > 0) stringResource(R.string.battery_milli_format, uiState.batteryResistanceNow) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_resistance_now), resNowStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 15. Health Impedance Index
                     val healthImpStr = if (uiState.batteryHealthImpIndex > 0) stringResource(R.string.battery_health_format, uiState.batteryHealthImpIndex) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_health_impedance_index), healthImpStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 16. Serial Number
                     BatteryMetricItem(stringResource(R.string.battery_serial_number), uiState.batterySerialNumber, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 17. Manufacture Date & Age
                     val ageStr = if (uiState.batteryFirstUsage != "N/A") stringResource(R.string.battery_first_usage_age_format, uiState.batteryFirstUsage, uiState.batteryAge) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_first_usage), ageStr, isColumnLayout = true)
 
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    // 18. AAFV Offset
                     val aafvStr = if (uiState.batteryAafvOffset >= 0) stringResource(R.string.battery_aafv_format, uiState.batteryAafvOffset) else stringResource(R.string.battery_unknown)
                     BatteryMetricItem(stringResource(R.string.battery_aafv_offset), aafvStr, isColumnLayout = true)
                 }
             }
 
-            // Section: Debug Logging (if DEBUG)
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(20.dp))
                 CategoryHeader(stringResource(R.string.category_debug), Icons.Outlined.BugReport)
@@ -539,7 +516,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Section: Others (Language & GitHub Repository)
             CategoryHeader(stringResource(R.string.category_others), Icons.Outlined.MoreHoriz)
             OthersCard(
                 currentLanguageTag = uiState.currentLanguageTag,
@@ -551,6 +527,13 @@ fun SettingsScreen(
     }
 }
 
+/**
+ * Displays a single battery metric row or column in Compose layout.
+ *
+ * @param title Metric label text.
+ * @param value Formatted metric value string.
+ * @param isColumnLayout True to render label and value stacked vertically in a Column; false for a Row.
+ */
 @Composable
 fun BatteryMetricItem(title: String, value: String, isColumnLayout: Boolean = false) {
     if (isColumnLayout) {
@@ -597,6 +580,12 @@ fun BatteryMetricItem(title: String, value: String, isColumnLayout: Boolean = fa
     }
 }
 
+/**
+ * Header component for setting categories in Compose screen.
+ *
+ * @param text Category title string.
+ * @param icon Category vector icon.
+ */
 @Composable
 fun CategoryHeader(text: String, icon: ImageVector) {
     Row(
@@ -619,6 +608,12 @@ fun CategoryHeader(text: String, icon: ImageVector) {
     }
 }
 
+/**
+ * Card displaying language selection, GitHub link, and system build information.
+ *
+ * @param currentLanguageTag Currently selected BCP-47 language tag string.
+ * @param onLanguageSelected Callback lambda invoked when user selects a new language tag.
+ */
 @Composable
 fun OthersCard(
     currentLanguageTag: String,
@@ -654,7 +649,6 @@ fun OthersCard(
         ?: languages.first().second
 
     SettingsCard {
-        // 1. Language Selection Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -688,7 +682,6 @@ fun OthersCard(
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-        // 2. GitHub Repository Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -725,7 +718,6 @@ fun OthersCard(
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-        // 3. System Build Number Row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -815,6 +807,11 @@ fun OthersCard(
     }
 }
 
+/**
+ * A styled card container for a group of settings items.
+ *
+ * @param content Composable slot for settings items.
+ */
 @Composable
 fun SettingsCard(content: @Composable () -> Unit) {
     Card(
@@ -830,6 +827,15 @@ fun SettingsCard(content: @Composable () -> Unit) {
     }
 }
 
+/**
+ * A setting item containing a title, summary, and a switch toggle.
+ *
+ * @param title Main setting title string.
+ * @param summary Description or current value summary text.
+ * @param checked Toggle switch active state.
+ * @param onCheckedChange Callback lambda invoked when user flips the switch.
+ * @param isWarning True to display text in warning/error color state.
+ */
 @Composable
 fun SwitchSettingItem(
     title: String,

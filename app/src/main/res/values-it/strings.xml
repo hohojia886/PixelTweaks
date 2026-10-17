@@ -86,9 +86,9 @@
     <string name="master_log">Registro principale</string>
     <string name="master_log_summary">Tag Logcat: PXTK_</string>
     <string name="log_security">Registri sistema e sicurezza</string>
-    <string name="log_security_summary">Tag Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Tag Logcat: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">Registri interfaccia e barra di stato</string>
-    <string name="log_interface_summary">Tag Logcat: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Tag Logcat: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">Registri gesti e interazioni</string>
     <string name="log_gestures_summary">Tag Logcat: PXTK_DT2S</string>
     <string name="log_quick_settings">Registri impostazioni rapide</string>

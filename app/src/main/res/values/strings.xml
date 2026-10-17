@@ -86,9 +86,9 @@
     <string name="master_log">Master Logging</string>
     <string name="master_log_summary">Logcat tag: PXTK_</string>
     <string name="log_security">System &amp; Security Logs</string>
-    <string name="log_security_summary">Logcat tag: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Logcat tag: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">Interface &amp; Status Bar Logs</string>
-    <string name="log_interface_summary">Logcat tag: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Logcat tag: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">Gestures &amp; Interactions Logs</string>
     <string name="log_gestures_summary">Logcat tag: PXTK_DT2S</string>
     <string name="log_quick_settings">Quick Settings Logs</string>

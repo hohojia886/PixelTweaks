@@ -82,9 +82,9 @@
     <string name="master_log">Jurnalizare principală</string>
     <string name="master_log_summary">Etichetă Logcat: PXTK_</string>
     <string name="log_security">Jurnale sistem &amp; securitate</string>
-    <string name="log_security_summary">Etichete: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Etichete: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">Jurnale interfață</string>
-    <string name="log_interface_summary">Etichete: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Etichete: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
 
     <!-- Battery Info Metrics -->
     <string name="battery_status">Stare baterie</string>

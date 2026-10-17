@@ -1,15 +1,20 @@
 package io.github.hohojia886.pixeltweaks.presentation
 
 /**
- * SettingsUiState: Represents the single source of truth for the entire Settings UI.
- * Consolidates all feature toggles, internal app states, and real-time battery metrics
- * into an immutable data class for Unidirectional Data Flow (UDF) rendering.
+ * Single source of truth data class for the Settings UI state.
+ * Holds all feature toggles, real-time metrics, and configuration values.
  */
 data class SettingsUiState(
-    // App Display Language ("" = System Default)
+    /**
+     * App display language tag configuration state.
+     * Empty string defaults to system language setting.
+     */
     val currentLanguageTag: String = "",
 
-    // System & Security State
+    /**
+     * System and security bypass state properties.
+     * Controls unrestricted screenshots, easy unlock, and security timeouts.
+     */
     val unrestrictedScreenshots: Boolean = true,
     val easyUnlock: Boolean = true,
     val easyUnlockReboot: Boolean = false,
@@ -18,7 +23,10 @@ data class SettingsUiState(
     val bypassSignature: Boolean = false,
     val bypassSignatureTimer: String? = null,
 
-    // Battery Info State (Toggle + 18 Metrics + Energy Ring Sliders)
+    /**
+     * Battery information and energy ring configuration state.
+     * Holds real-time sysfs battery metrics and cutout ring settings.
+     */
     val enableBatteryInfo: Boolean = false,
     val cameraEnergyRing: Boolean = false,
     val ringOnlyCharging: Boolean = false,
@@ -47,7 +55,10 @@ data class SettingsUiState(
     val batteryAge: String = "N/A",
     val batteryAafvOffset: Int = -1,
 
-    // Interface State
+    /**
+     * Interface customization and indicator state properties.
+     * Controls clear all button, tablet mode, traffic monitor, and VPN icon.
+     */
     val clearAll: Boolean = true,
     val tabletMode: Boolean = false,
     val networkTraffic: Boolean = true,
@@ -57,16 +68,25 @@ data class SettingsUiState(
     val trafficFontSize: Float = 8f,
     val trafficThreshold: Int = 1,
 
-    // Gestures State
+    /**
+     * Gesture handling configuration state properties.
+     * Controls double-tap to sleep on launcher, lockscreen, and statusbar.
+     */
     val dtLauncher: Boolean = true,
     val dtLockscreen: Boolean = true,
     val dtStatusbar: Boolean = true,
 
-    // Quick Settings State
+    /**
+     * Quick Settings tile fix state properties.
+     * Controls WiFi power-off fix and cellular data confirmation bypass.
+     */
     val qsWifiFix: Boolean = true,
     val qsDataFix: Boolean = true,
 
-    // Debug Logging State
+    /**
+     * Debug logging category configuration state properties.
+     * Controls master logging toggle and category sub-switches.
+     */
     val masterLog: Boolean = false,
     val logSecurity: Boolean = true,
     val logInterface: Boolean = true,

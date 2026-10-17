@@ -8,8 +8,9 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**版本：** v1.2.9 (穩定版)  
+**版本：** v1.3.0 (穩定版)  
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
+**測試過版本號：** CP3A.261005.005
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
 
@@ -30,7 +31,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.2.9)
+## ✨ 功能特點 (v1.3.0)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **雙擊桌面熄屏**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -49,7 +50,7 @@
 - **解除截圖限制**：強制在受限制的應用程式（如銀行 App、無痕視窗）中啟用截圖與錄影。
 
 ### 📱 系統介面設定 (System UI Settings)
-- **前鏡頭環形電量光環**：圍繞前置鏡頭挖孔 (`DisplayCutout`) 的動態電量光環，支援三段式電量色彩變化 (<=20% 黃色, <=10% 紅色, >20% 青綠色)、充電 3 秒 HSV 動態彩虹漸層脈衝動畫、系統省電模式橘黃色彩連動 (`#FF9500`)、隨時間平滑旋轉、大小與線條粗細微調滑桿、「僅在充電時顯示」選項及螢幕熄滅自動暫停繪製省電。
+- **前鏡頭環形電量光環**：圍繞前置鏡頭挖孔 (`DisplayCutout`) 的動態電量光環，支援三段式電量色彩變化 (<=20% 黃色, <=10% 紅色, >20% 青綠色)、解鎖瞬間 3 秒霓虹外發光與厚度脈動、低電量 (<10%) 每分鐘一次的 1.5 秒紅色呼吸脈動警示、充電 3 秒 HSV 動態彩虹漸層脈衝動畫、系統省電模式橘黃色彩連動 (`#FF9500`)、隨時間平滑旋轉、大小與線條粗細微調滑桿、「僅在充電時顯示」選項及螢幕熄滅自動暫停繪製省電。
 - **狀態欄右側電量百分比**：於狀態列最右側顯示純文字電量百分比（如 "100%"），自動隱藏 Android 17 原廠電池圖示，並動態同頻對齊狀態列時鐘字體樣式、主題配色與充電脈衝漸層。
 - **清除全部按鈕**：在 Pixel Launcher 的近期任務（Recents）畫面中新增原生風格的「清除全部」按鈕。
 - **Tablet 模式**：動態計算並切換全系統平板模式版型 (`sw >= 600dp`)，透過純 LSPosed 系統層切換，免 Root。
@@ -82,7 +83,7 @@ PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **作用域**：System Framework, Pixel Launcher, System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-v1.2.9-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-v1.3.0-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
 3. 開啟 **PixelTweaks** App 一次以初始化設定（消除 Android 的 `STOPPED` 狀態）。
 4. 重新啟動您的裝置。
@@ -98,14 +99,14 @@ PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 ### 2. 使用自訂簽名金鑰
 - **Debug Builds**：自動使用電腦本地的 debug 金鑰進行簽名（無需設定）。
 - **Release Builds (`release.jks`)**：
-  1. Place your release keystore file (`release.jks`) into the **`app/keystore/`** directory (`app/keystore/release.jks`).
-  2. Create or open **`local.properties`** in the root project directory and add your keystore credentials:
+  1. 將您的 Release 簽名金鑰檔 (`release.jks`) 放至 **`app/keystore/`** 目錄下 (`app/keystore/release.jks`)。
+  2. 在專案根目錄新增或開啟 **`local.properties`** 檔案，並填入您的金鑰憑證資訊：
      ```properties
      keystore.storePassword=your_store_password
      keystore.keyAlias=your_key_alias
      keystore.keyPassword=your_key_password
      ```
-  3. If `release.jks` is not present, release builds will automatically fall back to signing with your local debug key.
+  3. 若專案中未放置 `release.jks`，Release 版本編譯時將自動降級使用電腦本地的 Debug 金鑰進行簽名。
 
 ## 📄 License
 

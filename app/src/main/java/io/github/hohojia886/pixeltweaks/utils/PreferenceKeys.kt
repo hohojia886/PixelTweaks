@@ -1,13 +1,15 @@
 package io.github.hohojia886.pixeltweaks.utils
 
 /**
- * Single source of truth for every settings key used across the module:
- * UI (SettingsActivity), storage (RemotePrefProvider), broadcast sync
- * (IpcManager), and every hook that consumes a setting.
+ * Single source of truth for every settings key used across module.
+ * Defines string constants for UI, storage, IPC, and hooks.
  */
 object PreferenceKeys {
 
-    /** Generic broadcast extra field names, shared by every single-key update. */
+    /**
+     * Generic broadcast extra field names, shared by every update.
+     * Identifies key name and new value payloads in IPC intents.
+     */
     const val EXTRA_KEY = "key"
     const val EXTRA_VALUE = "value"
 
@@ -25,7 +27,10 @@ object PreferenceKeys {
     const val EXTRA_BATTERY_AGE = "battery_age"
     const val EXTRA_BATTERY_AAFV_OFFSET = "battery_aafv_offset"
 
-    // ---- Feature toggles -------------------------------------------------
+    /**
+     * Keys representing feature toggles across UI and module hooks.
+     * Maps boolean preferences for active features and overrides.
+     */
     const val APP_LANGUAGE = "app_language"
     const val ENABLE_BATTERY_INFO = "enable_battery_info"
     const val ENABLE_CAMERA_ENERGY_RING = "enable_camera_energy_ring"
@@ -44,7 +49,10 @@ object PreferenceKeys {
     const val ENABLE_TABLET_MODE = "enable_tablet_mode"
     const val IS_FIRST_UNLOCK_DONE = "is_first_unlock_done"
 
-    // ---- Numerical settings ------------------------------------------------
+    /**
+     * Keys representing numerical configuration parameters.
+     * Maps float and integer preferences for intervals and sizes.
+     */
     const val NETWORK_TRAFFIC_INTERVAL = "network_traffic_interval"
     const val NETWORK_TRAFFIC_FONT_SIZE = "network_traffic_font_size"
     const val NETWORK_TRAFFIC_THRESHOLD = "network_traffic_threshold"
@@ -54,13 +62,19 @@ object PreferenceKeys {
     const val RING_ONLY_CHARGING = "ring_only_charging"
     const val ENABLE_RING_ROTATION = "enable_ring_rotation"
 
-    // ---- Security bypasses -------------------------------------------------
+    /**
+     * Keys representing security bypass states and active timestamps.
+     * Maps downgrade and signature verification bypass options.
+     */
     const val ALLOW_DOWNGRADE = "allow_downgrade"
     const val BYPASS_SIGNATURE = "bypass_signature"
     const val DOWNGRADE_TIMESTAMP = "downgrade_timestamp"
     const val SIGNATURE_TIMESTAMP = "signature_timestamp"
 
-    // ---- Debug logging configuration (Consolidated into 4 categories) ------
+    /**
+     * Keys representing debug logging category configurations.
+     * Maps master log toggle and functional category sub-switches.
+     */
     const val ENABLE_MASTER_LOG = "enable_master_log"
     const val LOG_SECURITY = "log_security"
     const val LOG_INTERFACE = "log_interface"

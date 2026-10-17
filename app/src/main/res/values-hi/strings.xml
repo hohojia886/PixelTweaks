@@ -86,9 +86,9 @@
     <string name="master_log">मुख्य लॉगिंग</string>
     <string name="master_log_summary">Logcat टैग: PXTK_</string>
     <string name="log_security">सिस्टम और सुरक्षा लॉग</string>
-    <string name="log_security_summary">Logcat टैग: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot</string>
+    <string name="log_security_summary">Logcat टैग: PXTK_Security, PXTK_EasyUnlock, PXTK_Screenshot, PXTK_HideVpn</string>
     <string name="log_interface">इंटरफ़ेस लॉग</string>
-    <string name="log_interface_summary">Logcat टैग: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery</string>
+    <string name="log_interface_summary">Logcat टैग: PXTK_ClearAll, PXTK_Traffic, PXTK_Battery, PXTK_EnergyRing</string>
     <string name="log_gestures">जेस्चर लॉग</string>
     <string name="log_gestures_summary">Logcat टैग: PXTK_DT2S</string>
     <string name="log_quick_settings">त्वरित सेटिंग्स लॉग</string>

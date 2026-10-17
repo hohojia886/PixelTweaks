@@ -4,13 +4,17 @@ import android.view.View
 import android.view.ViewGroup
 
 /**
- * ViewHierarchyUtils: Utility functions for inspecting, dumping, and searching
- * Android View hierarchies. Reusable across all Xposed hooks in PixelTweaks.
+ * Utility functions for inspecting and traversing View hierarchies.
+ * Reusable across all Xposed hooks in PixelTweaks module.
  */
 object ViewHierarchyUtils {
 
     /**
-     * Recursively dumps the View hierarchy tree with visibility, dimensions, alpha, and resource IDs.
+     * Recursively dumps View hierarchy tree with visibility, bounds, and resource IDs for debugging.
+     *
+     * @param view Root View to begin dumping from.
+     * @param depth Current recursion depth (used for indent spacing).
+     * @param logOutput Callback lambda receiving formatted log line strings.
      */
     fun dumpViewHierarchy(view: View, depth: Int = 0, logOutput: (String) -> Unit) {
         val indent = "  ".repeat(depth)
@@ -42,6 +46,10 @@ object ViewHierarchyUtils {
 
     /**
      * Searches a View tree and returns the first View matching the specified predicate.
+     *
+     * @param root Root View to begin depth-first search from.
+     * @param predicate Evaluation predicate function.
+     * @return First matching [View], or null if no view matches predicate.
      */
     fun findViewByPredicate(root: View, predicate: (View) -> Boolean): View? {
         if (predicate(root)) return root
@@ -56,7 +64,11 @@ object ViewHierarchyUtils {
     }
 
     /**
-     * Searches a View tree and returns all Views matching the given class name substring.
+     * Searches a View tree and returns all Views matching class name substring.
+     *
+     * @param root Root ViewGroup to traverse.
+     * @param classNamePart Case-insensitive class name substring.
+     * @return List of matching [View] instances.
      */
     fun findViewsByClassName(root: ViewGroup, classNamePart: String): List<View> {
         val results = mutableListOf<View>()

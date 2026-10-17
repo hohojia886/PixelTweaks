@@ -19,19 +19,13 @@ import java.util.Collections
 import java.util.WeakHashMap
 
 /**
- * HideVpnIconHook: Responsible for hiding the system VPN status bar icon in Android SystemUI.
+ * Hides the system VPN icon from the SystemUI status bar across legacy and modern Compose architectures.
  *
- * Underlying Principles & Dual Strategy:
- * 1. Traditional Blacklist Mechanism (Unconditional):
- *    - Updates Settings.Secure.icon_blacklist and StatusIconContainer.mIgnoredSlots
- *      to exclude the "vpn" slot across all Android versions.
- * 2. Modern Compose Interception Strategy (CP3A+):
- *    - Intercepts VpnIconViewModel.getVisible() to return false and getIcon() to return null.
- *    - Dynamically scans view hierarchies to hide delayed VPN connections (e.g. AdGuard).
+ * Utilizes Settings.Secure icon blacklists, `StatusBarIconController` reflection, and dynamic Compose View tree scanning.
  */
 object HideVpnIconHook {
 
-    private const val TAG = "HideVpn" // Maps to Logcat tag PXTK_HideVpn
+    private const val TAG = "HideVpn"
 
     @Volatile private var isEnabled = false
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -42,20 +36,18 @@ object HideVpnIconHook {
     private val originalLayoutParamMap = Collections.synchronizedMap(WeakHashMap<View, Pair<Int, Int>>())
 
     /**
-     * Entry point for HideVpnIconHook:
-     * - Synchronizes initial settings.
-     * - Registers IPC broadcast listeners for real-time preference updates.
-     * - Applies dynamic view hiders conditionally on CP3A+ builds, and applies core view/controller hooks.
+     * Primary entry point syncing settings and applying VPN hiding hooks.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
      */
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         syncSettings(module, classLoader)
 
-        // Subscribe to process-level IPC broadcasts via IpcDispatcher
         IpcDispatcher.addListener { intent ->
             handleBroadcast(intent, classLoader)
         }
 
-        // Apply dynamic view tree scanning conditionally on modern Compose-based SystemUI builds (CP3A+)
         if (!(SystemVersion.isCp2a() || SystemVersion.isCd1aBefore260905())) {
             applyDynamicVpnViewHidingHooks(module, classLoader)
         }
@@ -69,8 +61,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Synchronizes initial settings from DE ContentProvider first (for Direct Boot / pre-unlock availability),
-     * falling back to CE RemotePreferences.
+     * Loads feature settings safely from DE or CE storage fallback.
+     * Queries ContentProvider or RemotePreferences for hide VPN toggle.
      */
     private fun syncSettings(module: XposedModule, classLoader: ClassLoader) {
         val loadedFromDe = runCatching {
@@ -97,7 +89,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Processes incoming IPC broadcasts to update feature states and refresh VPN icon visibility in real-time.
+     * Responds to IPC intents and dynamically adjusts VPN icon visibility.
+     * Updates isEnabled toggle and refreshes all tracked status bar views.
      */
     private fun handleBroadcast(intent: Intent, classLoader: ClassLoader) {
         when (intent.action) {
@@ -118,7 +111,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Unconditionally updates Settings.Secure "icon_blacklist" to include/exclude "vpn" across all Android versions.
+     * Adds or removes "vpn" from system Settings.Secure icon_blacklist.
+     * Updates icon_blacklist setting string unconditionally on UI thread.
      */
     private fun updateSystemSettingIconBlacklist(classLoader: ClassLoader) {
         Logger.i(TAG, "Blacklist", "Updating icon_blacklist unconditionally across all Android versions")
@@ -153,9 +147,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Dynamic View Tree Scanning Strategy (CP3A+):
-     * Hooks PhoneStatusBarView and KeyguardStatusBarView attached state to continuously monitor
-     * status bar children and hierarchy changes on-the-fly, catching late-bound VPN icons (e.g. AdGuard).
+     * Continuously scans status bar hierarchies for late-bound VPN views.
+     * Hooks onAttachedToWindow on PhoneStatusBarView and KeyguardStatusBarView.
      */
     private fun applyDynamicVpnViewHidingHooks(module: XposedModule, classLoader: ClassLoader) {
         val classNames = listOf(
@@ -177,7 +170,6 @@ object HideVpnIconHook {
                             }
                         }
 
-                        // Attach an OnHierarchyChangeListener to catch newly added VPN views immediately
                         root.setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
                             override fun onChildViewAdded(parent: View?, child: View?) {
                                 if (child is ViewGroup) {
@@ -191,22 +183,22 @@ object HideVpnIconHook {
                             override fun onChildViewRemoved(parent: View?, child: View?) {}
                         })
 
-                        // Scan the whole tree on global layout to catch deeply nested or late-bound Compose views
                         root.viewTreeObserver.addOnGlobalLayoutListener {
                             scanContainerForVpn(root)
                         }
+                    }.onFailure { e ->
+                        Logger.e(TAG, "DynamicVpn", "Failed during onAttachedToWindow hook", e)
                     }
                     chain.proceed()
                 }
             }.onFailure {
-                // Class not found, safe to ignore
             }
         }
     }
 
     /**
-     * Modern Compose ViewModel Interception Strategy (CP3A+):
-     * Hooks VpnIconViewModel to force getVisible() -> false and getIcon() -> null.
+     * Intercepts VpnIconViewModel calls on CP3A+ to prevent VPN icon render.
+     * Hooks getVisible to return false and getIcon to return null.
      */
     private fun applyComposeVpnHooks(module: XposedModule, classLoader: ClassLoader) {
         val className = "com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.VpnIconViewModel"
@@ -237,7 +229,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Hooks StatusBarIconController methods to intercept and suppress visibility changes for VPN icons.
+     * Hooks StatusBarIconController methods to suppress VPN visibility.
+     * Intercepts constructors and setIconVisibility calls for vpn slot.
      */
     private fun applyStatusBarIconControllerVpnHooks(module: XposedModule, classLoader: ClassLoader) {
         val classNames = listOf(
@@ -278,14 +271,15 @@ object HideVpnIconHook {
                         }
                     }
                 }
-            }.onFailure {
-                // Safe to ignore
+            }.onFailure { e ->
+                Logger.e(TAG, "ComposeVpn", "Failed class probe for $className", e)
             }
         }
     }
 
     /**
-     * Actively invokes setIconVisibility("vpn", false) and removeAllIconsForSlot("vpn") on active icon controllers.
+     * Emits events to existing controllers to aggressively hide VPN slots.
+     * Invokes setIconVisibility and removeAllIconsForSlot via reflection.
      */
     private fun forceHideVpnViaController(controller: Any) {
         runCatching {
@@ -293,22 +287,28 @@ object HideVpnIconHook {
             runCatching {
                 val method = clazz.getMethod("setIconVisibility", String::class.java, Boolean::class.javaPrimitiveType)
                 method.invoke(controller, "vpn", false)
+            }.onFailure { e ->
+                Logger.e(TAG, "Controller", "Failed to invoke setIconVisibility", e)
             }
             runCatching {
                 val method = clazz.getMethod("removeAllIconsForSlot", String::class.java)
                 method.invoke(controller, "vpn")
+            }.onFailure { e ->
+                Logger.e(TAG, "Controller", "Failed to invoke removeAllIconsForSlot", e)
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Controller", "Failed to force hide VPN via controller", e)
         }
     }
 
     /**
-     * Hooks StatusBarIconView constructors and update methods to identify and track VPN icon views.
+     * Hooks StatusBarIconView instantiation to track and hide VPN views.
+     * Intercepts constructors and set/setNotification methods on view.
      */
     private fun applyStatusBarIconViewConstructorHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val sbIconViewClass = classLoader.loadClass("com.android.systemui.statusbar.StatusBarIconView")
 
-            // Hook all constructors of StatusBarIconView
             sbIconViewClass.declaredConstructors.forEach { constructor ->
                 module.hook(constructor).intercept { chain ->
                     val res = chain.proceed()
@@ -321,12 +321,13 @@ object HideVpnIconHook {
                         if (isVpnViewByFeatures(view) || pkg == "com.android.vpndialogs" || (slot.isEmpty() && pkg.contains("vpn", ignoreCase = true))) {
                             trackVpnView(view)
                         }
+                    }.onFailure { e ->
+                        Logger.e(TAG, "StatusBarIconView", "Failed to process constructor arguments", e)
                     }
                     res
                 }
             }
 
-            // Hook set(StatusBarIcon) and setNotification(StatusBarNotification)
             sbIconViewClass.declaredMethods.filter { it.name == "set" || it.name == "setNotification" }.forEach { method ->
                 module.hook(method).intercept { chain ->
                     val res = chain.proceed()
@@ -341,18 +342,20 @@ object HideVpnIconHook {
                         if (isVpnViewByFeatures(view) || pkg == "com.android.vpndialogs" || trackedVpnViews.any { it.get() == view }) {
                             trackVpnView(view)
                         }
+                    }.onFailure { e ->
+                        Logger.e(TAG, "StatusBarIconView", "Failed to process set/setNotification arguments", e)
                     }
                     res
                 }
             }
-        }.onFailure {
-            // Safe to ignore
+        }.onFailure { e ->
+            Logger.e(TAG, "StatusBarIconView", "Failed to hook StatusBarIconView class", e)
         }
     }
 
     /**
-     * Evaluates a View against multiple feature dimensions (slot, content description, tag, class name, resource name, drawable)
-     * to determine if it represents a VPN status bar icon.
+     * Uses various view properties to detect if representing a VPN icon.
+     * Checks slot name, content description, tag, class name, and drawable.
      */
     private fun isVpnViewByFeatures(view: View): Boolean {
         val slot = runCatching {
@@ -385,7 +388,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Checks if a given slot identifier string corresponds to a known VPN slot.
+     * Verifies if a given string slot name is a recognized VPN slot.
+     * Evaluates slot string against vpn, vpn_status, and vpn_icon tags.
      */
     private fun isVpnSlot(slot: String?): Boolean {
         if (slot == null) return false
@@ -394,7 +398,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Adds a VPN view to the tracking list and immediately applies hiding visibility logic.
+     * Caches a VPN view for persistent visibility management.
+     * Adds reference to trackedVpnViews list and applies visibility.
      */
     private fun trackVpnView(view: View) {
         synchronized(trackedVpnViews) {
@@ -406,7 +411,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Forces visibility, alpha, layout dimensions, and state of a tracked VPN view, caching original layout parameters.
+     * Applies visibility state, alpha, and dimensions to hide/show VPN view.
+     * Sets GONE visibility, zero alpha, and 0px width/height layout params.
      */
     private fun applyVisibilityToVpnView(view: View) {
         mainHandler.post {
@@ -466,12 +472,15 @@ object HideVpnIconHook {
 
                 view.requestLayout()
                 view.invalidate()
+            }.onFailure { e ->
+                Logger.e(TAG, "Visibility", "Failed to apply visibility to VPN view", e)
             }
         }
     }
 
     /**
-     * Hooks ModernStatusBarView initView and setVisibleState methods.
+     * Intercepts ModernStatusBarView methods to suppress VPN visibility state.
+     * Hooks initView and setVisibleState methods for VPN candidate views.
      */
     private fun applyModernStatusBarViewVpnHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
@@ -484,6 +493,8 @@ object HideVpnIconHook {
                         if (isVpnViewByFeatures(view)) {
                             trackVpnView(view)
                         }
+                    }.onFailure { e ->
+                        Logger.e(TAG, "ModernVpn", "Failed to process initView", e)
                     }
                     chain.proceed()
                 }
@@ -494,19 +505,20 @@ object HideVpnIconHook {
                     val view = chain.thisObject as? View ?: return@intercept chain.proceed()
                     if (isEnabled) {
                         if (isVpnViewByFeatures(view) || trackedVpnViews.any { it.get() == view }) {
-                            chain.args[0] = 2 // 2 = STATE_HIDDEN
+                            chain.args[0] = 2
                         }
                     }
                     chain.proceed()
                 }
             }
-        }.onFailure {
-            // Safe to ignore
+        }.onFailure { e ->
+            Logger.e(TAG, "ModernVpn", "Failed to hook ModernStatusBarView for VPN", e)
         }
     }
 
     /**
-     * Hooks SingleBindableStatusBarComposeIconView and related compose icon views.
+     * Intercepts legacy compose icon views to suppress VPN visibility state.
+     * Hooks initView, setVisibleState, and setVisibility for VPN candidate views.
      */
     private fun applySingleBindableIconViewVpnHooks(module: XposedModule, classLoader: ClassLoader) {
         val classNames = listOf(
@@ -527,6 +539,8 @@ object HideVpnIconHook {
                             if (isVpnViewByFeatures(view)) {
                                 trackVpnView(view)
                             }
+                        }.onFailure { e ->
+                            Logger.e(TAG, "SingleBindableVpn", "Failed to process initView", e)
                         }
                         chain.proceed()
                     }
@@ -537,7 +551,7 @@ object HideVpnIconHook {
                         val view = chain.thisObject as? View ?: return@intercept chain.proceed()
                         if (isEnabled) {
                             if (isVpnViewByFeatures(view) || trackedVpnViews.any { it.get() == view }) {
-                                chain.args[0] = 2 // 2 = STATE_HIDDEN
+                                chain.args[0] = 2
                             }
                         }
                         chain.proceed()
@@ -555,14 +569,15 @@ object HideVpnIconHook {
                         chain.proceed()
                     }
                 }
-            }.onFailure {
-                // Safe to ignore
+            }.onFailure { e ->
+                Logger.e(TAG, "SingleBindableVpn", "Failed to hook $className for VPN", e)
             }
         }
     }
 
     /**
-     * Hooks StatusIconContainer and NotificationIconContainer to manage ignored slots and suppress VPN view additions.
+     * Prevents VPN addition and ensures proper ignore-slots on containers.
+     * Intercepts StatusIconContainer onAttachedToWindow and addView calls.
      */
     private fun applyStatusIconContainerVpnHooks(module: XposedModule, classLoader: ClassLoader) {
         val containerNames = listOf(
@@ -584,6 +599,8 @@ object HideVpnIconHook {
                             }
                         }
                         updateIgnoredSlotsForContainer(container)
+                    }.onFailure { e ->
+                        Logger.e(TAG, "IconContainer", "Failed to track StatusIconContainer onAttachedToWindow", e)
                     }
                     chain.proceed()
                 }
@@ -606,14 +623,15 @@ object HideVpnIconHook {
                         chain.proceed()
                     }
                 }
-            }.onFailure {
-                // Safe to ignore
+            }.onFailure { e ->
+                Logger.e(TAG, "IconContainer", "Failed to hook $className for VPN", e)
             }
         }
     }
 
     /**
-     * Recursively scans a view group container to identify and track any VPN views present.
+     * Scans through the hierarchy tracking any detected VPN views.
+     * Recursively traverses ViewGroup children calling trackVpnView.
      */
     private fun scanContainerForVpn(root: ViewGroup) {
         for (i in 0 until root.childCount) {
@@ -627,7 +645,8 @@ object HideVpnIconHook {
     }
 
     /**
-     * Updates mIgnoredSlots collection on StatusIconContainer instances to ignore the "vpn" slot.
+     * Reflectively modifies the container's ignored slots array.
+     * Adds or removes "vpn" from mIgnoredSlots collection field.
      */
     @Suppress("UNCHECKED_CAST")
     private fun updateIgnoredSlotsForContainer(container: ViewGroup) {
@@ -649,13 +668,14 @@ object HideVpnIconHook {
                 container.requestLayout()
                 container.invalidate()
             }
-        }.onFailure {
-            // Safe to ignore
+        }.onFailure { e ->
+            Logger.e(TAG, "IconContainer", "Failed to update mIgnoredSlots for VPN", e)
         }
     }
 
     /**
-     * Updates and refreshes all tracked status bar views, VPN views, containers, and icon controllers.
+     * Triggers a global visibility refresh of all tracked views and controllers.
+     * Invalidates status bar views, compose roots, and icon controllers.
      */
     private fun updateVpnIconVisibility(classLoader: ClassLoader? = null) {
         if (classLoader != null) {
@@ -663,7 +683,6 @@ object HideVpnIconHook {
         }
 
         mainHandler.post {
-            // Re-layout & invalidate all active status bar views & Compose roots to force Recomposition
             synchronized(trackedStatusBarViews) {
                 val sbIt = trackedStatusBarViews.iterator()
                 while (sbIt.hasNext()) {
@@ -691,7 +710,6 @@ object HideVpnIconHook {
                 }
             }
 
-            // Update all tracked VPN Views
             synchronized(trackedVpnViews) {
                 val vpnIt = trackedVpnViews.iterator()
                 while (vpnIt.hasNext()) {
@@ -704,7 +722,6 @@ object HideVpnIconHook {
                 }
             }
 
-            // Update all tracked StatusIconContainers
             synchronized(trackedStatusIconContainers) {
                 val containerIt = trackedStatusIconContainers.iterator()
                 while (containerIt.hasNext()) {
@@ -717,7 +734,6 @@ object HideVpnIconHook {
                 }
             }
 
-            // Update all tracked StatusBarIconControllers
             synchronized(trackedIconControllers) {
                 val ctrlIt = trackedIconControllers.iterator()
                 while (ctrlIt.hasNext()) {

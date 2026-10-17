@@ -39,9 +39,8 @@ import io.github.libxposed.api.XposedModule
 import kotlin.math.sqrt
 
 /**
- * Double Tap to Sleep Hook (Raw Math Edition + Wake Guard).
- * Uses lightweight coordinate/timestamp delta calculation and includes anti-wake-up protection.
- * Unified Tag: DT2S
+ * Handles double-tap gestures on status bar, keyguard, and launcher empty space to put device to sleep.
+ * Uses touch delta distance math, MotionEvent slop thresholds, and Wake Guard timing to prevent false triggers.
  */
 object DoubleTapToSleepHook {
 
@@ -52,18 +51,22 @@ object DoubleTapToSleepHook {
 
     @Volatile private var isBouncerShowing = false
     @Volatile private var lastUnlockInteractionTime = 0L
-    @Volatile private var lastWakeTime = 0L // Wake Guard: Prevent accidental sleep right after wake up
+    @Volatile private var lastWakeTime = 0L
 
-    // State for micro-gesture detection
     private var lastDownTime = 0L
     private var lastDownX = 0f
     private var lastDownY = 0f
 
+    /**
+     * Initializes DT2S hooks for the given process applying process-specific touch interceptors.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader Target process ClassLoader.
+     */
     fun hook(module: XposedModule, classLoader: ClassLoader) {
         val proc = getProcessName()
         Logger.i("Hook", "Started", "Initializing DoubleTapToSleepHook (Raw Math + WakeGuard) in process: $proc")
 
-        // 1. Initial State Load
         runCatching {
             val bundle = IpcManager.loadPreferences(module, classLoader, proc)
             isDtLauncherEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
@@ -73,7 +76,6 @@ object DoubleTapToSleepHook {
             Logger.e(TAG, "Error", "Failed to load initial settings via RemotePrefProvider", e)
         }
 
-        // 2. Dispatcher & Sleep Receiver Registration
         IpcDispatcher.addListener { intent -> handleSync(intent) }
         IpcDispatcher.initializeOnce(module, classLoader) { app ->
             val moduleUid = module.getModuleApplicationInfo().uid
@@ -85,7 +87,6 @@ object DoubleTapToSleepHook {
                     }
                 }
 
-                // Register ACTION_SCREEN_ON receiver for reliable Wake Guard
                 runCatching {
                     val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
                     app.registerReceiver(object : BroadcastReceiver() {
@@ -93,11 +94,12 @@ object DoubleTapToSleepHook {
                             lastWakeTime = SystemClock.uptimeMillis()
                         }
                     }, filter)
+                }.onFailure { e ->
+                    Logger.e(TAG, "Error", "Failed to register ACTION_SCREEN_ON receiver", e)
                 }
             }
         }
 
-        // 3. APPLY FUNCTIONAL HOOKS
         if (proc == "com.android.systemui") {
             applySystemUIHooks(module, classLoader)
         } else if (proc.contains("launcher") || proc.contains("nexuslauncher")) {
@@ -105,8 +107,11 @@ object DoubleTapToSleepHook {
         }
     }
 
+    /**
+     * Applies DT2S hooks to SystemUI status bar and lockscreen components.
+     * Monitors user interaction, bouncer visibility, and gesture events.
+     */
     private fun applySystemUIHooks(module: XposedModule, classLoader: ClassLoader) {
-        // 1. Protection: Monitor Interaction
         runCatching {
             val ctrlClass = classLoader.loadClass("com.android.keyguard.KeyguardAbsKeyInputViewController")
             ctrlClass.declaredMethods.find { it.name == "onUserInput" }?.let { m ->
@@ -114,9 +119,10 @@ object DoubleTapToSleepHook {
                     lastUnlockInteractionTime = SystemClock.uptimeMillis()
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook KeyguardAbsKeyInputViewController for interaction monitoring", e)
         }
 
-        // 3. Monitor Bouncer visibility
         runCatching {
             val managerClass = classLoader.loadClass("com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager")
             managerClass.declaredMethods.find { it.name == "showPrimaryBouncer" }?.let { m ->
@@ -129,9 +135,10 @@ object DoubleTapToSleepHook {
                     isBouncerShowing = false
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook StatusBarKeyguardViewManager for Bouncer visibility", e)
         }
 
-        // 4. Status Bar Hook (Using onInterceptTouchEvent for priority)
         runCatching {
             val sbClass = classLoader.loadClass("com.android.systemui.statusbar.phone.PhoneStatusBarView")
             sbClass.declaredMethods.find { it.name == "onInterceptTouchEvent" }?.let { m ->
@@ -144,14 +151,14 @@ object DoubleTapToSleepHook {
                     chain.proceed()
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook PhoneStatusBarView for double tap", e)
         }
 
-        // 5. Lockscreen Hook
         runCatching {
             val pulsingClass = classLoader.loadClass("com.android.systemui.shade.PulsingGestureListener")
             val stateControllerClass = classLoader.loadClass("com.android.systemui.plugins.statusbar.StatusBarStateController")
             
-            // Cache reflection and system services outside the interceptor block to avoid Hot-path lag
             val controllerField = pulsingClass.getDeclaredField("statusBarStateController").apply { isAccessible = true }
             val isDozingMethod = stateControllerClass.getMethod("isDozing")
             val sysContext = IpcManager.getSystemContext(classLoader)
@@ -177,9 +184,15 @@ object DoubleTapToSleepHook {
                     chain.proceed()
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook PulsingGestureListener for lockscreen double tap", e)
         }
     }
 
+    /**
+     * Applies DT2S hooks to Launcher workspace for home screen sleep.
+     * Hooks Workspace touch events to trigger sleep on double tap.
+     */
     private fun applyLauncherHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
             val wsClass = classLoader.loadClass("com.android.launcher3.Workspace")
@@ -193,14 +206,19 @@ object DoubleTapToSleepHook {
                     chain.proceed()
                 }
             }
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to hook Launcher Workspace for double tap", e)
         }
     }
 
+    /**
+     * Processes motion events to detect double tap gestures on views.
+     * Evaluates touch delta math and slop distance against thresholds.
+     */
     private fun processTouch(ev: MotionEvent, view: View, isLauncher: Boolean): Boolean {
         if (ev.action == MotionEvent.ACTION_DOWN) {
             val now = SystemClock.uptimeMillis()
             
-            // Wake Guard Check: Ignore touches within 500ms of screen wakeup
             if ((now - lastWakeTime) < 500) {
                 return false
             }
@@ -232,6 +250,10 @@ object DoubleTapToSleepHook {
         return false
     }
 
+    /**
+     * Synchronizes setting states from IPC broadcast intents dynamically.
+     * Updates launcher, lockscreen, and statusbar toggle variables.
+     */
     private fun handleSync(intent: Intent) {
         if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
             isDtLauncherEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
@@ -258,15 +280,25 @@ object DoubleTapToSleepHook {
         }
     }
 
+    /**
+     * Triggers actual screen off command using PowerManager goToSleep.
+     * Invokes goToSleep via reflection if screen is currently interactive.
+     */
     private fun triggerSleep(context: Context) {
         runCatching {
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
             if (!pm.isInteractive) return
             val goToSleep = pm.javaClass.getMethod("goToSleep", Long::class.javaPrimitiveType)
             goToSleep.invoke(pm, SystemClock.uptimeMillis())
+        }.onFailure { e ->
+            Logger.e(TAG, "Error", "Failed to invoke PowerManager.goToSleep", e)
         }
     }
 
+    /**
+     * Helper to safely retrieve current process name via ActivityThread.
+     * Reflectively calls currentProcessName returning unknown on error.
+     */
     private fun getProcessName(): String {
         return runCatching {
             val activityThread = Class.forName("android.app.ActivityThread")
