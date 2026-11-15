@@ -63,6 +63,11 @@ sealed interface SettingsEvent {
      */
     data class ToggleEasyUnlockReboot(val enabled: Boolean) : SettingsEvent
     /**
+     * Sets expected PIN length for easy unlock.
+     * Overrides auto learning with manual digit length (-1 for auto).
+     */
+    data class SetExpectedPassLen(val len: Int) : SettingsEvent
+    /**
      * Toggles allow package downgrade feature.
      * Bypasses version downgrade restriction for 3m.
      */

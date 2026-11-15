@@ -1,3 +1,7 @@
+### v1.3.1
+- 🔓 **Easy Unlock Manual PIN Digits Configuration**: Added a dedicated PIN length selector dialog (Auto-learn / 4 digits / 6 digits) directly in Settings UI, solving first-time auto-confirm failures on clean installations or newer Android 17 CP3A builds.
+- 👆 **Double Tap To Sleep Status Bar Compatibility**: Enhanced `PhoneStatusBarView` touch event dispatching to hook both `onInterceptTouchEvent` and `onTouchEvent`, fixing status bar double-tap to sleep on CP3A firmwares.
+
 ### v1.3.0
 - 🔋 **Energy Ring Visual Effects**: Added 3s unlock neon glow pulse and low-battery (<10%) once-per-minute 1.5s breathing alert.
 - 📝 **Code Quality & Log Normalization**: Standardized logcat tags (`PXTK_`) across all 32 source files and created `Logger.md` & `Comments.md` standards.

@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">PIN 码输入正确后自动解锁</string>
     <string name="easy_unlock_reboot">重启绕过限制</string>
     <string name="easy_unlock_reboot_summary">重启后允许自动解锁</string>
+    <string name="easy_unlock_pin_length">PIN 码位数</string>
+    <string name="easy_unlock_pin_length_summary">手动指定自动解锁位数</string>
+    <string name="pin_length_auto">自动学习</string>
+    <string name="pin_length_4">4 位数</string>
+    <string name="pin_length_6">6 位数</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">强制关闭 Wi-Fi</string>

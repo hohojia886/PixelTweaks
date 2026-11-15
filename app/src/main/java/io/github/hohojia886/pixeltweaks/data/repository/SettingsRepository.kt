@@ -90,6 +90,7 @@ class SettingsRepository(private val context: Context) {
             unrestrictedScreenshots = dePrefs.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true),
             easyUnlock = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true),
             easyUnlockReboot = dePrefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false),
+            expectedPassLen = dePrefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1),
             allowDowngrade = dePrefs.getBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false),
             bypassSignature = dePrefs.getBoolean(PreferenceKeys.BYPASS_SIGNATURE, false),
             clearAll = dePrefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true),

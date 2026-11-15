@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Buka kunci automatik apabila PIN betul</string>
     <string name="easy_unlock_reboot">Pintas Sekatan Mula Semula</string>
     <string name="easy_unlock_reboot_summary">Benarkan buka kunci automatik selepas mula semula</string>
+    <string name="easy_unlock_pin_length">Panjang PIN</string>
+    <string name="easy_unlock_pin_length_summary">Tetapkan digit PIN untuk buka kunci automatik</string>
+    <string name="pin_length_auto">Kaji secara automatik</string>
+    <string name="pin_length_4">4 digit</string>
+    <string name="pin_length_6">6 digit</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Paksa Matikan Wi-Fi</string>

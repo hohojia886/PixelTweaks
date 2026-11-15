@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Automatisch entsperren bei korrekter PIN</string>
     <string name="easy_unlock_reboot">Neustart-Einschränkung umgehen</string>
     <string name="easy_unlock_reboot_summary">Automatische Entsperrung auch nach Neustart erlauben</string>
+    <string name="easy_unlock_pin_length">PIN-Länge</string>
+    <string name="easy_unlock_pin_length_summary">PIN-Ziffern für automatisches Entsperren festlegen</string>
+    <string name="pin_length_auto">Automatisch lernen</string>
+    <string name="pin_length_4">4 Ziffern</string>
+    <string name="pin_length_6">6 Ziffern</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wi-Fi-Ausschalten erzwingen</string>

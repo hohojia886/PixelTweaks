@@ -18,6 +18,7 @@ data class SettingsUiState(
     val unrestrictedScreenshots: Boolean = true,
     val easyUnlock: Boolean = true,
     val easyUnlockReboot: Boolean = false,
+    val expectedPassLen: Int = -1,
     val allowDowngrade: Boolean = false,
     val allowDowngradeTimer: String? = null,
     val bypassSignature: Boolean = false,

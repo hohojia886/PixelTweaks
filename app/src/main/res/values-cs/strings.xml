@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Automaticky odemknout při správném PINu</string>
     <string name="easy_unlock_reboot">Obejít omezení po restartu</string>
     <string name="easy_unlock_reboot_summary">Povolit automatické odemknutí i po restartu</string>
+    <string name="easy_unlock_pin_length">Délka PINu</string>
+    <string name="easy_unlock_pin_length_summary">Nastavit počet číslic PINu pro automatické odemknutí</string>
+    <string name="pin_length_auto">Automaticky</string>
+    <string name="pin_length_4">4 číslice</string>
+    <string name="pin_length_6">6 číslic</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Vynutit vypnutí Wi-Fi</string>

@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">सही पिन दर्ज करने पर स्वतः अनलॉक करें</string>
     <string name="easy_unlock_reboot">रीस्टार्ट प्रतिबंध बाईपास</string>
     <string name="easy_unlock_reboot_summary">रीस्टार्ट के बाद भी स्वतः अनलॉक की अनुमति दें</string>
+    <string name="easy_unlock_pin_length">पिन की लंबाई</string>
+    <string name="easy_unlock_pin_length_summary">स्वतः अनलॉक के लिए पिन अंक सेट करें</string>
+    <string name="pin_length_auto">स्वतः सीखें</string>
+    <string name="pin_length_4">4 अंक</string>
+    <string name="pin_length_6">6 अंक</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wi-Fi ज़बरदस्ती बंद करें</string>

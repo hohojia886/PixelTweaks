@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Automatycznie odblokuj po wprowadzeniu prawidłowego PINu</string>
     <string name="easy_unlock_reboot">Omiń ograniczenie po ponownym uruchomieniu</string>
     <string name="easy_unlock_reboot_summary">Zezwalaj na automatyczne odblokowanie po ponownym uruchomieniu</string>
+    <string name="easy_unlock_pin_length">Długość kodu PIN</string>
+    <string name="easy_unlock_pin_length_summary">Ustaw liczbę cyfr PINu do automatycznego odblokowania</string>
+    <string name="pin_length_auto">Automatyczna nauka</string>
+    <string name="pin_length_4">4 cyfry</string>
+    <string name="pin_length_6">6 cyfr</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wymuś wyłączenie Wi-Fi</string>

@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">சரியான PIN உள்ளிடும்போது தானாகத் திறக்கப்படும்</string>
     <string name="easy_unlock_reboot">மறுதொடக்கக் கட்டுப்பாட்டைத் தவிர்க்கவும்</string>
     <string name="easy_unlock_reboot_summary">மறுதொடக்கம் செய்த பிறகும் தானாகத் திறக்க அனுமதி</string>
+    <string name="easy_unlock_pin_length">PIN நீளம்</string>
+    <string name="easy_unlock_pin_length_summary">தானாகத் திறக்க PIN இலக்கங்களை அமைக்கவும்</string>
+    <string name="pin_length_auto">தானியங்கு கற்றல்</string>
+    <string name="pin_length_4">4 இலக்கங்கள்</string>
+    <string name="pin_length_6">6 இலக்கங்கள்</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wi-Fi ஐ கட்டாயமாக அணைக்கவும்</string>

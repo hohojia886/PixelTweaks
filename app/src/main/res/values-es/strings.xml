@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Desbloquear automáticamente al ingresar PIN correcto</string>
     <string name="easy_unlock_reboot">Omitir restricción tras reinicio</string>
     <string name="easy_unlock_reboot_summary">Permitir desbloqueo automático tras reiniciar</string>
+    <string name="easy_unlock_pin_length">Longitud del PIN</string>
+    <string name="easy_unlock_pin_length_summary">Establecer dígitos del PIN para desbloqueo automático</string>
+    <string name="pin_length_auto">Aprendizaje automático</string>
+    <string name="pin_length_4">4 dígitos</string>
+    <string name="pin_length_6">6 dígitos</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Forzar apagar Wi-Fi</string>

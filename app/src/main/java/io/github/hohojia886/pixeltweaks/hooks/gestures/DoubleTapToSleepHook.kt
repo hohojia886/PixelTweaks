@@ -141,14 +141,21 @@ object DoubleTapToSleepHook {
 
         runCatching {
             val sbClass = classLoader.loadClass("com.android.systemui.statusbar.phone.PhoneStatusBarView")
-            sbClass.declaredMethods.find { it.name == "onInterceptTouchEvent" }?.let { m ->
-                module.hook(m).intercept { chain ->
-                    if (isDtStatusbarEnabled) {
-                        if (processTouch(chain.args[0] as MotionEvent, chain.thisObject as View, false)) {
-                            return@intercept true
+            val targetMethods = listOf("onInterceptTouchEvent", "onTouchEvent")
+            targetMethods.forEach { methodName ->
+                sbClass.declaredMethods.find { 
+                    it.name == methodName && it.parameterTypes.size == 1 && it.parameterTypes[0] == MotionEvent::class.java 
+                }?.let { m ->
+                    module.hook(m).intercept { chain ->
+                        val ev = chain.args[0] as? MotionEvent
+                        if (isDtStatusbarEnabled && ev != null) {
+                            if (processTouch(ev, chain.thisObject as View, isLauncher = false)) {
+                                return@intercept true
+                            }
                         }
+                        chain.proceed()
                     }
-                    chain.proceed()
+                    Logger.i(TAG, "Hook", "Hooked PhoneStatusBarView.$methodName")
                 }
             }
         }.onFailure { e ->

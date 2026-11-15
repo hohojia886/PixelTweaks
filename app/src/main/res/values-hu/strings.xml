@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Automata feloldás helyes PIN-kód megadásakor</string>
     <string name="easy_unlock_reboot">Újraindítási korlátozás kihagyása</string>
     <string name="easy_unlock_reboot_summary">Automata feloldás engedélyezése újraindítás után</string>
+    <string name="easy_unlock_pin_length">PIN hossza</string>
+    <string name="easy_unlock_pin_length_summary">PIN számjegyeinek beállítása az automatikus feloldáshoz</string>
+    <string name="pin_length_auto">Automatikus tanulás</string>
+    <string name="pin_length_4">4 számjegy</string>
+    <string name="pin_length_6">6 számjegy</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wi-Fi kényszerített kikapcsolása</string>

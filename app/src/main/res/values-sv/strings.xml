@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Lås upp automatiskt vid rätt PIN</string>
     <string name="easy_unlock_reboot">Kringgå omstartsrestriktion</string>
     <string name="easy_unlock_reboot_summary">Tillåt automatisk upplåsning efter omstart</string>
+    <string name="easy_unlock_pin_length">PIN-längd</string>
+    <string name="easy_unlock_pin_length_summary">Ange PIN-siffror för automatisk upplåsning</string>
+    <string name="pin_length_auto">Lär automatiskt</string>
+    <string name="pin_length_4">4 siffror</string>
+    <string name="pin_length_6">6 siffror</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Tvinga stänga av Wi-Fi</string>

@@ -132,6 +132,12 @@ class SettingsViewModel(
                 repository.dispatchUpdateBroadcast(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, event.enabled)
             }
 
+            is SettingsEvent.SetExpectedPassLen -> {
+                _uiState.update { it.copy(expectedPassLen = event.len) }
+                repository.savePreference(PreferenceKeys.EXPECTED_PASS_LEN, event.len)
+                repository.dispatchUpdateBroadcast(PreferenceKeys.EXPECTED_PASS_LEN, event.len)
+            }
+
             is SettingsEvent.ToggleAllowDowngrade -> {
                 _uiState.update { it.copy(allowDowngrade = event.enabled) }
                 repository.savePreference(PreferenceKeys.ALLOW_DOWNGRADE, event.enabled)

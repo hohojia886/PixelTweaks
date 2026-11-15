@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">PINが一致した時に自動解除</string>
     <string name="easy_unlock_reboot">再起動後の制限を回避</string>
     <string name="easy_unlock_reboot_summary">再起動後も自動ロック解除を許可</string>
+    <string name="easy_unlock_pin_length">PINの桁数</string>
+    <string name="easy_unlock_pin_length_summary">自動解除するPINの桁数を指定</string>
+    <string name="pin_length_auto">自動学習</string>
+    <string name="pin_length_4">4桁</string>
+    <string name="pin_length_6">6桁</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wi-Fiを強制OFF</string>

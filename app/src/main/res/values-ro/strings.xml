@@ -52,6 +52,11 @@
     <string name="easy_unlock_summary">Deblocare automată la introducerea PIN-ului corect</string>
     <string name="easy_unlock_reboot">Ocolește restricția după repornire</string>
     <string name="easy_unlock_reboot_summary">Permite deblocarea automată după repornire</string>
+    <string name="easy_unlock_pin_length">Lungime PIN</string>
+    <string name="easy_unlock_pin_length_summary">Setați numărul de cifre PIN pentru deblocare automată</string>
+    <string name="pin_length_auto">Învățare automată</string>
+    <string name="pin_length_4">4 cifre</string>
+    <string name="pin_length_6">6 cifre</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Oprește Wi-Fi forțat</string>

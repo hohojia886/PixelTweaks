@@ -85,6 +85,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
+    var showPinLengthDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -132,6 +133,18 @@ fun SettingsScreen(
                             summary = stringResource(R.string.easy_unlock_reboot_summary),
                             checked = uiState.easyUnlockReboot,
                             onCheckedChange = { onEvent(SettingsEvent.ToggleEasyUnlockReboot(it)) }
+                        )
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        val pinSummary = when (uiState.expectedPassLen) {
+                            4 -> stringResource(R.string.pin_length_4)
+                            6 -> stringResource(R.string.pin_length_6)
+                            -1 -> stringResource(R.string.pin_length_auto)
+                            else -> "${uiState.expectedPassLen}"
+                        }
+                        ClickableSettingItem(
+                            title = stringResource(R.string.easy_unlock_pin_length),
+                            summary = pinSummary,
+                            onClick = { showPinLengthDialog = true }
                         )
                     }
                 }
@@ -525,6 +538,66 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+
+    if (showPinLengthDialog) {
+        val pinOptions = listOf(
+            -1 to stringResource(R.string.pin_length_auto),
+            4 to stringResource(R.string.pin_length_4),
+            6 to stringResource(R.string.pin_length_6)
+        )
+        AlertDialog(
+            onDismissRequest = { showPinLengthDialog = false },
+            title = {
+                Text(
+                    text = stringResource(R.string.easy_unlock_pin_length),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectableGroup()
+                ) {
+                    pinOptions.forEach { (len, label) ->
+                        val isSelected = (uiState.expectedPassLen == len)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .selectable(
+                                    selected = isSelected,
+                                    onClick = {
+                                        showPinLengthDialog = false
+                                        onEvent(SettingsEvent.SetExpectedPassLen(len))
+                                    },
+                                    role = Role.RadioButton
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = null
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPinLengthDialog = false }) {
+                    Text(text = stringResource(android.R.string.cancel))
+                }
+            }
+        )
+    }
 }
 
 /**
@@ -901,5 +974,45 @@ fun SwitchSettingItem(
         )
     }
 }
+
+/**
+ * A setting item containing a title and summary that triggers a click action (e.g. dialog).
+ *
+ * @param title Main setting title string.
+ * @param summary Description or current value summary text.
+ * @param onClick Callback lambda invoked when user clicks the row.
+ */
+@Composable
+fun ClickableSettingItem(
+    title: String,
+    summary: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 
 

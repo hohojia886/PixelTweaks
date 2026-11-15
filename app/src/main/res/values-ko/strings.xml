@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">PIN 일치 시 자동 잠금해제</string>
     <string name="easy_unlock_reboot">재부팅 제한 우회</string>
     <string name="easy_unlock_reboot_summary">재부팅 후에도 자동 잠금해제 허용</string>
+    <string name="easy_unlock_pin_length">PIN 자릿수</string>
+    <string name="easy_unlock_pin_length_summary">자동 잠금해제 PIN 자릿수 설정</string>
+    <string name="pin_length_auto">자동 학습</string>
+    <string name="pin_length_4">4자리</string>
+    <string name="pin_length_6">6자리</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wi-Fi 강제 끄기</string>

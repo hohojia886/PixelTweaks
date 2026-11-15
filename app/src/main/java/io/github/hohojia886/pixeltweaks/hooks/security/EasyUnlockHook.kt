@@ -116,17 +116,23 @@ object EasyUnlockHook {
      * Spoofs isAutoPinConfirmEnabled and getPinLength in LockPatternUtils.
      */
     private fun applyNativeHijack(module: XposedModule, classLoader: ClassLoader) {
+        Logger.i(TAG, "Init", "Starting applyNativeHijack...")
         runCatching {
             val lpuClass = classLoader.loadClass("com.android.internal.widget.LockPatternUtils")
 
-            module.hook(lpuClass.getDeclaredMethod("isAutoPinConfirmEnabled", Int::class.javaPrimitiveType)).intercept { chain ->
+            val isAutoPinConfirmMethod = lpuClass.getDeclaredMethod("isAutoPinConfirmEnabled", Int::class.javaPrimitiveType)
+            module.hook(isAutoPinConfirmMethod).intercept { chain ->
+                Logger.d(TAG, "Intercept", "isAutoPinConfirmEnabled: enabled=$isEnabled, len=$learnedPinLength, bypass=$isBypassActive, firstDone=$isFirstUnlockDone")
                 if (isEnabled && learnedPinLength > 0) {
                     if (isBypassActive || isFirstUnlockDone) return@intercept true
                 }
                 chain.proceed()
             }
+            Logger.i(TAG, "Hook", "Hooked LockPatternUtils.isAutoPinConfirmEnabled")
 
-            module.hook(lpuClass.getDeclaredMethod("getPinLength", Int::class.javaPrimitiveType)).intercept { chain ->
+            val getPinLengthMethod = lpuClass.getDeclaredMethod("getPinLength", Int::class.javaPrimitiveType)
+            module.hook(getPinLengthMethod).intercept { chain ->
+                Logger.d(TAG, "Intercept", "getPinLength: enabled=$isEnabled, len=$learnedPinLength, bypass=$isBypassActive, firstDone=$isFirstUnlockDone")
                 if (isEnabled && learnedPinLength > 0) {
                     if (isBypassActive || isFirstUnlockDone) {
                         Logger.i(TAG, "Active", "Spoofed getPinLength -> $learnedPinLength")
@@ -135,39 +141,60 @@ object EasyUnlockHook {
                 }
                 chain.proceed()
             }
+            Logger.i(TAG, "Hook", "Hooked LockPatternUtils.getPinLength")
 
-            lpuClass.declaredMethods.find { it.name == "userHas6DigitPin" }?.let { m ->
-                module.hook(m).intercept { if (isEnabled) true else it.proceed() }
+            val userHas6DigitPinMethod = lpuClass.declaredMethods.find { it.name == "userHas6DigitPin" }
+            if (userHas6DigitPinMethod != null) {
+                module.hook(userHas6DigitPinMethod).intercept { if (isEnabled) true else it.proceed() }
+                Logger.i(TAG, "Hook", "Hooked LockPatternUtils.userHas6DigitPin")
+            } else {
+                Logger.w(TAG, "Warn", "LockPatternUtils.userHas6DigitPin not found")
             }
 
-            val securityCtrlClass = classLoader.loadClass("com.android.keyguard.KeyguardAbsKeyInputViewController")
-            securityCtrlClass.declaredMethods.find { it.name == "onPasswordChecked" }?.let { m ->
-                module.hookBefore(m) { chain ->
-                    val successful = chain.args.getOrNull(1) as? Boolean ?: false
-                    if (isEnabled && successful) {
-                        if (!isFirstUnlockDone) {
-                            isFirstUnlockDone = true
-                            Logger.i(TAG, "Success", "Session first unlock done")
-                        }
-                        
-                        runCatching {
-                            val instance = chain.thisObject
-                            val passwordEntry = findField(instance.javaClass, "mPasswordEntry")?.get(instance) ?: return@runCatching
-                            val text = findMethod(passwordEntry.javaClass)?.invoke(passwordEntry) ?: 
-                                       findField(passwordEntry.javaClass, "mText")?.get(passwordEntry)
-                            
-                            val length = (text as? CharSequence)?.length ?: 0
-                            if (length > 0 && length != learnedPinLength) {
-                                learnedPinLength = length
-                                Logger.i(TAG, "Success", "Learned PIN length: $learnedPinLength")
-                                saveLearnedLength(classLoader, learnedPinLength)
+            val securityCtrlClass = runCatching {
+                classLoader.loadClass("com.android.keyguard.KeyguardAbsKeyInputViewController")
+            }.getOrNull()
+
+            if (securityCtrlClass != null) {
+                Logger.i(TAG, "Hook", "Loaded class: com.android.keyguard.KeyguardAbsKeyInputViewController")
+                val onPasswordCheckedMethod = securityCtrlClass.declaredMethods.find { it.name == "onPasswordChecked" }
+                    ?: securityCtrlClass.methods.find { it.name == "onPasswordChecked" }
+
+                if (onPasswordCheckedMethod != null) {
+                    Logger.i(TAG, "Hook", "Found onPasswordChecked method: $onPasswordCheckedMethod")
+                    module.hookBefore(onPasswordCheckedMethod) { chain ->
+                        val successful = chain.args.getOrNull(1) as? Boolean ?: false
+                        if (isEnabled && successful) {
+                            if (!isFirstUnlockDone) {
+                                isFirstUnlockDone = true
+                                Logger.i(TAG, "Success", "Session first unlock done")
                             }
-                        }.onFailure { e ->
-                            Logger.e(TAG, "Learner", "Failed to learn PIN length during onPasswordChecked", e)
+
+                            runCatching {
+                                val instance = chain.thisObject
+                                val passwordEntry = findField(instance.javaClass, "mPasswordEntry")?.get(instance) ?: return@runCatching
+                                val text = findMethod(passwordEntry.javaClass)?.invoke(passwordEntry) ?:
+                                           findField(passwordEntry.javaClass, "mText")?.get(passwordEntry)
+                                val length = (text as? CharSequence)?.length ?: 0
+
+                                if (length > 0 && length != learnedPinLength) {
+                                    learnedPinLength = length
+                                    Logger.i(TAG, "Success", "Learned PIN length: $learnedPinLength")
+                                    saveLearnedLength(classLoader, learnedPinLength)
+                                }
+                            }.onFailure { e ->
+                                Logger.e(TAG, "Learner", "Failed to learn PIN length during onPasswordChecked", e)
+                            }
                         }
                     }
+                } else {
+                    Logger.w(TAG, "Warn", "onPasswordChecked not found in KeyguardAbsKeyInputViewController")
                 }
+            } else {
+                Logger.w(TAG, "Warn", "Class com.android.keyguard.KeyguardAbsKeyInputViewController not found")
             }
+
+            Logger.i(TAG, "Applied", "EasyUnlock hooks setup finished")
         }.onFailure { e ->
             Logger.e(TAG, "Error", "Failed to apply native hijacks", e)
         }

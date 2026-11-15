@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Déverrouiller automatiquement lorsque le PIN est correct</string>
     <string name="easy_unlock_reboot">Contourner la restriction au redémarrage</string>
     <string name="easy_unlock_reboot_summary">Autoriser le déverrouillage automatique après redémarrage</string>
+    <string name="easy_unlock_pin_length">Longueur du code PIN</string>
+    <string name="easy_unlock_pin_length_summary">Définir le nombre de chiffres du PIN pour le déverrouillage automatique</string>
+    <string name="pin_length_auto">Apprentissage automatique</string>
+    <string name="pin_length_4">4 chiffres</string>
+    <string name="pin_length_6">6 chiffres</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Forcer la désactivation du Wi-Fi</string>

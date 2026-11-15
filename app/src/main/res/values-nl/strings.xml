@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Automatisch ontgrendelen bij juiste PIN</string>
     <string name="easy_unlock_reboot">Herstartbeperking omzeilen</string>
     <string name="easy_unlock_reboot_summary">Automatisch ontgrendelen na herstart toestaan</string>
+    <string name="easy_unlock_pin_length">PIN-lengte</string>
+    <string name="easy_unlock_pin_length_summary">Stel het aantal cijfers in voor automatisch ontgrendelen</string>
+    <string name="pin_length_auto">Automatisch leren</string>
+    <string name="pin_length_4">4 cijfers</string>
+    <string name="pin_length_6">6 cijfers</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Wi-Fi geforceerd uitschakelen</string>

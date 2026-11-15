@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Sblocco automatico quando il PIN è corretto</string>
     <string name="easy_unlock_reboot">Bypassa restrizione riavvio</string>
     <string name="easy_unlock_reboot_summary">Consenti sblocco automatico dopo il riavvio</string>
+    <string name="easy_unlock_pin_length">Lunghezza PIN</string>
+    <string name="easy_unlock_pin_length_summary">Imposta cifre PIN per lo sblocco automatico</string>
+    <string name="pin_length_auto">Apprendimento automatico</string>
+    <string name="pin_length_4">4 cifre</string>
+    <string name="pin_length_6">6 cifre</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Forza disattivazione Wi-Fi</string>

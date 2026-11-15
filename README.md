@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**Version:** v1.3.0 (Stable Release)  
+**Version:** v1.3.1 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 **Tested Build Number:** CP3A.261005.005
 
@@ -29,12 +29,12 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.3.0)
+## ✨ Features (v1.3.1)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
 - **Double Tap Lockscreen**: Integrated support for double-tap gestures on the lockscreen area to sleep.
-- **Double Tap Status Bar**: Integrated support for double-tap gestures on the status bar to sleep.
+- **Double Tap Status Bar**: Integrated support for double-tap gestures on the status bar to sleep (supports both `onInterceptTouchEvent` and `onTouchEvent`).
 
 ### ⚙️ Quick Settings
 - **Direct Mobile Data Toggle**: Removes the confirmation dialog when switching to mobile data.
@@ -43,7 +43,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 ### 🛡️ Security Settings
 - **Allow App Downgrade**: Install older APKs over newer ones without data loss (auto-resets after 3 minutes).
 - **Bypass Signature Verification**: Install modified APKs with different signatures (auto-resets after 3 minutes).
-- **Easy Unlock**: Automatically dismisses the keyguard when the entered PIN/Password length matches the learned pattern (with DE storage fallback & cross-process sync protection).
+- **Easy Unlock**: Automatically dismisses the keyguard when the entered PIN/Password length matches the specified pattern (configurable via Auto-learn / 4 digits / 6 digits in UI, with DE storage fallback & cross-process sync protection).
 - **Bypass Restriction**: Optional setting to allow auto-unlock immediately after system boot.
 - **Unrestricted Screenshots**: Force-enable screenshots and recordings in restricted apps (Banking, Incognito).
 

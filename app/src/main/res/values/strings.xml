@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- General -->
     <string name="app_name">Pixel Tweaks</string>
     <string name="module_active">Module is active</string>
@@ -54,6 +54,11 @@
     <string name="easy_unlock_summary">Auto unlock when PIN is correct</string>
     <string name="easy_unlock_reboot">Bypass Reboot Restriction</string>
     <string name="easy_unlock_reboot_summary">Auto unlock after restart</string>
+    <string name="easy_unlock_pin_length">PIN Length</string>
+    <string name="easy_unlock_pin_length_summary">Set PIN digits for auto confirm</string>
+    <string name="pin_length_auto">Auto-learn</string>
+    <string name="pin_length_4">4 digits</string>
+    <string name="pin_length_6">6 digits</string>
 
     <!-- QuickSettings -->
     <string name="qs_wifi_fix">Force Wi-Fi Off</string>
