@@ -1,3 +1,8 @@
+### v1.3.1
+- 🔒 **EasyUnlock Android 17 CP3A Bouncer Refactoring**: Resolved Auto PIN Confirm issues on Android 17 (`CP3A` build) by adding pre-clear entry text capture and direct `LockPatternUtils` credential interception.
+- 🛡️ **RemotePrefProvider IPC Authorization Fix**: Implemented dynamic `getPackagesForUid` caller verification in `RemotePrefProvider`, ensuring reliable Direct Boot settings reads/writes for SystemUI and Launcher across all firmware builds.
+- 🐞 **LSPosed Package Loaded Re-Entrancy Fix**: Prevented `LoadedApk` re-entrancy NPEs during early module loading by using system ActivityThread context.
+
 ### v1.3.0
 - 🔋 **Energy Ring Visual Effects**: Added 3s unlock neon glow pulse and low-battery (<10%) once-per-minute 1.5s breathing alert.
 - 📝 **Code Quality & Log Normalization**: Standardized logcat tags (`PXTK_`) across all 32 source files and created `Logger.md` & `Comments.md` standards.

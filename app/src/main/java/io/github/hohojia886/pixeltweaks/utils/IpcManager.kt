@@ -92,33 +92,22 @@ object IpcManager {
     /**
      * Obtains a process-safe Context matching caller identity for ContentProvider calls.
      *
+     * Prefers application Context if available. Falls back directly to ActivityThread's system Context
+     * (`getSystemContext()`). Avoids `createPackageContext` during module load to prevent recursive
+     * `LoadedApk` initialization and LSPosed callback re-entrancy issues.
+     *
      * @param classLoader The target process ClassLoader.
-     * @param packageName Optional package name override for package context creation.
+     * @param packageName Optional package name parameter retained for backwards compatibility.
      * @return A safe [Context] instance matching process scope.
      */
-    fun getSafeContext(classLoader: ClassLoader, packageName: String? = null): Context? {
+    fun getSafeContext(classLoader: ClassLoader, @Suppress("UNUSED_PARAMETER") packageName: String? = null): Context? {
         return runCatching {
             val atClass = classLoader.loadClass("android.app.ActivityThread")
             val at = atClass.getDeclaredMethod("currentActivityThread").invoke(null) ?: return null
             val app = atClass.getDeclaredMethod("getApplication").invoke(at) as? Context
             app?.let { return it }
 
-            val sysContext = (atClass.getDeclaredMethod("getSystemContext").invoke(at) as? Context) ?: return null
-            
-            val myUid = Process.myUid()
-            val targetPackage = packageName ?: runCatching {
-                val ipmClass = classLoader.loadClass("android.app.AppGlobals")
-                val ipm = ipmClass.getDeclaredMethod("getPackageManager").invoke(null) ?: return@runCatching null
-                val getPackagesMethod = ipm.javaClass.getDeclaredMethod("getPackagesForUid", Int::class.javaPrimitiveType)
-                val packages = getPackagesMethod.invoke(ipm, myUid) as? Array<*>
-                packages?.get(0) as? String
-            }.getOrNull()
-
-            if ((myUid != 1000) && (targetPackage != null) && (targetPackage != "android") && (targetPackage != "unknown")) {
-                runCatching { sysContext.createPackageContext(targetPackage, 0) }.getOrDefault(sysContext)
-            } else {
-                sysContext
-            }
+            (atClass.getDeclaredMethod("getSystemContext").invoke(at) as? Context)
         }.onFailure { e ->
             Logger.e("IpcManager", "Error", "Failed to getSafeContext", e)
         }.getOrNull()
@@ -317,6 +306,48 @@ object IpcManager {
         context.sendBroadcast(intent, null, makeBroadcastOptions())
     }
 
+    private val trustedBroadcastPackages = setOf(
+        "io.github.hohojia886.pixeltweaks",
+        "com.android.systemui",
+        "com.google.android.apps.nexuslauncher",
+        "com.google.android.launcher",
+        "com.android.launcher3",
+        "android"
+    )
+
+    /**
+     * Verifies whether an incoming IPC broadcast sender UID is authorized.
+     * Combines fast App ID matching with dynamic package manager lookup for Direct Boot reliability.
+     *
+     * @param context Application Context used to query package manager.
+     * @param senderUid The integer UID of the process that dispatched the broadcast.
+     * @param moduleUid Optional module UID passed from LSPosed.
+     * @return True if the sender process is authorized; false otherwise.
+     */
+    fun isSenderTrusted(context: Context, senderUid: Int, moduleUid: Int = -1): Boolean {
+        if (senderUid <= 0) return false
+        val senderAppId = senderUid % 100000
+        val myAppId = Process.myUid() % 100000
+        val moduleAppId = if (moduleUid > 0) moduleUid % 100000 else -1
+
+        if (senderAppId == 0 || senderAppId == 1000 || senderAppId == myAppId || (moduleAppId > 0 && senderAppId == moduleAppId)) {
+            return true
+        }
+
+        val pkgAppId = getModulePackageAppId(context)
+        if (pkgAppId > 0 && senderAppId == pkgAppId) {
+            return true
+        }
+
+        val pm = context.packageManager ?: return false
+        val pkgs = runCatching { pm.getPackagesForUid(senderUid) }.getOrNull()
+        if (pkgs != null && pkgs.any { it in trustedBroadcastPackages }) {
+            return true
+        }
+
+        return false
+    }
+
     /**
      * Registers a receiver with multi-layer UID verification to prevent spoofing.
      *
@@ -341,13 +372,7 @@ object IpcManager {
                 override fun onReceive(ctx: Context, intent: Intent) {
                     val senderUid = resolveSenderUid(this)
                     val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
-                    val moduleAppId = moduleUid % 100000
-                    val myAppId = Process.myUid() % 100000
-                    val pkgAppId = getModulePackageAppId(ctx)
-
-                    val isTrusted = senderUid > 0 && (senderAppId == 0 || senderAppId == 1000 || 
-                                    senderAppId == moduleAppId || senderAppId == myAppId || 
-                                    (pkgAppId > 0 && senderAppId == pkgAppId))
+                    val isTrusted = isSenderTrusted(ctx, senderUid, moduleUid)
 
                     Logger.d("Ipc", "Broadcast", "Action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
 
@@ -377,18 +402,7 @@ object IpcManager {
                 override fun onReceive(ctx: Context, intent: Intent) {
                     val senderUid = resolveSenderUid(this)
                     val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
-                    val moduleAppId = moduleUid % 100000
-                    val myAppId = Process.myUid() % 100000
-                    val pkgAppId = getModulePackageAppId(ctx)
-
-                    val isTrusted = senderUid > 0 && (senderAppId == 0 || senderAppId == 1000 || 
-                                    senderAppId == moduleAppId || senderAppId == myAppId || 
-                                    (pkgAppId > 0 && senderAppId == pkgAppId) || run {
-                        val trustedLaunchers = listOf("com.google.android.apps.nexuslauncher", "com.android.launcher3", "com.google.android.launcher")
-                        trustedLaunchers.any { pkg ->
-                            runCatching { context.packageManager.getPackageInfo(pkg, 0)?.applicationInfo?.uid?.rem(100000) }.getOrNull() == senderAppId
-                        }
-                    })
+                    val isTrusted = isSenderTrusted(ctx, senderUid, moduleUid)
 
                     Logger.d("Ipc", "Sleep", "Request received: action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
 

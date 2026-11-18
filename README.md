@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**Version:** v1.3.0 (Stable Release)  
+**Version:** v1.3.1 (Stable Release)  
 **Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 **Tested Build Number:** CP3A.261005.005
 
@@ -29,7 +29,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.3.0)
+## ✨ Features (v1.3.1)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -123,6 +123,9 @@ this project's own:
   is what makes that durable even if I'm no longer the one maintaining it.
 
 See [LICENSE](./LICENSE) for the full text.
+
+## ⚠️ Known Issues
+- **CP3A Status Bar Offline Battery Display**: On Android 17 CP3A firmware under conditions where Wi-Fi, Mobile Data, and VPN are all disconnected or hidden, the stock battery icon may display alongside the battery percentage text upon fresh reboot. Connecting to a network (or triggering any status bar network update) automatically hides the stock battery icon for the remainder of the uptime session.
 
 ## 📚 Credits & Acknowledgments
 

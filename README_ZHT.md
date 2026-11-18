@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**版本：** v1.3.0 (穩定版)  
+**版本：** v1.3.1 (穩定版)  
 **目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
 **測試過版本號：** CP3A.261005.005
 
@@ -31,7 +31,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.3.0)
+## ✨ 功能特點 (v1.3.1)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **雙擊桌面熄屏**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -113,6 +113,9 @@ PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 本專案採用 **GNU General Public License v3.0 (GPL-3.0)** 授權條款釋出。
 
 詳情請參閱 [LICENSE](./LICENSE) 檔案。
+
+## ⚠️ 已知問題
+- **CP3A 斷網開機狀態欄電池圖示**：在 Android 17 CP3A 韌體下，若處於無 Wi-Fi、無行動數據且無 VPN（或隱藏）的完全斷網狀態下重新開機，原廠電池圖示可能會暫時與電池百分比同時顯示。只要連上網路（或觸發任何狀態列網路更新）後，原廠電池圖示即會被自動隱藏，直到下一次重新開機。
 
 ## 📚 相關專案與致謝
 

@@ -310,8 +310,10 @@ class MainHook : XposedModule() {
      */
     override fun onPackageLoaded(param: PackageLoadedParam) {
         super.onPackageLoaded(param)
-        val pkgName = param.packageName
-        val classLoader = param.defaultClassLoader
+        @Suppress("USELESS_ELVIS")
+        val pkgName = param.packageName ?: return
+        @Suppress("USELESS_ELVIS")
+        val classLoader = param.defaultClassLoader ?: return
         
         val isRootSystemServer = pkgName == "android" && isSystemServerProcess
 

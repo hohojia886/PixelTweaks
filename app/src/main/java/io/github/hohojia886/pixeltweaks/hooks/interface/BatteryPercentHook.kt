@@ -338,6 +338,10 @@ object BatteryPercentHook {
      * Manages alpha, scale, and layout params for compose battery views.
      */
     private fun applyVisibilityToComposeView(view: View) {
+        // On Android 17 CP3A.*.*, the outer ComposeView is a UNIFIED CONTAINER for VPN + Battery + WiFi + Cellular.
+        // We MUST NOT set view.visibility = View.GONE on the outer ComposeView, because doing so
+        // hides VPN, WiFi and Cellular along with the battery!
+        // Battery hiding is handled inside Compose by cancelling UnifiedBatteryKt execution.
         if (isAndroid17CP3A) {
             return
         }
@@ -346,71 +350,40 @@ object BatteryPercentHook {
             runCatching {
                 val hide = isEnabled
 
-                view.visibility = if (hide) View.GONE else View.VISIBLE
-                view.alpha = if (hide) 0f else 1f
-                view.scaleX = if (hide) 0f else 1f
-                view.scaleY = if (hide) 0f else 1f
+                if (isBatteryViewCandidate(view)) {
+                    view.alpha = if (hide) 0f else 1f
+                    view.scaleX = if (hide) 0f else 1f
+                    view.scaleY = if (hide) 0f else 1f
+                    if (!isAndroid17CP3A) {
+                        view.visibility = if (hide) View.GONE else View.VISIBLE
+                    }
 
-                val lp = view.layoutParams
-                if (lp != null) {
-                    lp.width = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
-                    lp.height = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
-                    view.layoutParams = lp
-                }
-
-                if (hide) {
-                    view.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
-                        if (isEnabled && isStockBatteryView(v)) {
-                            if (v.visibility != View.GONE || v.alpha != 0f) {
-                                v.visibility = View.GONE
-                                v.alpha = 0f
-                                v.scaleX = 0f
-                                v.scaleY = 0f
-                                val currentLp = v.layoutParams
-                                if (currentLp != null && currentLp.width != 0) {
-                                    currentLp.width = 0
-                                    currentLp.height = 0
-                                    v.layoutParams = currentLp
-                                }
-                            }
-                        }
+                    val lp = view.layoutParams
+                    if (lp != null) {
+                        lp.width = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
+                        lp.height = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
+                        view.layoutParams = lp
                     }
                 }
 
                 if (view is ViewGroup && view.isNotEmpty()) {
                     for (i in 0 until view.childCount) {
                         val child = view.getChildAt(i) ?: continue
-                        markAsStockBatteryView(child)
-                        child.visibility = if (hide) View.GONE else View.VISIBLE
-                        child.alpha = if (hide) 0f else 1f
-                        child.scaleX = if (hide) 0f else 1f
-                        child.scaleY = if (hide) 0f else 1f
-                        val childLp = child.layoutParams
-                        if (childLp != null) {
-                            childLp.width = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
-                            childLp.height = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
-                            child.layoutParams = childLp
-                        }
-                        if (hide) {
-                            child.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
-                                if (isEnabled && isStockBatteryView(v)) {
-                                    if (v.visibility != View.GONE || v.alpha != 0f) {
-                                        v.visibility = View.GONE
-                                        v.alpha = 0f
-                                        v.scaleX = 0f
-                                        v.scaleY = 0f
-                                        val currentLp = v.layoutParams
-                                        if (currentLp != null && currentLp.width != 0) {
-                                            currentLp.width = 0
-                                            currentLp.height = 0
-                                            v.layoutParams = currentLp
-                                        }
-                                    }
-                                }
+                        if (isBatteryViewCandidate(child)) {
+                            markAsStockBatteryView(child)
+                            child.alpha = if (hide) 0f else 1f
+                            child.scaleX = if (hide) 0f else 1f
+                            child.scaleY = if (hide) 0f else 1f
+                            if (!isAndroid17CP3A) {
+                                child.visibility = if (hide) View.GONE else View.VISIBLE
+                            }
+                            val childLp = child.layoutParams
+                            if (childLp != null) {
+                                childLp.width = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
+                                childLp.height = if (hide) 0 else ViewGroup.LayoutParams.WRAP_CONTENT
+                                child.layoutParams = childLp
                             }
                         }
-                        child.requestLayout()
-                        child.invalidate()
                     }
                 }
 
@@ -895,6 +868,7 @@ object BatteryPercentHook {
             cName.contains("Carrier") || 
             cName.contains("Satellite") || 
             cName.contains("StatusIcon") || 
+            cName.contains("Vpn") || 
             cName.contains("User") || 
             cName.contains("Clock") || 
             cName.contains("Notification") || 
@@ -903,7 +877,13 @@ object BatteryPercentHook {
             return false
         }
 
-        return cName.contains("ComposeView") || cName.contains("Battery") || isStockBatteryView(child)
+        val resName = runCatching { child.resources.getResourceEntryName(child.id) }.getOrNull() ?: ""
+        val contentDesc = child.contentDescription?.toString() ?: ""
+
+        return cName.contains("Battery", ignoreCase = true) || 
+               resName.contains("battery", ignoreCase = true) || 
+               contentDesc.contains("battery", ignoreCase = true) || 
+               isStockBatteryView(child)
     }
 
     /**

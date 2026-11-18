@@ -111,6 +111,9 @@ object EasyUnlockHook {
         }
     }
 
+    @Volatile private var pendingCredentialLength = -1
+    @Volatile private var lastEnteredPinLength = -1
+
     /**
      * Implements native hijacks bypassing PIN length and confirm checks.
      * Spoofs isAutoPinConfirmEnabled and getPinLength in LockPatternUtils.
@@ -119,57 +122,180 @@ object EasyUnlockHook {
         runCatching {
             val lpuClass = classLoader.loadClass("com.android.internal.widget.LockPatternUtils")
 
-            module.hook(lpuClass.getDeclaredMethod("isAutoPinConfirmEnabled", Int::class.javaPrimitiveType)).intercept { chain ->
-                if (isEnabled && learnedPinLength > 0) {
-                    if (isBypassActive || isFirstUnlockDone) return@intercept true
-                }
-                chain.proceed()
-            }
-
-            module.hook(lpuClass.getDeclaredMethod("getPinLength", Int::class.javaPrimitiveType)).intercept { chain ->
-                if (isEnabled && learnedPinLength > 0) {
-                    if (isBypassActive || isFirstUnlockDone) {
-                        Logger.i(TAG, "Active", "Spoofed getPinLength -> $learnedPinLength")
-                        return@intercept learnedPinLength
+            lpuClass.declaredMethods.filter { 
+                it.name == "isAutoPinConfirmEnabled" || it.name == "isAutoPinConfirmSetInSettings" 
+            }.forEach { m ->
+                module.hook(m).intercept { chain ->
+                    if (isEnabled && learnedPinLength > 0) {
+                        if (isBypassActive || isFirstUnlockDone) return@intercept true
                     }
+                    chain.proceed()
                 }
-                chain.proceed()
             }
 
-            lpuClass.declaredMethods.find { it.name == "userHas6DigitPin" }?.let { m ->
-                module.hook(m).intercept { if (isEnabled) true else it.proceed() }
-            }
-
-            val securityCtrlClass = classLoader.loadClass("com.android.keyguard.KeyguardAbsKeyInputViewController")
-            securityCtrlClass.declaredMethods.find { it.name == "onPasswordChecked" }?.let { m ->
-                module.hookBefore(m) { chain ->
-                    val successful = chain.args.getOrNull(1) as? Boolean ?: false
-                    if (isEnabled && successful) {
-                        if (!isFirstUnlockDone) {
-                            isFirstUnlockDone = true
-                            Logger.i(TAG, "Success", "Session first unlock done")
+            lpuClass.declaredMethods.filter { it.name == "getPinLength" }.forEach { m ->
+                module.hook(m).intercept { chain ->
+                    if (isEnabled && learnedPinLength > 0) {
+                        if (isBypassActive || isFirstUnlockDone) {
+                            Logger.i(TAG, "Active", "Spoofed getPinLength -> $learnedPinLength")
+                            return@intercept learnedPinLength
                         }
-                        
+                    }
+                    chain.proceed()
+                }
+            }
+
+            lpuClass.declaredMethods.filter { it.name == "userHas6DigitPin" }.forEach { m ->
+                module.hook(m).intercept { chain ->
+                    if (isEnabled) true else chain.proceed()
+                }
+            }
+
+            // Global credential length capture and success verification on LockPatternUtils
+            lpuClass.declaredMethods.filter { 
+                it.name == "checkCredential" || it.name == "verifyCredential" || it.name == "checkPassword" 
+            }.forEach { m ->
+                module.hook(m).intercept { chain ->
+                    val cred = chain.args.find { arg ->
+                        arg != null && (arg is CharSequence || arg is ByteArray || arg.javaClass.simpleName.contains("Credential"))
+                    }
+                    val size = getCredentialSize(cred)
+                    if (size > 0) {
+                        pendingCredentialLength = size
+                        Logger.d(TAG, "Credential", "Intercepted credential attempt, size=$size")
+                    }
+
+                    val callbackArg = chain.args.find { arg ->
+                        arg != null && (arg.javaClass.simpleName.contains("Callback") || arg.javaClass.interfaces.any { it.simpleName.contains("Callback") })
+                    }
+                    
+                    if (callbackArg != null) {
                         runCatching {
-                            val instance = chain.thisObject
-                            val passwordEntry = findField(instance.javaClass, "mPasswordEntry")?.get(instance) ?: return@runCatching
-                            val text = findMethod(passwordEntry.javaClass)?.invoke(passwordEntry) ?: 
-                                       findField(passwordEntry.javaClass, "mText")?.get(passwordEntry)
-                            
-                            val length = (text as? CharSequence)?.length ?: 0
-                            if (length > 0 && length != learnedPinLength) {
-                                learnedPinLength = length
-                                Logger.i(TAG, "Success", "Learned PIN length: $learnedPinLength")
-                                saveLearnedLength(classLoader, learnedPinLength)
+                            callbackArg.javaClass.declaredMethods.filter { 
+                                it.name == "onChecked" || it.name == "onEarlyMatched" || it.name == "onCredentialVerified" 
+                            }.forEach { cbMethod ->
+                                module.hookBefore(cbMethod) { cbChain ->
+                                    val matched = cbChain.args.any { it == true }
+                                    if (matched && pendingCredentialLength > 0) {
+                                        commitLearnedLength(classLoader, pendingCredentialLength, "LockPatternUtils Callback")
+                                    }
+                                }
                             }
-                        }.onFailure { e ->
-                            Logger.e(TAG, "Learner", "Failed to learn PIN length during onPasswordChecked", e)
+                        }
+                    }
+
+                    val result = chain.proceed()
+
+                    if (result != null && pendingCredentialLength > 0) {
+                        val isSuccess = when (result) {
+                            is Boolean -> result
+                            else -> runCatching {
+                                val resCode = findMethod(result.javaClass, "getResponseCode")?.invoke(result) as? Int
+                                val matched = findMethod(result.javaClass, "isMatched")?.invoke(result) as? Boolean
+                                val timeout = findMethod(result.javaClass, "getTimeout")?.invoke(result) as? Int
+                                (resCode == 0) || (matched == true) || (timeout == 0)
+                            }.getOrDefault(false)
+                        }
+
+                        if (isSuccess) {
+                            commitLearnedLength(classLoader, pendingCredentialLength, "LockPatternUtils Return")
+                        }
+                    }
+
+                    result
+                }
+            }
+
+            // Keyguard Controller Candidates
+            val candidateClassNames = listOf(
+                "com.android.keyguard.KeyguardAbsKeyInputViewController",
+                "com.android.keyguard.KeyguardPinBasedInputViewController",
+                "com.android.keyguard.KeyguardPinViewController",
+                "com.android.keyguard.KeyguardPasswordViewController",
+                "com.android.keyguard.KeyguardAbsKeyInputView",
+                "com.android.keyguard.KeyguardPinBasedInputView"
+            )
+
+            val candidateFieldNames = listOf(
+                "mPasswordEntry", "mPinEntry", "mEntryView", "mPasswordTextView", "passwordEntry", "mText"
+            )
+
+            candidateClassNames.forEach { className ->
+                runCatching {
+                    val clazz = classLoader.loadClass(className)
+                    
+                    // Capture entered PIN length BEFORE mPasswordEntry is cleared by verifyPasswordAndUnlock
+                    clazz.declaredMethods.filter { 
+                        it.name == "verifyPasswordAndUnlock" || it.name == "onPasswordChecked" || it.name == "resetPasswordText"
+                    }.forEach { m ->
+                        module.hookBefore(m) { chain ->
+                            val instance = chain.thisObject ?: return@hookBefore
+                            for (fieldName in candidateFieldNames) {
+                                val entryObj = findField(instance.javaClass, fieldName)?.get(instance) ?: continue
+                                val text = findMethod(entryObj.javaClass, "getText")?.invoke(entryObj)
+                                    ?: findMethod(entryObj.javaClass, "getTransformedText")?.invoke(entryObj)
+                                    ?: findField(entryObj.javaClass, "mText")?.get(entryObj)
+                                
+                                val l = (text as? CharSequence)?.length ?: 0
+                                if (l > 0) {
+                                    lastEnteredPinLength = l
+                                    Logger.d(TAG, "Entry", "Captured entered PIN length before clear: $l (from $className)")
+                                    break
+                                }
+                            }
+                        }
+                    }
+
+                    // Handle password check success and commit learned length
+                    clazz.declaredMethods.filter { 
+                        it.name == "onPasswordChecked" || it.name == "verifyPasswordAndUnlock"
+                    }.forEach { m ->
+                        module.hookBefore(m) { chain ->
+                            val successful = chain.args.any { it == true }
+                            if (isEnabled && successful) {
+                                val lengthToSave = if (lastEnteredPinLength > 0) lastEnteredPinLength else pendingCredentialLength
+                                if (lengthToSave > 0) {
+                                    commitLearnedLength(classLoader, lengthToSave, className)
+                                }
+                            }
                         }
                     }
                 }
             }
         }.onFailure { e ->
             Logger.e(TAG, "Error", "Failed to apply native hijacks", e)
+        }
+    }
+
+    /**
+     * Commits auto-learned PIN length securely and syncs across processes.
+     */
+    private fun commitLearnedLength(classLoader: ClassLoader, length: Int, source: String) {
+        if (length > 0 && length != learnedPinLength) {
+            learnedPinLength = length
+            isFirstUnlockDone = true
+            Logger.i(TAG, "Success", "Learned PIN length: $learnedPinLength (from $source)")
+            saveLearnedLength(classLoader, learnedPinLength)
+        } else if (length > 0) {
+            isFirstUnlockDone = true
+        }
+    }
+
+    /**
+     * Extracts length from credential objects or payloads safely.
+     */
+    private fun getCredentialSize(cred: Any?): Int {
+        if (cred == null) return 0
+        if (cred is CharSequence) return cred.length
+        if (cred is ByteArray) return cred.size
+        return runCatching {
+            val sizeMethod = cred.javaClass.getDeclaredMethod("size").apply { isAccessible = true }
+            sizeMethod.invoke(cred) as? Int ?: 0
+        }.getOrElse {
+            runCatching {
+                val sizeField = cred.javaClass.getDeclaredField("mSize").apply { isAccessible = true }
+                sizeField.get(cred) as? Int ?: 0
+            }.getOrDefault(0)
         }
     }
 
@@ -191,12 +317,12 @@ object EasyUnlockHook {
 
     /**
      * Helper to find methods safely within class hierarchy via reflection.
-     * Traverses superclasses searching for getText declared method.
+     * Traverses superclasses searching for declared method by name.
      */
-    private fun findMethod(clazz: Class<*>): Method? {
+    private fun findMethod(clazz: Class<*>, name: String = "getText"): Method? {
         var curr: Class<*>? = clazz
         while (curr != null) {
-            try { return curr.getDeclaredMethod("getText").apply { isAccessible = true } } 
+            try { return curr.getDeclaredMethod(name).apply { isAccessible = true } } 
             catch (_: NoSuchMethodException) { curr = curr.superclass }
         }
         return null

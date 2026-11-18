@@ -52,14 +52,23 @@ class RemotePrefProvider : ContentProvider() {
      */
     override fun onCreate(): Boolean = true
 
+    private val trustedPackages = setOf(
+        "com.android.systemui", 
+        "com.google.android.dialer", 
+        "com.android.dialer",
+        "com.google.android.apps.nexuslauncher",
+        "com.google.android.launcher",
+        "com.android.launcher3",
+        "android"
+    )
+
     /**
      * Resolves and caches App IDs for authorized components.
      * Queries package manager for SystemUI and launcher UIDs.
      */
     private fun updateTrustedAppIds() {
-        if (trustedAppIds.isNotEmpty()) return
         val ctx = context ?: return
-        val pm = ctx.packageManager
+        val pm = ctx.packageManager ?: return
         val packages = listOf(
             "com.android.systemui", 
             "com.google.android.dialer", 
@@ -79,6 +88,33 @@ class RemotePrefProvider : ContentProvider() {
     }
 
     /**
+     * Verifies if incoming calling process UID belongs to a trusted system or module component.
+     */
+    private fun isCallerTrusted(callingUid: Int): Boolean {
+        val callingAppId = callingUid % 100000
+        val moduleAppId = Process.myUid() % 100000
+        
+        if (callingAppId == 0 || callingAppId == 1000 || callingAppId == moduleAppId) {
+            return true
+        }
+        
+        if (trustedAppIds.contains(callingAppId)) {
+            return true
+        }
+
+        val ctx = context ?: return false
+        val pm = ctx.packageManager ?: return false
+        val pkgs = runCatching { pm.getPackagesForUid(callingUid) }.getOrNull()
+        if (pkgs != null && pkgs.any { it in trustedPackages }) {
+            trustedAppIds.add(callingAppId)
+            return true
+        }
+
+        updateTrustedAppIds()
+        return trustedAppIds.contains(callingAppId)
+    }
+
+    /**
      * Handles incoming ContentProvider IPC method calls (`get` / `put`) with UID-based access control.
      *
      * @param method Method string (`get` for reading DE storage, `put` for writing DE storage).
@@ -90,10 +126,9 @@ class RemotePrefProvider : ContentProvider() {
         val callingUid = Binder.getCallingUid()
         val callingAppId = callingUid % 100000
         val moduleAppId = Process.myUid() % 100000
-        updateTrustedAppIds()
 
         val isModule = callingAppId == moduleAppId
-        val isTrusted = callingAppId == 0 || callingAppId == 1000 || trustedAppIds.contains(callingAppId)
+        val isTrusted = isCallerTrusted(callingUid)
 
         if (method == "put") {
             if (isModule) {
@@ -110,12 +145,11 @@ class RemotePrefProvider : ContentProvider() {
         }
 
         if (method == "get") {
-            val isWhitelisted = isModule || isTrusted || callingAppId < 1000
-            if (!isWhitelisted) {
-                Logger.e(TAG, "Blocked", "Unauthorized READ from UID: $callingUid (AppId: $callingAppId)")
-                return null
+            if (isModule || isTrusted || callingAppId < 1000) {
+                return handleGet()
             }
-            return handleGet()
+            Logger.e(TAG, "Blocked", "Unauthorized READ from UID: $callingUid (AppId: $callingAppId)")
+            return null
         }
 
         return null

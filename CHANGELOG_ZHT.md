@@ -1,3 +1,8 @@
+### v1.3.1
+- 🔒 **EasyUnlock Android 17 CP3A 適配**：修復 Android 17（`CP3A` 韌體）上因 Bouncer 重構導致的自動確認失效，加入輸入框清空前快照與 `LockPatternUtils` 底層憑證攔截。
+- 🛡️ **RemotePrefProvider IPC 授權修復**：新增動態 `getPackagesForUid` 呼叫者驗證，解決 SystemUI 與 Launcher 在 Direct Boot 階段 IPC 讀寫遭拒問題，恢復狀態欄所有功能。
+- 🐞 **LSPosed 載入遞迴防護**：優化 `getSafeContext` 避開 `LoadedApk` 建立，防止 `onPackageLoaded` 空值指標例外。
+
 ### v1.3.0
 - 🔋 **電量光圈視覺特效**：新增解鎖 3 秒霓虹外發光與厚度脈動，以及低電量 (<10%) 每分鐘一次的 1.5 秒紅色呼吸警示。
 - 📝 **程式碼與 Log 正規化**：統一全專案 32 個檔案 Logcat 標籤 (`PXTK_`)，並建立 `Logger.md` / `Comments.md` 規範。
