@@ -24,9 +24,6 @@ class BootReceiver : BroadcastReceiver() {
         
         if ((action == Intent.ACTION_BOOT_COMPLETED) ||
             (action == Intent.ACTION_LOCKED_BOOT_COMPLETED) || 
-            (action == Intent.ACTION_USER_UNLOCKED) ||
-            (action == Intent.ACTION_PACKAGE_ADDED) ||
-            (action == Intent.ACTION_PACKAGE_REPLACED) ||
             (action == Intent.ACTION_MY_PACKAGE_REPLACED)) {
             
             val deContext = context.createDeviceProtectedStorageContext()
@@ -47,27 +44,6 @@ class BootReceiver : BroadcastReceiver() {
                     putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
                     putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
                     putBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false)
-                }
-            }
-            
-            if ((action == Intent.ACTION_USER_UNLOCKED) && (cePrefs != null)) {
-                if (cePrefs.all.isNotEmpty()) {
-                    prefs.edit(commit = true) {
-                        cePrefs.all.forEach { (k, v) ->
-                            when (v) {
-                                is Boolean -> putBoolean(k, v)
-                                is Int -> putInt(k, v)
-                                is Float -> putFloat(k, v)
-                                is Long -> putLong(k, v)
-                                is String -> putString(k, v)
-                            }
-                        }
-                        putBoolean(PreferenceKeys.ALLOW_DOWNGRADE, false)
-                        putBoolean(PreferenceKeys.BYPASS_SIGNATURE, false)
-                        putLong(PreferenceKeys.DOWNGRADE_TIMESTAMP, 0L)
-                        putLong(PreferenceKeys.SIGNATURE_TIMESTAMP, 0L)
-                        putBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false)
-                    }
                 }
             }
 

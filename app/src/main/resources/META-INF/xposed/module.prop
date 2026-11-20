@@ -1,4 +1,4 @@
 minApiVersion=102
 targetApiVersion=102
-autoHotReload=true
+autoHotReload=false
 staticScope=true

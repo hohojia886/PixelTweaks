@@ -9,8 +9,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-val appVersionName = "1.3.1"
-val appVersionCode = 23
+val appVersionName = "1.3.2"
+val appVersionCode = 24
 
 val localProperties = Properties().apply {
     val localPropertiesFile = rootProject.file("local.properties")
@@ -99,6 +99,7 @@ dependencies {
     // libxposed API 102
     compileOnly("io.github.libxposed:api:102.0.0")
     testImplementation("io.github.libxposed:api:102.0.0")
+    implementation("io.github.libxposed:service:102.0.0")
 
     // AndroidX & Material Design
     implementation("com.google.android.material:material:1.14.0")
@@ -144,8 +145,10 @@ tasks.register<Zip>("backupProject") {
         ?: System.getenv("BACKUP_DIR")
         ?: "${rootProject.rootDir}/Backups"
 
-    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    archiveFileName.set("PixelTweaks2_$timestamp.zip")
+    archiveFileName.set(providers.provider {
+        val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        "PixelTweaks2_$timestamp.zip"
+    })
     destinationDirectory.set(file(backupDirStr))
 
     from(project.rootDir) {
@@ -160,9 +163,4 @@ tasks.register<Zip>("backupProject") {
         exclude("**/tmp/**")
         exclude("**/app/keystore/**")
     }
-}
-
-// Automatically trigger backup after any Debug assemble task completes
-tasks.matching { it.name.startsWith("assemble") && it.name.contains("Debug") }.configureEach {
-    finalizedBy("backupProject")
 }

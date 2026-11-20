@@ -280,10 +280,8 @@ class MainHook : XposedModule() {
         DoubleTapToSleepEntry,
         EasyUnlockEntry,
         QuickSettingsEntry,
-        ScreenshotServerEntry,
         ScreenshotSystemUIEntry,
         ScreenshotAppEntry,
-        PackageManagerEntry,
         NetworkTrafficEntry,
         EnergyRingEntry,
         BatteryPercentEntry,
@@ -305,17 +303,66 @@ class MainHook : XposedModule() {
     }
 
     /**
+     * Invoked when system_server is starting up.
+     * Hooks core system services (PackageManager, Screenshot) directly using the system ClassLoader,
+     * and defers IPC receiver initialization until ActivityManagerService.systemReady is reached.
+     *
+     * @param param System server startup parameters containing system ClassLoader.
+     */
+    override fun onSystemServerStarting(param: XposedModuleInterface.SystemServerStartingParam) {
+        super.onSystemServerStarting(param)
+        isSystemServerProcess = true
+        val cl = param.classLoader
+        
+        runCatching { 
+            io.github.hohojia886.pixeltweaks.hooks.security.PackageManagerHook.hook(this, cl) 
+        }.onFailure { Logger.e("Hook", "Error", "PackageManager hook initialization failed", it) }
+        
+        runCatching { 
+            io.github.hohojia886.pixeltweaks.hooks.security.ScreenshotHook.hookSystemServer(this, cl) 
+        }.onFailure { Logger.e("Hook", "Error", "Screenshot system server hook failed", it) }
+        
+        runCatching { 
+            io.github.hohojia886.pixeltweaks.hooks.security.ScreenshotHook.hookApp(this, cl) 
+        }.onFailure { Logger.e("Hook", "Error", "Screenshot app hook in system_server failed", it) }
+
+        // Delay receiver registration until AMS is ready to avoid early-boot Binder/context deadlocks
+        runCatching {
+            val amsClass = cl.loadClass("com.android.server.am.ActivityManagerService")
+            val systemReadyMethods = amsClass.declaredMethods.filter { it.name == "systemReady" }
+            if (systemReadyMethods.isEmpty()) {
+                Logger.e("Hook", "Error", "No ActivityManagerService.systemReady method found")
+            } else {
+                val ipcInitialized = java.util.concurrent.atomic.AtomicBoolean(false)
+                systemReadyMethods.forEach { systemReady ->
+                    this.hook(systemReady).intercept { chain ->
+                        val result = chain.proceed()
+                        if (ipcInitialized.compareAndSet(false, true)) {
+                            Logger.i("Hook", "Started", "AMS systemReady reached, initializing IPC in system_server")
+                            Logger.sync(this, cl)
+                            io.github.hohojia886.pixeltweaks.utils.IpcDispatcher.initializeOnce(this, cl, isSystemReady = true)
+                        }
+                        result
+                    }
+                }
+            }
+        }.onFailure { Logger.e("Hook", "Error", "Failed to hook AMS systemReady", it) }
+    }
+
+    /**
      * Iterates through defined hooks and applies those matching current package.
      * Invokes apply method on matching hook entries with target ClassLoader.
      */
     override fun onPackageLoaded(param: PackageLoadedParam) {
         super.onPackageLoaded(param)
+        if (isSystemServerProcess) return
+        
         @Suppress("USELESS_ELVIS")
         val pkgName = param.packageName ?: return
         @Suppress("USELESS_ELVIS")
         val classLoader = param.defaultClassLoader ?: return
         
-        val isRootSystemServer = pkgName == "android" && isSystemServerProcess
+        val isRootSystemServer = false // Handled in onSystemServerStarting
 
         allHooks.forEach { hook ->
             if (!hook.matches(pkgName, isRootSystemServer)) return@forEach

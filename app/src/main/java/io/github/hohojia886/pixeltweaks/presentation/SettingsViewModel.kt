@@ -3,6 +3,7 @@ package io.github.hohojia886.pixeltweaks.presentation
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import io.github.hohojia886.pixeltweaks.data.repository.SettingsRepository
 import io.github.hohojia886.pixeltweaks.utils.BatteryUtils
@@ -29,7 +30,7 @@ class SettingsViewModel(
 ) : ViewModel() {
 
     private val timeoutMillis = 3 * 60 * 1000L
-    private val batteryRefreshIntervalMs = 2000L
+    private val batteryRefreshIntervalMs = 5000L
 
     private val _uiState = MutableStateFlow(repository.loadInitialState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -408,5 +409,23 @@ class SettingsViewModel(
         super.onCleared()
         stopBatteryAutoRefresh()
         stopSecurityTimers()
+    }
+
+    companion object {
+        /**
+         * Creates a [ViewModelProvider.Factory] to instantiate [SettingsViewModel] with application context.
+         * Scopes the repository lifecycle to the application context to prevent Activity memory leaks.
+         *
+         * @param context Application or component context used to initialize the settings repository.
+         * @return A configured [ViewModelProvider.Factory] instance.
+         */
+        fun factory(context: android.content.Context): ViewModelProvider.Factory = 
+            object : ViewModelProvider.Factory {
+                @Suppress("UNCHECKED_CAST")
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    val repository = SettingsRepository(context.applicationContext)
+                    return SettingsViewModel(repository) as T
+                }
+            }
     }
 }

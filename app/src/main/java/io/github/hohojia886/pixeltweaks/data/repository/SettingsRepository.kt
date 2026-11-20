@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.SharedPreferences
 import io.github.hohojia886.pixeltweaks.presentation.SettingsUiState
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
+import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
+import io.github.libxposed.service.XposedService
+import io.github.libxposed.service.XposedServiceHelper
 
 /**
  * SettingsRepository: Data access layer handling dual SharedPreferences persistence.
@@ -26,8 +29,47 @@ class SettingsRepository(private val context: Context) {
         deContext.getSharedPreferences(IpcManager.PREF_NAME, Context.MODE_PRIVATE)
     }
 
+    private var xposedService: XposedService? = null
+
     init {
+        runCatching {
+            XposedServiceHelper.registerListener(object : XposedServiceHelper.OnServiceListener {
+                override fun onServiceBind(service: XposedService) {
+                    xposedService = service
+                    syncRemotePrefs()
+                }
+                override fun onServiceDied(service: XposedService) {
+                    xposedService = null
+                }
+            })
+        }.onFailure { e ->
+            Logger.e("IpcManager", "Error", "Failed to register XposedServiceHelper listener", e)
+        }
         initDefaultsIfNeeded()
+    }
+
+    /**
+     * Synchronizes current Device Protected preferences to LSPosed RemotePreferences via [XposedService].
+     * Allows system hooks to read up-to-date preferences even during early boot before credential unlock.
+     */
+    private fun syncRemotePrefs() {
+        val service = xposedService ?: return
+        runCatching {
+            val prefs = service.getRemotePreferences(IpcManager.PREF_NAME)
+            val edit = prefs.edit()
+            dePrefs.all.forEach { (k, v) ->
+                when (v) {
+                    is Boolean -> edit.putBoolean(k, v)
+                    is Int -> edit.putInt(k, v)
+                    is Float -> edit.putFloat(k, v)
+                    is Long -> edit.putLong(k, v)
+                    is String -> edit.putString(k, v)
+                }
+            }
+            edit.apply()
+        }.onFailure { e ->
+            Logger.e("IpcManager", "Error", "Failed to sync remote preferences via XposedService", e)
+        }
     }
 
     /**
@@ -132,6 +174,23 @@ class SettingsRepository(private val context: Context) {
         }
         ceEdit.commit()
         deEdit.commit()
+        
+        runCatching {
+            val remotePrefs = xposedService?.getRemotePreferences(IpcManager.PREF_NAME)
+            val remoteEdit = remotePrefs?.edit()
+            if (remoteEdit != null) {
+                when (value) {
+                    is Boolean -> remoteEdit.putBoolean(key, value)
+                    is Int -> remoteEdit.putInt(key, value)
+                    is Float -> remoteEdit.putFloat(key, value)
+                    is Long -> remoteEdit.putLong(key, value)
+                    is String -> remoteEdit.putString(key, value)
+                }
+                remoteEdit.apply()
+            }
+        }.onFailure { e ->
+            Logger.e("IpcManager", "Error", "Failed to write key $key to RemotePreferences", e)
+        }
     }
 
     /**

@@ -27,6 +27,8 @@ object IpcManager {
     const val ACTION_SETTINGS_SYNC = "io.github.hohojia886.pixeltweaks.SETTINGS_SYNC"
     const val ACTION_REQUEST_SLEEP = "io.github.hohojia886.pixeltweaks.REQUEST_SLEEP"
 
+    private const val TAG = "IpcManager"
+
     private var sysContextRef: WeakReference<Context>? = null
     @Volatile private var cachedModulePkgAppId = -1
 
@@ -217,6 +219,14 @@ object IpcManager {
      */
     @SuppressLint("WrongConstant")
     fun syncAllSettings(context: Context, prefs: SharedPreferences) {
+        val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
+            if (inMemoryLen > 0) inMemoryLen else runCatching {
+                val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
+                val bundle = context.contentResolver.call(uri, "get", null, null)
+                bundle?.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1) ?: -1
+            }.getOrDefault(-1)
+        }
+        
         val intent = Intent(ACTION_SETTINGS_SYNC).apply {
             putExtra(PreferenceKeys.ENABLE_CLEAR_ALL, prefs.getBoolean(PreferenceKeys.ENABLE_CLEAR_ALL, true))
             putExtra(PreferenceKeys.ENABLE_TABLET_MODE, prefs.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false))
@@ -231,16 +241,11 @@ object IpcManager {
             putExtra(PreferenceKeys.ENABLE_DT_LOCKSCREEN, prefs.getBoolean(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true))
             putExtra(PreferenceKeys.ENABLE_DT_STATUSBAR, prefs.getBoolean(PreferenceKeys.ENABLE_DT_STATUSBAR, true))
 
-            val expectedPassLen = prefs.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1).let { inMemoryLen ->
-                if (inMemoryLen > 0) inMemoryLen else runCatching {
-                    val uri = "content://io.github.hohojia886.pixeltweaks".toUri()
-                    val bundle = context.contentResolver.call(uri, "get", null, null)
-                    bundle?.getInt(PreferenceKeys.EXPECTED_PASS_LEN, -1) ?: -1
-                }.getOrDefault(-1)
-            }
             putExtra(PreferenceKeys.ENABLE_EASY_UNLOCK, prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK, true))
             putExtra(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, prefs.getBoolean(PreferenceKeys.ENABLE_EASY_UNLOCK_REBOOT, false))
-            putExtra(PreferenceKeys.EXPECTED_PASS_LEN, expectedPassLen)
+            
+            // Expected pass length will be added separately for SystemUI only
+            
             putExtra(PreferenceKeys.IS_FIRST_UNLOCK_DONE, prefs.getBoolean(PreferenceKeys.IS_FIRST_UNLOCK_DONE, false))
 
             putExtra(PreferenceKeys.ENABLE_QS_WIFI_FIX, prefs.getBoolean(PreferenceKeys.ENABLE_QS_WIFI_FIX, true))
@@ -268,7 +273,16 @@ object IpcManager {
 
             addFlags(0x01000000)
         }
-        context.sendBroadcast(intent, null, makeBroadcastOptions())
+        
+        val sysUiIntent = Intent(intent).apply { 
+            putExtra(PreferenceKeys.EXPECTED_PASS_LEN, expectedPassLen) 
+            setPackage("com.android.systemui")
+        }
+        
+        runCatching { context.sendBroadcast(intent, null, makeBroadcastOptions()) }
+            .onFailure { e -> Logger.e(TAG, "Error", "Failed to broadcast SETTINGS_SYNC", e) }
+        runCatching { context.sendBroadcast(sysUiIntent, null, makeBroadcastOptions()) }
+            .onFailure { e -> Logger.e(TAG, "Error", "Failed to broadcast SETTINGS_SYNC to SystemUI", e) }
     }
 
     /**
@@ -280,8 +294,10 @@ object IpcManager {
     fun sendSleepRequest(context: Context) {
         val intent = Intent(ACTION_REQUEST_SLEEP).apply {
             addFlags(Intent.FLAG_RECEIVER_FOREGROUND or 0x01000000)
+            setPackage("com.android.systemui")
         }
-        context.sendBroadcast(intent, null, makeBroadcastOptions())
+        runCatching { context.sendBroadcast(intent, null, makeBroadcastOptions()) }
+            .onFailure { e -> Logger.e(TAG, "Error", "Failed to broadcast ACTION_REQUEST_SLEEP to SystemUI", e) }
     }
 
     /**
@@ -303,7 +319,14 @@ object IpcManager {
             }
             addFlags(0x01000000)
         }
-        context.sendBroadcast(intent, null, makeBroadcastOptions())
+        if (key == PreferenceKeys.EXPECTED_PASS_LEN) {
+            intent.setPackage("com.android.systemui")
+            runCatching { context.sendBroadcast(intent, null, makeBroadcastOptions()) }
+                .onFailure { e -> Logger.e(TAG, "Error", "Failed to broadcast SETTING_CHANGED for $key to SystemUI", e) }
+        } else {
+            runCatching { context.sendBroadcast(intent, null, makeBroadcastOptions()) }
+                .onFailure { e -> Logger.e(TAG, "Error", "Failed to broadcast SETTING_CHANGED for $key", e) }
+        }
     }
 
     private val trustedBroadcastPackages = setOf(

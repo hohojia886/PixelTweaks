@@ -1,3 +1,9 @@
+### v1.3.2
+- 📦 **作用域簽章繞過與應用降級修復**：透過 ThreadLocal 深度追蹤機制（`withInstallVerification`）將簽章繞過嚴格限制於安裝驗證階段，杜絕系統全域洩漏；並攔截 `PackageManagerServiceUtils#compareSignatures` 與隱藏的 `SigningDetails` 能力判定方法（如 `checkCapability`、`signaturesMatchExactly` 等），支援 Debug 與 Release 簽章間無縫覆蓋切換與降級安裝。
+- 📱 **平板模式與系統服務生命週期修復**：修正現代 Android 版本上的 `AMS.systemReady` 反射簽章查找問題，並引入狀態感知解析（`decideDensityAction`），確保平板模式精確作用於 `DEFAULT_DISPLAY` 且不會在廣播同步時意外重置自訂顯示大小。
+- 🔒 **EasyUnlock 與安全性強化**：全面優化憑證判定邏輯防止錯誤 PIN 碼誤學，消除回呼記憶體洩漏，於 Manifest 關閉 `allowBackup`，並確保開機時自動重置降級與簽章等高風險開關。
+- 🛡️ **IPC 廣播安全升級與遠端偏好設定整合**：將敏感廣播改為明確 `setPackage` 目標傳遞，杜絕參數外洩；完整導入 `io.github.libxposed:service` 依賴，確保開機早期即能穩定同步模組偏好設定。
+
 ### v1.3.1
 - 🔒 **EasyUnlock Android 17 CP3A 適配**：修復 Android 17（`CP3A` 韌體）上因 Bouncer 重構導致的自動確認失效，加入輸入框清空前快照與 `LockPatternUtils` 底層憑證攔截。
 - 🛡️ **RemotePrefProvider IPC 授權修復**：新增動態 `getPackagesForUid` 呼叫者驗證，解決 SystemUI 與 Launcher 在 Direct Boot 階段 IPC 讀寫遭拒問題，恢復狀態欄所有功能。

@@ -13,6 +13,7 @@ import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Enables Auto PIN Confirm for any PIN length on Keyguard without requiring the user to press Enter.
@@ -28,6 +29,7 @@ object EasyUnlockHook {
     @Volatile private var isFirstUnlockDone = false
     @Volatile private var learnedPinLength = -1
     @Volatile private var processPackageName: String? = null
+    private val hookedCallbackClasses = ConcurrentHashMap.newKeySet<Class<*>>()
 
     /**
      * Initializes EasyUnlock hooks inside SystemUI keyguard.
@@ -147,7 +149,7 @@ object EasyUnlockHook {
 
             lpuClass.declaredMethods.filter { it.name == "userHas6DigitPin" }.forEach { m ->
                 module.hook(m).intercept { chain ->
-                    if (isEnabled) true else chain.proceed()
+                    if (isEnabled && learnedPinLength == 6) true else chain.proceed()
                 }
             }
 
@@ -162,40 +164,41 @@ object EasyUnlockHook {
                     val size = getCredentialSize(cred)
                     if (size > 0) {
                         pendingCredentialLength = size
-                        Logger.d(TAG, "Credential", "Intercepted credential attempt, size=$size")
+                        Logger.d(TAG, "Active", "Intercepted credential attempt, size=$size")
                     }
 
                     val callbackArg = chain.args.find { arg ->
                         arg != null && (arg.javaClass.simpleName.contains("Callback") || arg.javaClass.interfaces.any { it.simpleName.contains("Callback") })
                     }
                     
-                    if (callbackArg != null) {
+                    if (callbackArg != null && hookedCallbackClasses.add(callbackArg.javaClass)) {
                         runCatching {
                             callbackArg.javaClass.declaredMethods.filter { 
                                 it.name == "onChecked" || it.name == "onEarlyMatched" || it.name == "onCredentialVerified" 
                             }.forEach { cbMethod ->
+                                val boolIndex = cbMethod.parameterTypes.indexOfFirst { it == Boolean::class.javaPrimitiveType }
                                 module.hookBefore(cbMethod) { cbChain ->
-                                    val matched = cbChain.args.any { it == true }
+                                    val matched = if (cbMethod.name == "onEarlyMatched") true 
+                                                  else if (boolIndex >= 0) cbChain.args[boolIndex] as? Boolean == true 
+                                                  else false
                                     if (matched && pendingCredentialLength > 0) {
                                         commitLearnedLength(classLoader, pendingCredentialLength, "LockPatternUtils Callback")
                                     }
                                 }
                             }
+                        }.onFailure { e ->
+                            Logger.e(TAG, "Error", "Failed to hook callback on ${callbackArg.javaClass.name}", e)
                         }
                     }
 
                     val result = chain.proceed()
 
                     if (result != null && pendingCredentialLength > 0) {
-                        val isSuccess = when (result) {
-                            is Boolean -> result
-                            else -> runCatching {
-                                val resCode = findMethod(result.javaClass, "getResponseCode")?.invoke(result) as? Int
-                                val matched = findMethod(result.javaClass, "isMatched")?.invoke(result) as? Boolean
-                                val timeout = findMethod(result.javaClass, "getTimeout")?.invoke(result) as? Int
-                                (resCode == 0) || (matched == true) || (timeout == 0)
-                            }.getOrDefault(false)
-                        }
+                        val isSuccess = runCatching {
+                            val resCode = findMethod(result.javaClass, "getResponseCode")?.invoke(result) as? Int
+                            val matched = findMethod(result.javaClass, "isMatched")?.invoke(result) as? Boolean
+                            isCredentialCheckSuccess(result, resCode, matched)
+                        }.getOrDefault(false)
 
                         if (isSuccess) {
                             commitLearnedLength(classLoader, pendingCredentialLength, "LockPatternUtils Return")
@@ -239,7 +242,7 @@ object EasyUnlockHook {
                                 val l = (text as? CharSequence)?.length ?: 0
                                 if (l > 0) {
                                     lastEnteredPinLength = l
-                                    Logger.d(TAG, "Entry", "Captured entered PIN length before clear: $l (from $className)")
+                                    Logger.d(TAG, "Active", "Captured entered PIN length before clear: $l (from $className)")
                                     break
                                 }
                             }
@@ -248,14 +251,17 @@ object EasyUnlockHook {
 
                     // Handle password check success and commit learned length
                     clazz.declaredMethods.filter { 
-                        it.name == "onPasswordChecked" || it.name == "verifyPasswordAndUnlock"
+                        it.name == "onPasswordChecked"
                     }.forEach { m ->
-                        module.hookBefore(m) { chain ->
-                            val successful = chain.args.any { it == true }
-                            if (isEnabled && successful) {
-                                val lengthToSave = if (lastEnteredPinLength > 0) lastEnteredPinLength else pendingCredentialLength
-                                if (lengthToSave > 0) {
-                                    commitLearnedLength(classLoader, lengthToSave, className)
+                        val boolIndex = m.parameterTypes.indexOfFirst { it == Boolean::class.javaPrimitiveType }
+                        if (boolIndex >= 0) {
+                            module.hookBefore(m) { chain ->
+                                val successful = chain.args[boolIndex] as? Boolean == true
+                                if (isEnabled && successful) {
+                                    val lengthToSave = if (lastEnteredPinLength > 0) lastEnteredPinLength else pendingCredentialLength
+                                    if (lengthToSave > 0) {
+                                        commitLearnedLength(classLoader, lengthToSave, className)
+                                    }
                                 }
                             }
                         }
@@ -271,12 +277,12 @@ object EasyUnlockHook {
      * Commits auto-learned PIN length securely and syncs across processes.
      */
     private fun commitLearnedLength(classLoader: ClassLoader, length: Int, source: String) {
-        if (length > 0 && length != learnedPinLength) {
+        if (length in 4..16 && length != learnedPinLength) {
             learnedPinLength = length
             isFirstUnlockDone = true
             Logger.i(TAG, "Success", "Learned PIN length: $learnedPinLength (from $source)")
             saveLearnedLength(classLoader, learnedPinLength)
-        } else if (length > 0) {
+        } else if (length in 4..16) {
             isFirstUnlockDone = true
         }
     }
@@ -339,5 +345,22 @@ object EasyUnlockHook {
             catch (_: NoSuchFieldException) { curr = curr.superclass }
         }
         return null
+    }
+
+    /**
+     * Evaluates whether a credential check returned a successful verification result.
+     * Explicitly recognizes Boolean `true`, response code `0` (RESPONSE_OK), or `isMatched() == true`.
+     * Does NOT treat `timeout == 0` as success, preventing false-positive PIN learning when an incorrect PIN is entered.
+     *
+     * @param result The raw result object returned by `LockPatternUtils.checkCredential`.
+     * @param responseCode Optional integer response code retrieved via reflection (`getResponseCode`).
+     * @param isMatched Optional boolean match indicator retrieved via reflection (`isMatched`).
+     * @return True if the credential verification was definitively successful, false otherwise.
+     */
+    internal fun isCredentialCheckSuccess(result: Any?, responseCode: Int?, isMatched: Boolean?): Boolean {
+        if (result is Boolean) return result
+        if (responseCode == 0) return true
+        if (isMatched == true) return true
+        return false
     }
 }

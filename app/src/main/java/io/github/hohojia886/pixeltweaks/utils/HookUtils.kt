@@ -86,6 +86,8 @@ fun android.content.Intent.getFlexibleFloatExtra(name: String, defaultValue: Flo
 
 /**
  * Checks if Mobile Data Direct Toggle is supported based on current Android build numbers.
+ * Note: This relies on hardcoded build tags and may stop working after a system update
+ * if the list is not kept up-to-date.
  *
  * @param display Android Build DISPLAY string.
  * @param id Android Build ID string.

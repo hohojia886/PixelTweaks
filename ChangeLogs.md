@@ -1,3 +1,9 @@
+### v1.3.2
+- 📦 **Scoped Signature Bypass & Package Downgrade**: Scoped install-time signature bypass using thread-local depth tracking (`withInstallVerification`) to prevent global bypass leaks, while hooking `PackageManagerServiceUtils#compareSignatures` and hidden `SigningDetails` capability checks (`checkCapability`, `hasAncestorOrSelf`, `signaturesMatchExactly`, etc.) to allow switching between Debug and Release builds.
+- 📱 **Tablet Mode & System Server Stability**: Resolved `systemReady` reflection lookup failure on modern Android releases and integrated state-aware density action resolution (`decideDensityAction`), ensuring Tablet Mode applies reliably to `DEFAULT_DISPLAY` without getting reset during settings sync broadcasts.
+- 🔒 **EasyUnlock & Security Hardening**: Optimized credential verification checks to prevent false-positive PIN learning, eliminated callback hook memory leaks, disabled application backup (`allowBackup="false"`), and ensured security switches auto-reset on boot.
+- 🛡️ **Secure IPC & Xposed Service Integration**: Replaced implicit IPC broadcasts with explicit package targeting (`setPackage`) for sensitive payloads, and integrated `io.github.libxposed:service` for low-latency early remote preference synchronization.
+
 ### v1.3.1
 - 🔒 **EasyUnlock Android 17 CP3A Bouncer Refactoring**: Resolved Auto PIN Confirm issues on Android 17 (`CP3A` build) by adding pre-clear entry text capture and direct `LockPatternUtils` credential interception.
 - 🛡️ **RemotePrefProvider IPC Authorization Fix**: Implemented dynamic `getPackagesForUid` caller verification in `RemotePrefProvider`, ensuring reliable Direct Boot settings reads/writes for SystemUI and Launcher across all firmware builds.

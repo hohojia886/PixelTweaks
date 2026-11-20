@@ -94,4 +94,21 @@ class EasyUnlockHookTest {
         assertEquals(4, lenField.get(instance) as Int)
     }
 
+    @Test
+    fun testIsCredentialCheckSuccess() {
+        // Boolean cases
+        assertTrue(EasyUnlockHook.isCredentialCheckSuccess(true, null, null))
+        assertFalse(EasyUnlockHook.isCredentialCheckSuccess(false, null, null))
+
+        // responseCode cases
+        assertTrue(EasyUnlockHook.isCredentialCheckSuccess(Any(), 0, null))
+        assertFalse(EasyUnlockHook.isCredentialCheckSuccess(Any(), -1, null))
+        
+        // isMatched cases
+        assertTrue(EasyUnlockHook.isCredentialCheckSuccess(Any(), null, true))
+        assertFalse(EasyUnlockHook.isCredentialCheckSuccess(Any(), null, false))
+
+        // Negative combo: failed verify with responseCode -1 and matched false
+        assertFalse(EasyUnlockHook.isCredentialCheckSuccess(Any(), -1, false))
+    }
 }

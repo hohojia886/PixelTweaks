@@ -48,6 +48,7 @@ class PackageManagerHookTest {
             if (field.name == "isSignatureBypassEnabled") field[instance] = false
             if (field.name == "downgradeTimestamp") field[instance] = 0L
             if (field.name == "signatureTimestamp") field[instance] = 0L
+            if (field.name == "appliedTabletMode") field[instance] = null
         }
     }
 
@@ -115,6 +116,69 @@ class PackageManagerHookTest {
         
         // Advanced time check using manual timestamp since Robolectric shadow clock can be tricky
         assertFalse(method.invoke(instance, true, now - 4 * 60 * 1000L) as Boolean)
+    }
+
+    @Test
+    fun testDecideDensityAction() {
+        // Explicit change (isFullSync = false)
+        assertTrue(PackageManagerHook.decideDensityAction(false, true, null)!!)
+        assertTrue(PackageManagerHook.decideDensityAction(false, true, false)!!)
+        assertFalse(PackageManagerHook.decideDensityAction(false, false, true)!!)
+        assertFalse(PackageManagerHook.decideDensityAction(false, false, null)!!)
+
+        // Full sync (isFullSync = true)
+        assertTrue(PackageManagerHook.decideDensityAction(true, true, null)!!)
+        assertTrue(PackageManagerHook.decideDensityAction(true, true, false)!!)
+        assertFalse(PackageManagerHook.decideDensityAction(true, false, true)!!)
+        
+        // **Crucial case**: requested false, applied null -> should be null
+        assertTrue(PackageManagerHook.decideDensityAction(true, false, null) == null)
+        assertTrue(PackageManagerHook.decideDensityAction(true, false, false) == null)
+        assertTrue(PackageManagerHook.decideDensityAction(true, true, true) == null)
+    }
+
+    @Test
+    fun testShouldBypassSignatureRequiresInstallFlow() {
+        assertFalse(PackageManagerHook.shouldBypassSignature(false, false))
+        assertFalse(PackageManagerHook.shouldBypassSignature(true, false))
+        assertFalse(PackageManagerHook.shouldBypassSignature(false, true))
+        assertTrue(PackageManagerHook.shouldBypassSignature(true, true))
+    }
+
+    @Test
+    fun testWithInstallVerificationNestingAndCleanup() {
+        assertFalse(PackageManagerHook.isInInstallVerification())
+
+        PackageManagerHook.withInstallVerification {
+            assertTrue(PackageManagerHook.isInInstallVerification())
+            PackageManagerHook.withInstallVerification {
+                assertTrue(PackageManagerHook.isInInstallVerification())
+            }
+            assertTrue(PackageManagerHook.isInInstallVerification())
+        }
+        assertFalse(PackageManagerHook.isInInstallVerification())
+
+        runCatching {
+            PackageManagerHook.withInstallVerification {
+                assertTrue(PackageManagerHook.isInInstallVerification())
+                error("simulated failure")
+            }
+        }
+        assertFalse(PackageManagerHook.isInInstallVerification())
+    }
+
+    @Test
+    fun testWithoutInstallVerificationSuspendsBypassDuringPostCommit() {
+        assertFalse(PackageManagerHook.isInInstallVerification())
+
+        PackageManagerHook.withInstallVerification {
+            assertTrue(PackageManagerHook.isInInstallVerification())
+            PackageManagerHook.withoutInstallVerification {
+                assertFalse(PackageManagerHook.isInInstallVerification())
+            }
+            assertTrue(PackageManagerHook.isInInstallVerification())
+        }
+        assertFalse(PackageManagerHook.isInInstallVerification())
     }
 
 }

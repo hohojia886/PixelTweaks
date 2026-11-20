@@ -22,6 +22,7 @@ object ScreenshotHook {
     private const val TAG = "Screenshot"
     @Volatile private var isEnabled = false
     @Volatile private var isSystemHooked = false
+    @Volatile private var isListenerRegistered = false
 
     /**
      * Intercepts application-level surface creation to suppress secure flags.
@@ -36,7 +37,7 @@ object ScreenshotHook {
             module.hook(builderClass.getDeclaredMethod("setSecure", Boolean::class.java)).intercept { chain ->
                 val requestedSecure = chain.args.getOrNull(0) as? Boolean ?: false
                 if (isEnabled && requestedSecure) {
-                    Logger.d(TAG, "Action", "Forced SurfaceControl.setSecure(false)")
+                    Logger.d(TAG, "Active", "Forced SurfaceControl.setSecure(false)")
                     chain.proceed(arrayOf(false))
                 } else {
                     chain.proceed()
@@ -50,6 +51,9 @@ object ScreenshotHook {
     /**
      * Injects system UI settings specific to screenshots.
      * Synchronizes module preferences for SystemUI process instance.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI process ClassLoader.
      */
     fun hookSystemUI(module: XposedModule, classLoader: ClassLoader) {
         Logger.i(TAG, "Init", "Initializing ScreenshotHook for [SystemUI]")
@@ -59,6 +63,9 @@ object ScreenshotHook {
     /**
      * Removes FLAG_SECURE layer properties within WindowManager.
      * Hooks WindowManagerService and WindowState to strip secure flags.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemServer ClassLoader.
      */
     fun hookSystemServer(module: XposedModule, classLoader: ClassLoader) {
         if (isSystemHooked) return
@@ -119,17 +126,27 @@ object ScreenshotHook {
 
         isEnabled = bundle.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, prefs?.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true) ?: true)
 
-        IpcDispatcher.addListener { intent ->
-            val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
-            if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
-                isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
-                Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
-            } else if (key == PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS) {
-                isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
-                Logger.i(TAG, "Sync", "Setting [enable_unrestricted_screenshots] updated to $isEnabled")
+        if (!isListenerRegistered) {
+            isListenerRegistered = true
+            IpcDispatcher.addListener { intent ->
+                val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
+                if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
+                    isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
+                    Logger.i(TAG, "Sync", "Full sync received: enabled=$isEnabled")
+                } else if (key == PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS) {
+                    isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
+                    Logger.i(TAG, "Sync", "Setting [enable_unrestricted_screenshots] updated to $isEnabled")
+                }
             }
-        }
-        if (classLoader != null) {
+            if (classLoader != null) {
+                IpcDispatcher.initializeOnce(module, classLoader) {
+                    val refreshed = IpcManager.loadPreferences(module, classLoader)
+                    if (refreshed.containsKey(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS)) {
+                        isEnabled = refreshed.getBoolean(PreferenceKeys.ENABLE_UNRESTRICTED_SCREENSHOTS, true)
+                    }
+                }
+            }
+        } else if (classLoader != null) {
             IpcDispatcher.initializeOnce(module, classLoader)
         }
     }

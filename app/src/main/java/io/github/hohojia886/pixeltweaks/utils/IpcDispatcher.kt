@@ -35,25 +35,25 @@ object IpcDispatcher {
      * @param module Active LSPosed [XposedModule] instance.
      * @param classLoader Target process ClassLoader.
      * @param extraActions Optional additional broadcast action strings to register.
+     * @param isSystemReady Whether system_server has reached the AMS systemReady lifecycle state.
      * @param onContextReady Optional callback invoked as soon as Application Context is acquired.
      */
     fun initializeOnce(
         module: XposedModule,
         classLoader: ClassLoader,
         extraActions: List<String> = emptyList(),
+        isSystemReady: Boolean = false,
         onContextReady: ((Context) -> Unit)? = null
     ) {
         if (onContextReady != null) {
             val app = cachedAppContext
             if (app != null) {
-                runCatching { onContextReady(app) }
+                runCatching { onContextReady(app) }.onFailure { e ->
+                    Logger.e("Dispatcher", "Error", "Immediate onContextReady invocation failed", e)
+                }
             } else {
                 contextListeners.add(onContextReady)
             }
-        }
-
-        if (!isInitialized.compareAndSet(false, true)) {
-            return
         }
 
         fun setupReceiver(context: Context) {
@@ -63,7 +63,9 @@ object IpcDispatcher {
                 synchronized(contextListeners) {
                     val iterator = contextListeners.iterator()
                     while (iterator.hasNext()) {
-                        runCatching { iterator.next().invoke(context) }
+                        runCatching { iterator.next().invoke(context) }.onFailure { e ->
+                            Logger.e("Dispatcher", "Error", "Context listener callback failed", e)
+                        }
                     }
                 }
 
@@ -75,14 +77,23 @@ object IpcDispatcher {
                     synchronized(listeners) {
                         val iterator = listeners.iterator()
                         while (iterator.hasNext()) {
-                            runCatching { iterator.next().invoke(intent) }
+                            runCatching { iterator.next().invoke(intent) }.onFailure { e ->
+                                Logger.e("Dispatcher", "Error", "IPC broadcast listener callback failed", e)
+                            }
                         }
                     }
                 }
+            }.onFailure { e ->
+                Logger.e("Dispatcher", "Error", "Failed to setup secure IPC receiver", e)
             }
         }
 
         val isSystemServer = runCatching { android.os.Process.myUid() }.getOrDefault(-1) == 1000
+        
+        if (isSystemServer && !isSystemReady) {
+            // Defer registration in system_server until AMS systemReady is explicitly signaled
+            return
+        }
 
         val currentApp = runCatching {
             val atClass = classLoader.loadClass("android.app.ActivityThread")
@@ -98,9 +109,12 @@ object IpcDispatcher {
         }.getOrNull()
 
         if (currentApp != null) {
-            Logger.i("Ipc", "Dispatcher", "Active Context found (${currentApp.packageName}). Registering IPC receiver immediately.")
+            if (!isInitialized.compareAndSet(false, true)) return
+            Logger.i("Dispatcher", "Init", "Active Context found (${currentApp.packageName}). Registering IPC receiver immediately.")
             setupReceiver(currentApp)
         } else {
+            if (isSystemServer) return // SystemServer lacks Application.onCreate, wait for next initialization attempt
+            if (!isInitialized.compareAndSet(false, true)) return
             runCatching {
                 val appClass = classLoader.loadClass("android.app.Application")
                 module.hookBefore(appClass.getDeclaredMethod("onCreate")) { chain ->
@@ -108,7 +122,7 @@ object IpcDispatcher {
                     setupReceiver(app)
                 }
             }.onFailure { e ->
-                Logger.e("Ipc", "Dispatcher", "Failed to initialize Application.onCreate hook", e)
+                Logger.e("Dispatcher", "Error", "Failed to initialize Application.onCreate hook", e)
             }
         }
     }
