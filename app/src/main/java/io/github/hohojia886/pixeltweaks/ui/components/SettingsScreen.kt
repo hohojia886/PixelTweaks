@@ -1,81 +1,47 @@
 package io.github.hohojia886.pixeltweaks.ui.components
 
-import android.content.Intent
-import android.os.Build
-import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.BatteryChargingFull
 import androidx.compose.material.icons.outlined.BugReport
-import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Gesture
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import io.github.hohojia886.pixeltweaks.BuildConfig
 import io.github.hohojia886.pixeltweaks.R
 import io.github.hohojia886.pixeltweaks.presentation.SettingsEvent
 import io.github.hohojia886.pixeltweaks.presentation.SettingsUiState
 import io.github.hohojia886.pixeltweaks.utils.DensityUtils
-import kotlin.math.abs
+import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
 
 /**
  * Main Jetpack Compose screen for the Settings UI.
  *
  * @param uiState Current immutable [SettingsUiState] state instance.
- * @param onEvent Event callback lambda to dispatch user intents to [SettingsViewModel].
+ * @param onEvent Event callback lambda to dispatch user intents to [io.github.hohojia886.pixeltweaks.presentation.SettingsViewModel].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,7 +74,6 @@ fun SettingsScreen(
                 .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-
             CategoryHeader(stringResource(R.string.category_security), Icons.Outlined.Security)
             SettingsCard {
                 SwitchSettingItem(
@@ -206,7 +171,7 @@ fun SettingsScreen(
                             modifier = Modifier.padding(bottom = 12.dp),
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                         )
-                        
+
                         val intervalValues = listOf(1, 2, 3, 4, 5)
                         Text(
                             text = context.getString(R.string.traffic_interval_format, uiState.trafficInterval),
@@ -307,167 +272,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            CategoryHeader(stringResource(R.string.category_battery), Icons.Outlined.BatteryChargingFull)
-            SettingsCard {
-                SwitchSettingItem(
-                    title = stringResource(R.string.camera_energy_ring),
-                    summary = stringResource(R.string.camera_energy_ring_summary),
-                    checked = uiState.cameraEnergyRing,
-                    onCheckedChange = { onEvent(SettingsEvent.ToggleCameraEnergyRing(it)) }
-                )
-                AnimatedVisibility(visible = uiState.cameraEnergyRing) {
-                    Column {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                        SwitchSettingItem(
-                            title = stringResource(R.string.ring_only_charging),
-                            summary = stringResource(R.string.ring_only_charging_summary),
-                            checked = uiState.ringOnlyCharging,
-                            onCheckedChange = { onEvent(SettingsEvent.ToggleRingOnlyCharging(it)) }
-                        )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                        SwitchSettingItem(
-                            title = stringResource(R.string.enable_ring_rotation),
-                            summary = stringResource(R.string.enable_ring_rotation_summary),
-                            checked = uiState.ringRotation,
-                            onCheckedChange = { onEvent(SettingsEvent.ToggleRingRotation(it)) }
-                        )
-                        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(bottom = 12.dp),
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                            )
-
-                        val radiusValues = listOf(-2.0f, -1.0f, 0.0f, 1.0f, 2.0f)
-                        val radiusIndex = radiusValues.minByOrNull { abs(it - uiState.ringRadiusOffset) }?.let { radiusValues.indexOf(it) } ?: 2
-                        Text(
-                            text = context.getString(R.string.ring_radius_offset_format, uiState.ringRadiusOffset),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Slider(
-                            value = radiusIndex.toFloat(),
-                            onValueChange = { onEvent(SettingsEvent.ChangeRingRadiusOffset(radiusValues[it.toInt().coerceIn(0, 4)])) },
-                            valueRange = 0f..4f,
-                            steps = 3
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        val strokeValues = listOf(1.0f, 1.5f, 2.0f, 2.5f, 3.0f)
-                        val strokeIndex = strokeValues.minByOrNull { abs(it - uiState.ringStrokeWidth) }?.let { strokeValues.indexOf(it) } ?: 2
-                        Text(
-                            text = context.getString(R.string.ring_stroke_width_format, uiState.ringStrokeWidth),
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium
-                        )
-                        Slider(
-                            value = strokeIndex.toFloat(),
-                            onValueChange = { onEvent(SettingsEvent.ChangeRingStrokeWidth(strokeValues[it.toInt().coerceIn(0, 4)])) },
-                            valueRange = 0f..4f,
-                            steps = 3
-                        )
-                    }
-                }
-            }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                SwitchSettingItem(
-                    title = stringResource(R.string.enable_battery_info),
-                    summary = stringResource(R.string.enable_battery_info_summary),
-                    checked = uiState.enableBatteryInfo,
-                    onCheckedChange = { onEvent(SettingsEvent.ToggleBatteryInfo(it)) }
-                )
-
-                if (uiState.enableBatteryInfo) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    BatteryMetricItem(stringResource(R.string.battery_status), uiState.batteryStatus, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val powerStr = stringResource(R.string.battery_power_format, uiState.batteryPowerWatts, uiState.batteryCurrentMa)
-                    BatteryMetricItem(stringResource(R.string.battery_power_current), powerStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val voltStr = if (uiState.batteryVoltageMv > 0) stringResource(R.string.battery_voltage_format, uiState.batteryVoltageMv / 1000.0f, uiState.batteryVoltageMv) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_voltage), voltStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val chargeStr = if (uiState.batteryCurrentChargeMah > 0) stringResource(R.string.battery_capacity_format, uiState.batteryCurrentChargeMah) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_current_stored), chargeStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val limitsStr = if (uiState.batteryMaxChargeVoltageMv > 0 && uiState.batteryMaxChargeCurrentMa > 0) {
-                        stringResource(R.string.battery_max_limits_format, uiState.batteryMaxChargeVoltageMv, uiState.batteryMaxChargeCurrentMa)
-                    } else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_max_limits), limitsStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val cyclesStr = if (uiState.batteryCycles >= 0) stringResource(R.string.battery_cycles_format, uiState.batteryCycles) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_cycles), cyclesStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val ratedStr = if (uiState.batteryRated > 0) stringResource(R.string.battery_capacity_format, uiState.batteryRated) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_rated_capacity), ratedStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val estStr = if (uiState.batteryEstimated > 0) stringResource(R.string.battery_capacity_format, uiState.batteryEstimated) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_estimated_capacity), estStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val calcHealthStr = if (uiState.batteryCalculatedHealth > 0) stringResource(R.string.battery_health_format, uiState.batteryCalculatedHealth) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_calculated_health), calcHealthStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val healthCapStr = if (uiState.batteryHealthCapIndex > 0) stringResource(R.string.battery_health_format, uiState.batteryHealthCapIndex) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_health_capacity_index), healthCapStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    BatteryMetricItem(stringResource(R.string.battery_overall_health), uiState.batteryOverallHealth, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val tempStr = if (uiState.batteryTemp > 0) stringResource(R.string.battery_temp_format, uiState.batteryTemp) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_temperature), tempStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val resAvgStr = if (uiState.batteryResistanceAvg > 0) stringResource(R.string.battery_milli_format, uiState.batteryResistanceAvg) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_resistance_avg), resAvgStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val resNowStr = if (uiState.batteryResistanceNow > 0) stringResource(R.string.battery_milli_format, uiState.batteryResistanceNow) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_resistance_now), resNowStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val healthImpStr = if (uiState.batteryHealthImpIndex > 0) stringResource(R.string.battery_health_format, uiState.batteryHealthImpIndex) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_health_impedance_index), healthImpStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    BatteryMetricItem(stringResource(R.string.battery_serial_number), uiState.batterySerialNumber, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val ageStr = if (uiState.batteryFirstUsage != "N/A") stringResource(R.string.battery_first_usage_age_format, uiState.batteryFirstUsage, uiState.batteryAge) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_first_usage), ageStr, isColumnLayout = true)
-
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                    val aafvStr = if (uiState.batteryAafvOffset >= 0) stringResource(R.string.battery_aafv_format, uiState.batteryAafvOffset) else stringResource(R.string.battery_unknown)
-                    BatteryMetricItem(stringResource(R.string.battery_aafv_offset), aafvStr, isColumnLayout = true)
-                }
-            }
+            BatterySettingsSection(uiState = uiState, onEvent = onEvent)
 
             if (BuildConfig.DEBUG) {
                 Spacer(modifier = Modifier.height(20.dp))
@@ -526,380 +331,3 @@ fun SettingsScreen(
         }
     }
 }
-
-/**
- * Displays a single battery metric row or column in Compose layout.
- *
- * @param title Metric label text.
- * @param value Formatted metric value string.
- * @param isColumnLayout True to render label and value stacked vertically in a Column; false for a Row.
- */
-@Composable
-fun BatteryMetricItem(title: String, value: String, isColumnLayout: Boolean = false) {
-    if (isColumnLayout) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 12.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    } else {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-    }
-}
-
-/**
- * Header component for setting categories in Compose screen.
- *
- * @param text Category title string.
- * @param icon Category vector icon.
- */
-@Composable
-fun CategoryHeader(text: String, icon: ImageVector) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-/**
- * Card displaying language selection, GitHub link, and system build information.
- *
- * @param currentLanguageTag Currently selected BCP-47 language tag string.
- * @param onLanguageSelected Callback lambda invoked when user selects a new language tag.
- */
-@Composable
-fun OthersCard(
-    currentLanguageTag: String,
-    onLanguageSelected: (String) -> Unit
-) {
-    val context = LocalContext.current
-    var showLanguageDialog by remember { mutableStateOf(false) }
-
-    val languages = listOf(
-        "" to stringResource(R.string.lang_system_default),
-        "ms" to "Bahasa Melayu",
-        "cs" to "Čeština",
-        "de" to "Deutsch",
-        "en" to "English",
-        "es" to "Español",
-        "fr" to "Français",
-        "it" to "Italiano",
-        "hu" to "Magyar",
-        "nl" to "Nederlands",
-        "pl" to "Polski",
-        "pt" to "Português",
-        "ro" to "Română",
-        "sv" to "Svenska",
-        "ja" to "日本語",
-        "zh-Hans" to "简体中文",
-        "zh-Hant" to "繁體中文",
-        "ko" to "한국어",
-        "hi" to "हिन्दी",
-        "ta" to "தமிழ்"
-    )
-
-    val currentLabel = languages.firstOrNull { it.first == currentLanguageTag }?.second
-        ?: languages.first().second
-
-    SettingsCard {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { showLanguageDialog = true }
-                .padding(horizontal = 18.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Language,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.language_settings),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = currentLabel,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    val intent = Intent(Intent.ACTION_VIEW, "https://github.com/hohojia886/PixelTweaks".toUri())
-                    context.startActivity(intent)
-                }
-                .padding(horizontal = 18.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Code,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.github_repository),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.github_repository_summary),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Info,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.system_build_number),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = Build.DISPLAY,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-        }
-    }
-
-    if (showLanguageDialog) {
-        AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
-            title = {
-                Text(
-                    text = stringResource(R.string.language_settings),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 420.dp)
-                        .verticalScroll(rememberScrollState())
-                        .selectableGroup()
-                ) {
-                    languages.forEach { (tag, label) ->
-                        val isSelected = (tag == currentLanguageTag)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp)
-                                .selectable(
-                                    selected = isSelected,
-                                    onClick = {
-                                        showLanguageDialog = false
-                                        onLanguageSelected(tag)
-                                    },
-                                    role = Role.RadioButton
-                                ),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = isSelected,
-                                onClick = null
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showLanguageDialog = false }) {
-                    Text(text = stringResource(android.R.string.cancel))
-                }
-            }
-        )
-    }
-}
-
-/**
- * A styled card container for a group of settings items.
- *
- * @param content Composable slot for settings items.
- */
-@Composable
-fun SettingsCard(content: @Composable () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        )
-    ) {
-        Column {
-            content()
-        }
-    }
-}
-
-/**
- * A setting item containing a title, summary, and a switch toggle.
- *
- * @param title Main setting title string.
- * @param summary Description or current value summary text.
- * @param checked Toggle switch active state.
- * @param onCheckedChange Callback lambda invoked when user flips the switch.
- * @param isWarning True to display text in warning/error color state.
- */
-@Composable
-fun SwitchSettingItem(
-    title: String,
-    summary: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    isWarning: Boolean = false
-) {
-    val icon: (@Composable () -> Unit) = {
-        if (checked) {
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = null,
-                modifier = Modifier.size(SwitchDefaults.IconSize),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            Icon(
-                imageVector = Icons.Filled.Close,
-                contentDescription = null,
-                modifier = Modifier.size(SwitchDefaults.IconSize),
-                tint = MaterialTheme.colorScheme.surfaceContainerHighest
-            )
-        }
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 18.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = if (isWarning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = summary,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (isWarning) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            thumbContent = icon,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                checkedTrackColor = MaterialTheme.colorScheme.primary,
-                checkedIconColor = MaterialTheme.colorScheme.primary,
-                uncheckedThumbColor = MaterialTheme.colorScheme.outline,
-                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                uncheckedIconColor = MaterialTheme.colorScheme.surfaceContainerHighest
-            )
-        )
-    }
-}
-
-

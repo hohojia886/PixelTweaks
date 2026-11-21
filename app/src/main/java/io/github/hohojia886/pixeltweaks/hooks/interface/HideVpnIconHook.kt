@@ -13,8 +13,11 @@ import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.SystemVersion
+import io.github.hohojia886.pixeltweaks.utils.findField
+import io.github.hohojia886.pixeltweaks.utils.findMethod
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
+import java.lang.reflect.Modifier
 import java.util.Collections
 import java.util.WeakHashMap
 
@@ -95,14 +98,18 @@ object HideVpnIconHook {
     private fun handleBroadcast(intent: Intent, classLoader: ClassLoader) {
         when (intent.action) {
             IpcManager.ACTION_SETTINGS_SYNC -> {
-                isEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_HIDE_VPN_ICON, false)
+                val newEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_HIDE_VPN_ICON, false)
+                if (newEnabled == isEnabled) return
+                isEnabled = newEnabled
                 Logger.i(TAG, "Sync", "Full sync received: enableHideVpnIcon=$isEnabled")
                 updateVpnIconVisibility(classLoader)
             }
             IpcManager.ACTION_SETTING_CHANGED -> {
                 val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
                 if (key == PreferenceKeys.ENABLE_HIDE_VPN_ICON) {
-                    isEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
+                    val newEnabled = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, false)
+                    if (newEnabled == isEnabled) return
+                    isEnabled = newEnabled
                     Logger.i(TAG, "Sync", "Setting [enable_hide_vpn_icon] updated to $isEnabled")
                     updateVpnIconVisibility(classLoader)
                 }
@@ -191,7 +198,12 @@ object HideVpnIconHook {
                     }
                     chain.proceed()
                 }
-            }.onFailure {
+            }.onFailure { e ->
+                if (e is ClassNotFoundException) {
+                    Logger.d(TAG, "Probe", "Skipping unavailable status bar view class: $className")
+                } else {
+                    Logger.e(TAG, "DynamicVpn", "Failed to hook $className for dynamic VPN hiding", e)
+                }
             }
         }
     }
@@ -234,9 +246,9 @@ object HideVpnIconHook {
      */
     private fun applyStatusBarIconControllerVpnHooks(module: XposedModule, classLoader: ClassLoader) {
         val classNames = listOf(
+            "com.android.systemui.statusbar.phone.ui.StatusBarIconControllerImpl",
             "com.android.systemui.statusbar.phone.StatusBarIconControllerImpl",
-            "com.android.systemui.statusbar.phone.StatusBarIconControllerImpl" + '$' + "Factory",
-            "com.android.systemui.statusbar.phone.StatusBarIconController"
+            "com.android.systemui.statusbar.phone.StatusBarIconControllerImpl" + '$' + "Factory"
         )
 
         classNames.forEach { className ->
@@ -245,20 +257,23 @@ object HideVpnIconHook {
 
                 clazz.declaredConstructors.forEach { constructor ->
                     module.hook(constructor).intercept { chain ->
+                        val res = chain.proceed()
                         val controller = chain.thisObject
-                        synchronized(trackedIconControllers) {
-                            if (trackedIconControllers.none { it.get() == controller }) {
-                                trackedIconControllers.add(WeakReference(controller))
+                        if (controller != null) {
+                            synchronized(trackedIconControllers) {
+                                if (trackedIconControllers.none { it.get() == controller }) {
+                                    trackedIconControllers.add(WeakReference(controller))
+                                }
+                            }
+                            if (isEnabled) {
+                                forceHideVpnViaController(controller)
                             }
                         }
-                        if (isEnabled) {
-                            forceHideVpnViaController(controller)
-                        }
-                        chain.proceed()
+                        res
                     }
                 }
 
-                clazz.declaredMethods.forEach { method ->
+                clazz.declaredMethods.filter { !Modifier.isAbstract(it.modifiers) }.forEach { method ->
                     if (method.name == "setIconVisibility" || method.name == "setIcon" || method.name == "removeAllIconsForSlot" || method.name == "loadIcons") {
                         module.hook(method).intercept { chain ->
                             val slot = chain.args.getOrNull(0)?.toString() ?: ""
@@ -272,29 +287,37 @@ object HideVpnIconHook {
                     }
                 }
             }.onFailure { e ->
-                Logger.e(TAG, "ComposeVpn", "Failed class probe for $className", e)
+                if (e is ClassNotFoundException) {
+                    Logger.d(TAG, "ComposeVpn", "Skipping unavailable controller class: $className")
+                } else {
+                    Logger.e(TAG, "ComposeVpn", "Failed class probe for $className", e)
+                }
             }
         }
     }
 
     /**
      * Emits events to existing controllers to aggressively hide VPN slots.
-     * Invokes setIconVisibility and removeAllIconsForSlot via reflection.
+     * Invokes setIconVisibility and optional removeAllIconsForSlot via reflection.
      */
     private fun forceHideVpnViaController(controller: Any) {
         runCatching {
             val clazz = controller.javaClass
-            runCatching {
-                val method = clazz.getMethod("setIconVisibility", String::class.java, Boolean::class.javaPrimitiveType)
-                method.invoke(controller, "vpn", false)
-            }.onFailure { e ->
-                Logger.e(TAG, "Controller", "Failed to invoke setIconVisibility", e)
+            val setVisibilityMethod = findMethod(clazz, "setIconVisibility", String::class.java, java.lang.Boolean.TYPE)
+            if (setVisibilityMethod != null) {
+                runCatching {
+                    setVisibilityMethod.invoke(controller, "vpn", false)
+                }.onFailure { e ->
+                    Logger.d(TAG, "Controller", "setIconVisibility invocation skipped: ${e.cause?.javaClass?.simpleName ?: e.javaClass.simpleName}")
+                }
             }
-            runCatching {
-                val method = clazz.getMethod("removeAllIconsForSlot", String::class.java)
-                method.invoke(controller, "vpn")
-            }.onFailure { e ->
-                Logger.e(TAG, "Controller", "Failed to invoke removeAllIconsForSlot", e)
+            val removeAllMethod = findMethod(clazz, "removeAllIconsForSlot", String::class.java)
+            if (removeAllMethod != null) {
+                runCatching {
+                    removeAllMethod.invoke(controller, "vpn")
+                }.onFailure { e ->
+                    Logger.d(TAG, "Controller", "removeAllIconsForSlot invocation skipped: ${e.cause?.javaClass?.simpleName ?: e.javaClass.simpleName}")
+                }
             }
         }.onFailure { e ->
             Logger.e(TAG, "Controller", "Failed to force hide VPN via controller", e)
@@ -586,27 +609,58 @@ object HideVpnIconHook {
         )
 
         containerNames.forEach { className ->
-            runCatching {
-                val containerClass = classLoader.loadClass(className)
-                val onAttachedMethod = containerClass.getDeclaredMethod("onAttachedToWindow")
-
-                module.hook(onAttachedMethod).intercept { chain ->
-                    val container = chain.thisObject as? ViewGroup ?: return@intercept chain.proceed()
-                    runCatching {
-                        synchronized(trackedStatusIconContainers) {
-                            if (trackedStatusIconContainers.none { it.get() == container }) {
-                                trackedStatusIconContainers.add(WeakReference(container))
-                            }
-                        }
-                        updateIgnoredSlotsForContainer(container)
-                    }.onFailure { e ->
-                        Logger.e(TAG, "IconContainer", "Failed to track StatusIconContainer onAttachedToWindow", e)
-                    }
-                    chain.proceed()
+            val containerClass = runCatching {
+                classLoader.loadClass(className)
+            }.onFailure { e ->
+                if (e is ClassNotFoundException) {
+                    Logger.d(TAG, "IconContainer", "Skipping unavailable container class: $className")
+                } else {
+                    Logger.e(TAG, "IconContainer", "Failed to load $className for VPN", e)
                 }
+            }.getOrNull() ?: return@forEach
 
-                containerClass.declaredMethods.filter { it.name == "addView" }.forEach { method ->
+            val onAttachedMethod = containerClass.declaredMethods.find {
+                it.name == "onAttachedToWindow" &&
+                    it.parameterTypes.isEmpty() &&
+                    !Modifier.isAbstract(it.modifiers)
+            }
+            if (onAttachedMethod != null) {
+                runCatching {
+                    module.hook(onAttachedMethod).intercept { chain ->
+                        val container = chain.thisObject as? ViewGroup ?: return@intercept chain.proceed()
+                        trackAndApplyContainerIgnoredSlots(container)
+                        chain.proceed()
+                    }
+                }.onFailure { e ->
+                    Logger.e(TAG, "IconContainer", "Failed to hook $className#onAttachedToWindow", e)
+                }
+            } else {
+                Logger.d(TAG, "IconContainer", "$className does not declare onAttachedToWindow; tracking via constructors")
+                runCatching {
+                    containerClass.declaredConstructors.forEach { ctor ->
+                        module.hook(ctor).intercept { chain ->
+                            val res = chain.proceed()
+                            val container = chain.thisObject as? ViewGroup
+                            if (container != null) {
+                                trackAndApplyContainerIgnoredSlots(container)
+                            }
+                            res
+                        }
+                    }
+                }.onFailure { e ->
+                    Logger.e(TAG, "IconContainer", "Failed to hook $className constructors", e)
+                }
+            }
+
+            runCatching {
+                containerClass.declaredMethods.filter {
+                    (it.name == "addView" || it.name == "onViewAdded") && !Modifier.isAbstract(it.modifiers)
+                }.forEach { method ->
                     module.hook(method).intercept { chain ->
+                        val container = chain.thisObject as? ViewGroup
+                        if (container != null) {
+                            trackAndApplyContainerIgnoredSlots(container)
+                        }
                         val view = chain.args.getOrNull(0) as? View ?: return@intercept chain.proceed()
                         if (isEnabled) {
                             if (isVpnViewByFeatures(view) || trackedVpnViews.any { it.get() == view }) {
@@ -624,8 +678,26 @@ object HideVpnIconHook {
                     }
                 }
             }.onFailure { e ->
-                Logger.e(TAG, "IconContainer", "Failed to hook $className for VPN", e)
+                Logger.e(TAG, "IconContainer", "Failed to hook $className view insertion methods for VPN", e)
             }
+        }
+    }
+
+    /**
+     * Tracks a status icon container and updates its ignored VPN slot list.
+     * Deduplicates weak references before applying reflected slot suppression.
+     */
+    private fun trackAndApplyContainerIgnoredSlots(container: ViewGroup) {
+        if (findField(container.javaClass, "mIgnoredSlots") == null) return
+        runCatching {
+            synchronized(trackedStatusIconContainers) {
+                if (trackedStatusIconContainers.none { it.get() == container }) {
+                    trackedStatusIconContainers.add(WeakReference(container))
+                }
+            }
+            updateIgnoredSlotsForContainer(container)
+        }.onFailure { e ->
+            Logger.e(TAG, "IconContainer", "Failed to track container for ignored slots", e)
         }
     }
 
@@ -650,8 +722,8 @@ object HideVpnIconHook {
      */
     @Suppress("UNCHECKED_CAST")
     private fun updateIgnoredSlotsForContainer(container: ViewGroup) {
+        val field = findField(container.javaClass, "mIgnoredSlots") ?: return
         runCatching {
-            val field = container.javaClass.getDeclaredField("mIgnoredSlots").apply { isAccessible = true }
             val ignoredSlots = field.get(container) as? MutableCollection<String> ?: return@runCatching
 
             synchronized(ignoredSlots) {

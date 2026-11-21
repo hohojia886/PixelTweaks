@@ -48,8 +48,8 @@ class PackageManagerHookTest {
             if (field.name == "isSignatureBypassEnabled") field[instance] = false
             if (field.name == "downgradeTimestamp") field[instance] = 0L
             if (field.name == "signatureTimestamp") field[instance] = 0L
-            if (field.name == "appliedTabletMode") field[instance] = null
         }
+        TabletModeDpiController.appliedTabletMode = null
     }
 
     @Test
@@ -179,6 +179,19 @@ class PackageManagerHookTest {
             assertTrue(PackageManagerHook.isInInstallVerification())
         }
         assertFalse(PackageManagerHook.isInInstallVerification())
+    }
+
+    @Test
+    fun testHookNeverLoadsAbstractComputerInterface() {
+        whenever(classLoader.loadClass(anyString())).thenAnswer { invocation ->
+            val name = invocation.getArgument<String>(0)
+            if (name == "com.android.server.pm.Computer") {
+                throw AssertionError("Should never attempt to hook abstract Computer interface")
+            }
+            Any::class.java
+        }
+
+        PackageManagerHook.hook(module, classLoader)
     }
 
 }

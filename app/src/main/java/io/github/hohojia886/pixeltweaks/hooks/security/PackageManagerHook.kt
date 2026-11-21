@@ -2,11 +2,9 @@
 
 package io.github.hohojia886.pixeltweaks.hooks.security
 
-import android.content.Context
 import android.os.Bundle
 import android.os.IBinder
 import android.os.SystemClock
-import android.provider.Settings
 import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
@@ -14,7 +12,7 @@ import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.hookAfter
 import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
-import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -38,8 +36,6 @@ object PackageManagerHook {
     private val activeInstallSessions = ConcurrentHashMap<Int, Long>()
     @Volatile private var isHooked = false
     @Volatile private var lastSignatureActiveState = false
-
-    @Volatile private var appliedTabletMode: Boolean? = null
 
     private val installVerificationDepth = ThreadLocal.withInitial { 0 }
     private val installSuspensionDepth = ThreadLocal.withInitial { 0 }
@@ -126,10 +122,7 @@ object PackageManagerHook {
      * @return `true` to apply tablet density, `false` to clear forced density back to default, or `null` if no action is needed.
      */
     internal fun decideDensityAction(isFullSync: Boolean, requested: Boolean, applied: Boolean?): Boolean? {
-        if (!isFullSync) return requested
-        if (requested && applied != true) return true
-        if (!requested && applied == true) return false
-        return null
+        return TabletModeDpiController.decideDensityAction(isFullSync, requested, applied)
     }
 
     /**
@@ -212,9 +205,8 @@ object PackageManagerHook {
                     val isTabletMode = intent.getBooleanExtra(PreferenceKeys.ENABLE_TABLET_MODE, false)
                     
                     val sysContext = IpcManager.getSystemContext(classLoader) ?: IpcManager.getSafeContext(classLoader, "android")
-                    val action = decideDensityAction(true, isTabletMode, appliedTabletMode)
-                    if (sysContext != null && action != null) {
-                        updateSystemServerDensity(sysContext, action)
+                    if (sysContext != null) {
+                        TabletModeDpiController.applyIfNeeded(sysContext, isFullSync = true, requested = isTabletMode)
                     }
                     Logger.d(TAG, "Sync", "Settings updated via broadcast: DG=$isDowngradeEnabled, Sig=$isSignatureBypassEnabled, Tablet=$isTabletMode")
                 }
@@ -236,9 +228,8 @@ object PackageManagerHook {
                         }
                         PreferenceKeys.ENABLE_TABLET_MODE -> {
                             val sysContext = IpcManager.getSystemContext(classLoader) ?: IpcManager.getSafeContext(classLoader, "android")
-                            val action = decideDensityAction(false, value, appliedTabletMode)
-                            if (sysContext != null && action != null) {
-                                updateSystemServerDensity(sysContext, action)
+                            if (sysContext != null) {
+                                TabletModeDpiController.applyIfNeeded(sysContext, isFullSync = false, requested = value)
                             }
                             Logger.d(TAG, "Sync", "Setting [enable_tablet_mode] updated to $value")
                         }
@@ -255,10 +246,7 @@ object PackageManagerHook {
                 signatureTimestamp = bundle.getLong(PreferenceKeys.SIGNATURE_TIMESTAMP, signatureTimestamp)
                 if (bundle.containsKey(PreferenceKeys.ENABLE_TABLET_MODE)) {
                     val isTabletMode = bundle.getBoolean(PreferenceKeys.ENABLE_TABLET_MODE, false)
-                    val action = decideDensityAction(true, isTabletMode, appliedTabletMode)
-                    if (action != null) {
-                        updateSystemServerDensity(ctx, action)
-                    }
+                    TabletModeDpiController.applyIfNeeded(ctx, isFullSync = true, requested = isTabletMode)
                 }
             }
         }
@@ -377,7 +365,9 @@ object PackageManagerHook {
         installEntryTargets.forEach { (className, methodNames) ->
             runCatching {
                 val clazz = realClassLoader.loadClass(className) ?: return@runCatching
-                clazz.declaredMethods.filter { it.name in methodNames }.forEach { m ->
+                clazz.declaredMethods.filter {
+                    it.name in methodNames && !Modifier.isAbstract(it.modifiers)
+                }.forEach { m ->
                     module.hook(m).intercept { chain ->
                         withInstallVerification {
                             chain.proceed()
@@ -386,27 +376,44 @@ object PackageManagerHook {
                     installEntryHookCount++
                 }
             }.onFailure { e ->
-                Logger.e(TAG, "Error", "Failed to hook install entry $className", e)
+                if (e is ClassNotFoundException) {
+                    Logger.d(TAG, "Probe", "Install entry class not present: $className")
+                } else {
+                    Logger.e(TAG, "Error", "Failed to hook install entry $className", e)
+                }
             }
         }
 
+        var installSuspendHookCount = 0
         val installSuspendTargets = listOf(
             "com.android.server.pm.InstallPackageHelper" to setOf("executePostCommitSteps"),
+            "com.android.server.permission.access.permission.PermissionService" to setOf("onPackageInstalled"),
             "com.android.server.pm.permission.PermissionManagerServiceImpl" to setOf("onPackageInstalled")
         )
         installSuspendTargets.forEach { (className, methodNames) ->
             runCatching {
                 val clazz = realClassLoader.loadClass(className) ?: return@runCatching
-                clazz.declaredMethods.filter { it.name in methodNames }.forEach { m ->
+                clazz.declaredMethods.filter {
+                    it.name in methodNames && !Modifier.isAbstract(it.modifiers)
+                }.forEach { m ->
                     module.hook(m).intercept { chain ->
                         withoutInstallVerification {
                             chain.proceed()
                         }
                     }
+                    installSuspendHookCount++
                 }
             }.onFailure { e ->
-                Logger.e(TAG, "Error", "Failed to hook suspend boundary $className", e)
+                if (e is ClassNotFoundException) {
+                    Logger.d(TAG, "Probe", "Suspend boundary class not present on this build: $className")
+                } else {
+                    Logger.e(TAG, "Error", "Failed to hook suspend boundary $className", e)
+                }
             }
+        }
+
+        if (installSuspendHookCount == 0) {
+            Logger.w(TAG, "Blocked", "No install suspend boundary methods were hooked")
         }
 
         Logger.i(TAG, "Applied", "Hooked $installEntryHookCount install verification entry methods")
@@ -417,30 +424,28 @@ object PackageManagerHook {
         }
 
         runCatching {
-            listOf(
-                "com.android.server.pm.ComputerEngine",
-                "com.android.server.pm.Computer"
-            ).forEach { className ->
-                runCatching {
-                    val clazz = realClassLoader.loadClass(className) ?: return@runCatching
-                    clazz.declaredMethods.filter { it.name == "checkSignatures" }.forEach { m ->
-                        module.hook(m).intercept { chain ->
-                            val isActive = shouldBypassSignature(isSignatureBypassActiveForInstall(), isInInstallVerification())
+            val computerClassName = "com.android.server.pm.ComputerEngine"
+            runCatching {
+                val clazz = realClassLoader.loadClass(computerClassName) ?: return@runCatching
+                clazz.declaredMethods.filter {
+                    it.name == "checkSignatures" && !Modifier.isAbstract(it.modifiers)
+                }.forEach { m ->
+                    module.hook(m).intercept { chain ->
+                        val isActive = shouldBypassSignature(isSignatureBypassActiveForInstall(), isInInstallVerification())
 
-                            if (isActive != lastSignatureActiveState) {
-                                lastSignatureActiveState = isActive
-                                Logger.i(TAG, "Active", "Signature Bypass state changed to: ${if (isActive) "ACTIVE" else "INACTIVE"}")
-                            }
-
-                            if (isActive) {
-                                return@intercept 0
-                            }
-                            chain.proceed()
+                        if (isActive != lastSignatureActiveState) {
+                            lastSignatureActiveState = isActive
+                            Logger.i(TAG, "Active", "Signature Bypass state changed to: ${if (isActive) "ACTIVE" else "INACTIVE"}")
                         }
+
+                        if (isActive) {
+                            return@intercept 0
+                        }
+                        chain.proceed()
                     }
-                }.onFailure { e ->
-                    Logger.e(TAG, "SectionC", "Failed to hook ComputerEngine for $className", e)
                 }
+            }.onFailure { e ->
+                Logger.e(TAG, "SectionC", "Failed to hook ComputerEngine for $computerClassName", e)
             }
         }.onFailure { e ->
             Logger.e(TAG, "SectionC", "ComputerEngine hook skipped/failed", e)
@@ -449,7 +454,9 @@ object PackageManagerHook {
         runCatching {
             val utilsClass = realClassLoader.loadClass("com.android.server.pm.PackageManagerServiceUtils")
             utilsClass.declaredMethods.filter {
-                it.name == "compareSignatures" && it.returnType == Int::class.javaPrimitiveType
+                it.name == "compareSignatures" &&
+                    it.returnType == Int::class.javaPrimitiveType &&
+                    !Modifier.isAbstract(it.modifiers)
             }.forEach { m ->
                 module.hook(m).intercept { chain ->
                     if (shouldBypassSignature(isSignatureBypassActiveForInstall(), isInInstallVerification())) {
@@ -475,7 +482,9 @@ object PackageManagerHook {
                 "hasCommonSignerWithCapability"
             )
             detailsClass.declaredMethods.filter {
-                it.name in bypassMethods && (it.returnType == Boolean::class.javaPrimitiveType || it.returnType == Boolean::class.java)
+                it.name in bypassMethods &&
+                    (it.returnType == Boolean::class.javaPrimitiveType || it.returnType == Boolean::class.java) &&
+                    !Modifier.isAbstract(it.modifiers)
             }.forEach { m ->
                 module.hook(m).intercept { chain ->
                     if (shouldBypassSignature(isSignatureBypassActiveForInstall(), isInInstallVerification())) {
@@ -488,79 +497,6 @@ object PackageManagerHook {
             }
         }.onFailure { e ->
             Logger.e(TAG, "Error", "SigningDetails hook skipped/failed", e)
-        }
-    }
-
-    @Volatile private var cachedWms: Any? = null
-    @Volatile private var cachedSetDpiMethod: Method? = null
-    @Volatile private var cachedClearDpiMethod: Method? = null
-
-    /**
-     * Obtains core WindowManager binder instance using ServiceManager.
-     * Reflectively calls getService and converts IBinder to IWindowManager.
-     */
-    private fun getIWindowManager(): Any? {
-        if (cachedWms != null) return cachedWms
-        return runCatching {
-            val smClass = Class.forName("android.os.ServiceManager")
-            val getService = smClass.getDeclaredMethod("getService", String::class.java)
-            val binder = getService.invoke(null, "window") as IBinder
-            val iwmClass = Class.forName("android.view.IWindowManager" + '$' + "Stub")
-            val asInterface = iwmClass.getDeclaredMethod("asInterface", IBinder::class.java)
-            val wms = asInterface.invoke(null, binder)
-            cachedWms = wms
-            wms
-        }.getOrNull()
-    }
-
-    /**
-     * Configures system density settings for tablet-like interfaces.
-     * Calls setForcedDisplayDensityForUser or updates Settings.Secure fallback.
-     */
-    private fun updateSystemServerDensity(context: Context, enabled: Boolean) {
-        runCatching {
-            val wms = getIWindowManager()
-            if (wms != null) {
-                if (enabled) {
-                    val dm = context.resources.displayMetrics
-                    val minPx = minOf(dm.widthPixels, dm.heightPixels)
-                    val targetDpi = (minPx * 160) / 600
-                    if (cachedSetDpiMethod == null) {
-                        cachedSetDpiMethod = wms.javaClass.methods.firstOrNull { it.name == "setForcedDisplayDensityForUser" }
-                    }
-                    if (cachedSetDpiMethod != null) {
-                        cachedSetDpiMethod!!.invoke(wms, android.view.Display.DEFAULT_DISPLAY, targetDpi, -2)
-                        appliedTabletMode = true
-                        Logger.i("Density", "Success", "Successfully called setForcedDisplayDensityForUser(DEFAULT_DISPLAY, $targetDpi, USER_CURRENT)")
-                        return
-                    }
-                } else {
-                    if (cachedClearDpiMethod == null) {
-                        cachedClearDpiMethod = wms.javaClass.methods.firstOrNull { it.name == "clearForcedDisplayDensityForUser" }
-                    }
-                    if (cachedClearDpiMethod != null) {
-                        cachedClearDpiMethod!!.invoke(wms, android.view.Display.DEFAULT_DISPLAY, -2)
-                        appliedTabletMode = false
-                        Logger.i("Density", "Success", "Successfully called clearForcedDisplayDensityForUser(DEFAULT_DISPLAY, USER_CURRENT)")
-                        return
-                    }
-                }
-            }
-
-            if (enabled) {
-                val dm = context.resources.displayMetrics
-                val minPx = minOf(dm.widthPixels, dm.heightPixels)
-                val targetDpi = (minPx * 160) / 600
-                Settings.Secure.putInt(context.contentResolver, "display_density_forced", targetDpi)
-                appliedTabletMode = true
-                Logger.i("Density", "Active", "Fallback: Set display_density_forced = $targetDpi")
-            } else {
-                Settings.Secure.putString(context.contentResolver, "display_density_forced", null)
-                appliedTabletMode = false
-                Logger.i("Density", "Active", "Fallback: Cleared display_density_forced")
-            }
-        }.onFailure { e ->
-            Logger.e("Density", "Error", "Failed to update display density in SystemServer", e)
         }
     }
 }

@@ -36,6 +36,9 @@ import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.hookBefore
 import io.github.libxposed.api.XposedModule
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import kotlin.math.max
 import kotlin.math.sqrt
 
 /**
@@ -112,44 +115,73 @@ object DoubleTapToSleepHook {
      * Monitors user interaction, bouncer visibility, and gesture events.
      */
     private fun applySystemUIHooks(module: XposedModule, classLoader: ClassLoader) {
-        runCatching {
-            val ctrlClass = classLoader.loadClass("com.android.keyguard.KeyguardAbsKeyInputViewController")
-            ctrlClass.declaredMethods.find { it.name == "onUserInput" }?.let { m ->
-                module.hookBefore(m) { _ ->
-                    lastUnlockInteractionTime = SystemClock.uptimeMillis()
+        val keyguardInputCandidates = listOf(
+            "com.android.keyguard.KeyguardAbsKeyInputViewController",
+            "com.android.keyguard.KeyguardInputViewController"
+        )
+        var keyguardInputHooked = false
+        for (className in keyguardInputCandidates) {
+            runCatching {
+                val ctrlClass = classLoader.loadClass(className)
+                ctrlClass.declaredMethods.find {
+                    it.name == "onUserInput" && !Modifier.isAbstract(it.modifiers)
+                }?.let { m ->
+                    module.hookBefore(m) { _ ->
+                        lastUnlockInteractionTime = SystemClock.uptimeMillis()
+                    }
+                    keyguardInputHooked = true
+                }
+            }.onFailure { e ->
+                if (e is ClassNotFoundException) {
+                    Logger.d(TAG, "Probe", "Legacy keyguard input controller not present: $className")
+                } else {
+                    Logger.e(TAG, "Error", "Failed to hook $className for interaction monitoring", e)
                 }
             }
-        }.onFailure { e ->
-            Logger.e(TAG, "Error", "Failed to hook KeyguardAbsKeyInputViewController for interaction monitoring", e)
+            if (keyguardInputHooked) break
         }
 
         runCatching {
             val managerClass = classLoader.loadClass("com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager")
-            managerClass.declaredMethods.find { it.name == "showPrimaryBouncer" }?.let { m ->
+            managerClass.declaredMethods.find {
+                it.name == "showPrimaryBouncer" && !Modifier.isAbstract(it.modifiers)
+            }?.let { m ->
                 module.hookBefore(m) { _ ->
                     isBouncerShowing = true
                 }
             }
-            managerClass.declaredMethods.find { it.name == "reset" || it.name == "hideBouncer" }?.let { m ->
+            managerClass.declaredMethods.find {
+                (it.name == "reset" || it.name == "hideBouncer") && !Modifier.isAbstract(it.modifiers)
+            }?.let { m ->
                 module.hookBefore(m) { _ ->
                     isBouncerShowing = false
                 }
             }
         }.onFailure { e ->
-            Logger.e(TAG, "Error", "Failed to hook StatusBarKeyguardViewManager for Bouncer visibility", e)
+            if (e is ClassNotFoundException) {
+                Logger.d(TAG, "Probe", "StatusBarKeyguardViewManager not present on this build")
+            } else {
+                Logger.e(TAG, "Error", "Failed to hook StatusBarKeyguardViewManager for Bouncer visibility", e)
+            }
         }
 
         runCatching {
             val sbClass = classLoader.loadClass("com.android.systemui.statusbar.phone.PhoneStatusBarView")
-            sbClass.declaredMethods.find { it.name == "onInterceptTouchEvent" }?.let { m ->
-                module.hook(m).intercept { chain ->
+            val touchMethod = resolveStatusBarTouchMethod(sbClass)
+            if (touchMethod != null) {
+                module.hook(touchMethod).intercept { chain ->
                     if (isDtStatusbarEnabled) {
-                        if (processTouch(chain.args[0] as MotionEvent, chain.thisObject as View, false)) {
+                        val event = chain.args.firstOrNull { it is MotionEvent } as? MotionEvent
+                        val view = chain.thisObject as? View
+                        if (event != null && view != null && processTouch(event, view, false)) {
                             return@intercept true
                         }
                     }
                     chain.proceed()
                 }
+                Logger.i(TAG, "Applied", "Hooked PhoneStatusBarView#${touchMethod.name} for Status Bar DT2S")
+            } else {
+                Logger.w(TAG, "Error", "No suitable touch method found on PhoneStatusBarView for Status Bar DT2S")
             }
         }.onFailure { e ->
             Logger.e(TAG, "Error", "Failed to hook PhoneStatusBarView for double tap", e)
@@ -212,26 +244,49 @@ object DoubleTapToSleepHook {
     }
 
     /**
+     * Resolves the preferred concrete touch callback declared on `PhoneStatusBarView`.
+     * Prioritizes `onTouchEvent` (Android 17+ / modern AOSP) before falling back to
+     * `dispatchTouchEvent` or `onInterceptTouchEvent`.
+     */
+    internal fun resolveStatusBarTouchMethod(clazz: Class<*>): Method? {
+        val preferredNames = listOf("onTouchEvent", "dispatchTouchEvent", "onInterceptTouchEvent")
+        for (name in preferredNames) {
+            val match = clazz.declaredMethods.find { m ->
+                m.name == name &&
+                    !Modifier.isAbstract(m.modifiers) &&
+                    m.parameterTypes.size == 1 &&
+                    m.parameterTypes[0] == MotionEvent::class.java
+            }
+            if (match != null) return match
+        }
+        return null
+    }
+
+    /**
      * Processes motion events to detect double tap gestures on views.
-     * Evaluates touch delta math and slop distance against thresholds.
+     * Evaluates touch delta math and double-tap slop distance against thresholds.
      */
     private fun processTouch(ev: MotionEvent, view: View, isLauncher: Boolean): Boolean {
-        if (ev.action == MotionEvent.ACTION_DOWN) {
+        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
             val now = SystemClock.uptimeMillis()
-            
+
             if ((now - lastWakeTime) < 500) {
                 return false
             }
 
-            val x = ev.x
-            val y = ev.y
+            val x = ev.rawX
+            val y = ev.rawY
 
             val dx = x - lastDownX
             val dy = y - lastDownY
             val distance = sqrt((dx * dx + dy * dy).toDouble())
 
-            val slop = ViewConfiguration.get(view.context).scaledTouchSlop
-            if (now - lastDownTime < 400 && distance < slop * 1.5f) {
+            val viewConfig = ViewConfiguration.get(view.context)
+            val maxDoubleTapDistance = max(
+                viewConfig.scaledDoubleTapSlop.toFloat(),
+                viewConfig.scaledTouchSlop * 3f
+            )
+            if (now - lastDownTime < 400 && distance < maxDoubleTapDistance) {
                 lastDownTime = 0
                 if (isLauncher) {
                     Logger.i(TAG, "Running", "Sending sleep request from Launcher")
@@ -256,23 +311,35 @@ object DoubleTapToSleepHook {
      */
     private fun handleSync(intent: Intent) {
         if (intent.action == IpcManager.ACTION_SETTINGS_SYNC) {
-            isDtLauncherEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
-            isDtLockscreenEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
-            isDtStatusbarEnabled = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_STATUSBAR, true)
+            val newLauncher = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_LAUNCHER, true)
+            val newLockscreen = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_LOCKSCREEN, true)
+            val newStatusbar = intent.getBooleanExtra(PreferenceKeys.ENABLE_DT_STATUSBAR, true)
+            if (newLauncher == isDtLauncherEnabled &&
+                newLockscreen == isDtLockscreenEnabled &&
+                newStatusbar == isDtStatusbarEnabled
+            ) {
+                return
+            }
+            isDtLauncherEnabled = newLauncher
+            isDtLockscreenEnabled = newLockscreen
+            isDtStatusbarEnabled = newStatusbar
             Logger.i(TAG, "Success", "Full sync: L=$isDtLauncherEnabled, LS=$isDtLockscreenEnabled, SB=$isDtStatusbarEnabled")
         } else {
             val key = intent.getStringExtra(PreferenceKeys.EXTRA_KEY)
             val value = intent.getBooleanExtra(PreferenceKeys.EXTRA_VALUE, true)
             when (key) {
                 PreferenceKeys.ENABLE_DT_LAUNCHER -> {
+                    if (isDtLauncherEnabled == value) return
                     isDtLauncherEnabled = value
                     Logger.i(TAG, "Success", "Launcher DT2S updated to $value")
                 }
                 PreferenceKeys.ENABLE_DT_LOCKSCREEN -> {
+                    if (isDtLockscreenEnabled == value) return
                     isDtLockscreenEnabled = value
                     Logger.i(TAG, "Success", "Lockscreen DT2S updated to $value")
                 }
                 PreferenceKeys.ENABLE_DT_STATUSBAR -> {
+                    if (isDtStatusbarEnabled == value) return
                     isDtStatusbarEnabled = value
                     Logger.i(TAG, "Success", "Statusbar DT2S updated to $value")
                 }

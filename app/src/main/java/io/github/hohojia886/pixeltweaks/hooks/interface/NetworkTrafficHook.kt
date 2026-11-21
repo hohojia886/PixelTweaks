@@ -26,12 +26,13 @@ import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
 import io.github.hohojia886.pixeltweaks.utils.StatusBarTintManager
+import io.github.hohojia886.pixeltweaks.utils.findField
+import io.github.hohojia886.pixeltweaks.utils.findMethod
 import io.github.hohojia886.pixeltweaks.utils.getFlexibleFloatExtra
 import io.github.hohojia886.pixeltweaks.utils.getFlexibleIntExtra
 import io.github.hohojia886.pixeltweaks.utils.hookAfter
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
-import java.lang.reflect.Method
 import java.util.Collections
 
 /**
@@ -312,11 +313,9 @@ object NetworkTrafficHook {
                 runCatching {
                     val fieldNames = listOf("mStartSideContent", "mStartSideContainer")
                     for (fName in fieldNames) {
-                        try {
-                            val field = parent.javaClass.getDeclaredField(fName).apply { isAccessible = true }
-                            targetContainer = field[parent] as? ViewGroup
-                            if (targetContainer != null) break
-                        } catch (_: NoSuchFieldException) {}
+                        val field = findField(parent.javaClass, fName) ?: continue
+                        targetContainer = field[parent] as? ViewGroup
+                        if (targetContainer != null) break
                     }
                 }.onFailure { e ->
                     Logger.e(TAG, "Error", "Failed to parse PhoneStatusBarView StartSideContainer", e)
@@ -359,7 +358,8 @@ object NetworkTrafficHook {
             (lp as? LinearLayout.LayoutParams)?.apply { gravity = Gravity.CENTER_VERTICAL; weight = 0f }
             (lp as? FrameLayout.LayoutParams)?.apply { gravity = Gravity.CENTER_VERTICAL }
             lp as ViewGroup.LayoutParams
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
+            Logger.d(TAG, "Error", "Failed to construct container LayoutParams, falling back to LinearLayout.LayoutParams: ${e.message}")
             LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
                 gravity = Gravity.CENTER_VERTICAL; leftMargin = dp(context, 4); rightMargin = dp(context, 4)
             }
@@ -415,19 +415,6 @@ object NetworkTrafficHook {
      * Applies COMPLEX_UNIT_DIP dimension transformation via Resources.
      */
     private fun dp(context: Context, value: Int): Int = (value * context.resources.displayMetrics.density).toInt()
-
-    /**
-     * Locates declared method within class hierarchy via reflection.
-     * Traverses superclasses returning Accessible method instance.
-     */
-    private fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
-        var c: Class<*>? = clazz
-        while (c != null) {
-            try { return c.getDeclaredMethod(name, *parameterTypes).apply { isAccessible = true } }
-            catch (_: NoSuchMethodException) { c = c.superclass }
-        }
-        return null
-    }
 
     /**
      * Specialized custom view for rendering two-line RX/TX speeds.

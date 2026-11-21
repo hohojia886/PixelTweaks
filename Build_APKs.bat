@@ -1,10 +1,10 @@
 @echo off
 setlocal
 echo ==========================================
-echo   PixelTweaks v1.3.2 APK Build Script
+echo   PixelTweaks v1.3.3 APK Build Script
 echo ==========================================
 
-set "VERSION=1.3.2"
+set "VERSION=1.3.3"
 
 echo.
 echo [1/2] Building Release APK for v%VERSION%...

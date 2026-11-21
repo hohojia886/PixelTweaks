@@ -8,9 +8,12 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**Version:** v1.3.2 (Stable Release)  
-**Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
-**Tested Build Number:** CP3A.261005.005
+**Version:** v1.3.3 (Stable Release)  
+**Target:** Android 17 (Pixel), `libxposed` API 102 (LSPosed)  
+**Tested Build Number:** Android 17.0.0 (CP3A.261005.005, Oct 2026)
+
+> [!WARNING]
+> **Upcoming Deprecation Notice:** Support for Android 17 **`CP2A`** firmware builds (including CP2A-specific compatibility paths and the legacy Direct Mobile Data Toggle fix) will be removed in a future release. Ongoing maintenance and testing will focus on **`CP3A`** and newer builds.
 
 **Language:** **English** | [繁體中文 (Traditional Chinese)](README_ZHT.md)
 
@@ -29,7 +32,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
   <em>(Click any image to view full size)</em>
 </p>
 
-## ✨ Features (v1.3.2)
+## ✨ Features (v1.3.3)
 
 ### 🎨 Double Tap To Sleep
 - **Double Tap Launcher**: Integrated support for double-tap gestures on the launcher workspace to sleep (optimized with relaxed touch slop `1.5f` and `400ms` time window).
@@ -53,6 +56,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 - **Clear All Button**: Adds a native-style "Clear all" button to the Pixel Launcher recents screen.
 - **Tablet Mode**: Dynamically calculates and applies target display density (`sw >= 600dp`) for tablet UI layout via pure LSPosed system server integration.
 - **Network Traffic Indicator**: Real-time speed monitor in status bar with intensity-aware color syncing.
+- **Hide VPN Icon**: Hides the persistent system VPN key icon in the status bar across both legacy and Android 17 Compose status bar pipelines.
 
 ### 🔋 Battery Info
 - **Show Battery Info**: Feature toggle to display 18 advanced hardware and real-time battery metrics (real-time wattage W, voltage V, current mA, charge cycles, calculated & chip capacity health scores, temperature °C, internal resistance mΩ, manufacture date & age, serial number, and current max charging limits) with 2s foreground auto-refresh (**requires Root**).
@@ -68,7 +72,7 @@ A professional, high-performance Xposed module tailored specifically for Google 
 PixelTweaks is built with modern Android **MVVM + Unidirectional Data Flow (UDF)** architecture:
 - **`presentation/`**: `SettingsUiState` (Immutable State), `SettingsEvent` (Sealed Interface Intents), `SettingsViewModel` (StateFlow & Coroutine Timers).
 - **`data/repository/`**: `SettingsRepository` (Handles CE/DE SharedPreferences & IPC Broadcasts).
-- **`ui/`**: `SettingsActivity` & `SettingsScreen` (Pure Compose View Layer).
+- **`ui/`**: `SettingsActivity`, `SettingsScreen`, and modularized `ui/components/` sections (Pure Compose View Layer).
 
 ## 📝 Changelog
 
@@ -81,7 +85,7 @@ See [ChangeLogs.md](ChangeLogs.md) for the complete version release history and 
 - **Static Scope Enforcement**: System Framework, Pixel Launcher, System UI.
 
 ### Install
-1. Build or download `pixel-tweaks-v1.3.0-<buildType>.apk`.
+1. Build or download `pixel-tweaks-v1.3.3-<buildType>.apk`.
 2. Install the APK and enable in LSPosed Manager.
 3. Open the **PixelTweaks** app once to initialize settings (clears Android `STOPPED` state).
 4. Reboot your device.
@@ -124,15 +128,9 @@ this project's own:
 
 See [LICENSE](./LICENSE) for the full text.
 
-## ⚠️ Known Issues
-- **CP3A Status Bar Offline Battery Display**: On Android 17 CP3A firmware under conditions where Wi-Fi, Mobile Data, and VPN are all disconnected or hidden, the stock battery icon may display alongside the battery percentage text upon fresh reboot. Connecting to a network (or triggering any status bar network update) automatically hides the stock battery icon for the remainder of the uptime session.
-
 ## 📚 Credits & Acknowledgments
 
-- **Inspiration**: Some early implementation ideas were inspired by
-  [PixelXpert](https://github.com/siavash79/PixelXpert) by @siavash79 & @ElTifo.
-  The current implementations use different technical approaches from the
-  original project.
+- **Inspiration**: Some implementation ideas were inspired by [PixelXpert](https://github.com/siavash79/PixelXpert) (@siavash79 & @ElTifo) and [PixelXpert-Next](https://github.com/anirudhgupta109/PixelXpert-Next) (@anirudhgupta109). All current implementations use independent technical approaches.
 - **Related Projects**:
   - **[DialerTweaks](https://github.com/hohojia886/DialerTweaks)**: Standalone Xposed module for Google Dialer Call Recording and Call Notes features.
 

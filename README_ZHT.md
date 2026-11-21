@@ -8,9 +8,12 @@
   <img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge" alt="License" />
 </p>
 
-**版本：** v1.3.2 (穩定版)  
-**目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)
-**測試過版本號：** CP3A.261005.005
+**版本：** v1.3.3 (穩定版)  
+**目標：** Android 17 (Pixel), `libxposed` API 102 (LSPosed)  
+**測試過版本號：** Android 17.0.0 (CP3A.261005.005, Oct 2026)
+
+> [!WARNING]
+> **韌體支援移除預告**：Android 17 **`CP2A`** 韌體相關支援（包含 CP2A 專屬相容路徑與舊版行動數據直接切換修復）將於未來版本移除，後續更新將專注於 **`CP3A`** 及更新版本之維護與測試。
 
 專為 Google Pixel 裝置量身打造的高效能專業 Xposed 模組。
 
@@ -31,7 +34,7 @@
   <em>(點擊任意圖片檢視原始大小)</em>
 </p>
 
-## ✨ 功能特點 (v1.3.2)
+## ✨ 功能特點 (v1.3.3)
 
 ### 🎨 雙擊熄屏 (Double Tap To Sleep)
 - **雙擊桌面熄屏**：支援在桌面空白處雙擊熄屏（已針對靈敏度優化：放寬觸控公差 `1.5f` 與 `400ms` 時間窗口）。
@@ -55,6 +58,7 @@
 - **清除全部按鈕**：在 Pixel Launcher 的近期任務（Recents）畫面中新增原生風格的「清除全部」按鈕。
 - **Tablet 模式**：動態計算並切換全系統平板模式版型 (`sw >= 600dp`)，透過純 LSPosed 系統層切換，免 Root。
 - **網路流量指示器**：狀態列即時網速監控，支援隨狀態列主題自動調整色彩。
+- **隱藏 VPN 圖示**：隱藏狀態列常駐的系統 VPN 鑰匙圖示，完整支援傳統與 Android 17 Compose 狀態列架構。
 
 ### 🔋 電池資訊 (Battery Info)
 - **顯示電池資訊**：手動開關，展出 18 項進階硬體與即時電池數據（包含即時瓦數 W、電壓 V、電流 mA、充電次數、計算預估容量健康度、晶片容量與阻抗健康度評分、溫度 °C、內阻 mΩ、生產日期與年齡、電池序號及當前最高充電限制），支援前台 2 秒自動定時刷新（**需 Root 權限**）。
@@ -70,7 +74,7 @@
 PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **`presentation/`**：`SettingsUiState` (不可變 State)、`SettingsEvent` (Sealed Event 意圖)、`SettingsViewModel` (StateFlow 與協程定時器)。
 - **`data/repository/`**：`SettingsRepository` (負責 CE/DE SharedPreferences 持久化與 IPC 廣播)。
-- **`ui/`**：`SettingsActivity` 與 `SettingsScreen` (純粹 Compose View 視圖層)。
+- **`ui/`**：`SettingsActivity`、`SettingsScreen` 與模組化 `ui/components/` 元件（純粹 Compose View 視圖層）。
 
 ## 📝 更新日誌 (Changelog)
 
@@ -83,7 +87,7 @@ PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 - **作用域**：System Framework, Pixel Launcher, System UI。
 
 ### 安裝步驟
-1. 編譯或下載 `pixel-tweaks-v1.3.0-<buildType>.apk`。
+1. 編譯或下載 `pixel-tweaks-v1.3.3-<buildType>.apk`。
 2. 安裝 APK 並在 LSPosed 管理器中啟用模組。
 3. 開啟 **PixelTweaks** App 一次以初始化設定（消除 Android 的 `STOPPED` 狀態）。
 4. 重新啟動您的裝置。
@@ -114,13 +118,10 @@ PixelTweaks 採用現代化 **MVVM + 單向資料流 (UDF)** 架構建構：
 
 詳情請參閱 [LICENSE](./LICENSE) 檔案。
 
-## ⚠️ 已知問題
-- **CP3A 斷網開機狀態欄電池圖示**：在 Android 17 CP3A 韌體下，若處於無 Wi-Fi、無行動數據且無 VPN（或隱藏）的完全斷網狀態下重新開機，原廠電池圖示可能會暫時與電池百分比同時顯示。只要連上網路（或觸發任何狀態列網路更新）後，原廠電池圖示即會被自動隱藏，直到下一次重新開機。
-
 ## 📚 相關專案與致謝
 
 - **[DialerTweaks](https://github.com/hohojia886/DialerTweaks)**：專為 Google Dialer 通話錄音與 Call Notes 語音提示打造的獨立 Xposed 模組。
-- **靈感來源**：部分早期實作構想啟發自 @siavash79 與 @ElTifo 的 [PixelXpert](https://github.com/siavash79/PixelXpert)。目前實作採用與原專案完全不同的技術架構。
+- **靈感來源**：部分實作構想啟發自 [PixelXpert](https://github.com/siavash79/PixelXpert)（@siavash79、@ElTifo）與 [PixelXpert-Next](https://github.com/anirudhgupta109/PixelXpert-Next)（@anirudhgupta109）。目前實作均採用獨立的技術架構。
 
 ### 感謝
 - Android Team

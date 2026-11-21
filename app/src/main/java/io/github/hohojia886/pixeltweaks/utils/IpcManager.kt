@@ -10,7 +10,6 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Process
-import android.util.Log
 import androidx.core.net.toUri
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
@@ -397,26 +396,30 @@ object IpcManager {
                     val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
                     val isTrusted = isSenderTrusted(ctx, senderUid, moduleUid)
 
-                    Logger.d("Ipc", "Broadcast", "Action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
+                    Logger.d(TAG, "Broadcast", "Action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
 
                     if (isTrusted) {
                         Logger.handleBroadcast(intent)
                         onVerifiedBroadcast(intent)
                     } else {
-                        Logger.e("Ipc", "Blocked", "Unauthorized broadcast from UID: $senderUid (AppId: $senderAppId)")
+                        Logger.e(TAG, "Blocked", "Unauthorized broadcast from UID: $senderUid (AppId: $senderAppId)")
                     }
                 }
             }
             val targetContext = context.applicationContext ?: context
             targetContext.registerReceiver(receiver, filter, null, null, Context.RECEIVER_EXPORTED)
         } catch (t: Throwable) {
-            Log.wtf("PXTK_Ipc", "CRITICAL: Receiver registration failed", t)
+            Logger.e(TAG, "Error", "CRITICAL: Receiver registration failed", t)
         }
     }
 
     /**
      * Specialized receiver for sleep requests with strict identity validation.
      * Validates sender UID against trusted launchers and system apps.
+     *
+     * @param context Target process [Context] used to register the receiver.
+     * @param moduleUid Expected UID of the PixelTweaks companion app.
+     * @param onReceive Callback invoked when an authorized sleep request arrives.
      */
     fun registerSleepReceiver(context: Context, moduleUid: Int, onReceive: () -> Unit) {
         try {
@@ -427,7 +430,7 @@ object IpcManager {
                     val senderAppId = if (senderUid > 0) senderUid % 100000 else -1
                     val isTrusted = isSenderTrusted(ctx, senderUid, moduleUid)
 
-                    Logger.d("Ipc", "Sleep", "Request received: action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
+                    Logger.d(TAG, "Sleep", "Request received: action=${intent.action}, senderUid=$senderUid (AppId: $senderAppId), isTrusted=$isTrusted")
 
                     if (isTrusted) {
                         onReceive()
@@ -439,7 +442,7 @@ object IpcManager {
             val targetContext = context.applicationContext ?: context
             targetContext.registerReceiver(receiver, filter, null, null, Context.RECEIVER_EXPORTED)
         } catch (t: Throwable) {
-            Log.wtf("PXTK_Ipc", "CRITICAL: Sleep receiver registration failed", t)
+            Logger.e(TAG, "Error", "CRITICAL: Sleep receiver registration failed", t)
         }
     }
 }

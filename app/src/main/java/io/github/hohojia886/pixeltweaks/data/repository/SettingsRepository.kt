@@ -66,7 +66,7 @@ class SettingsRepository(private val context: Context) {
                     is String -> edit.putString(k, v)
                 }
             }
-            edit.apply()
+            edit.commit()
         }.onFailure { e ->
             Logger.e("IpcManager", "Error", "Failed to sync remote preferences via XposedService", e)
         }
@@ -186,7 +186,7 @@ class SettingsRepository(private val context: Context) {
                     is Long -> remoteEdit.putLong(key, value)
                     is String -> remoteEdit.putString(key, value)
                 }
-                remoteEdit.apply()
+                remoteEdit.commit()
             }
         }.onFailure { e ->
             Logger.e("IpcManager", "Error", "Failed to write key $key to RemotePreferences", e)

@@ -84,6 +84,7 @@ Private functions do **not** require verbose KDoc if their purpose is obvious fr
 
 - **Obvious Helper**: No KDoc needed (e.g., `private fun dp(context: Context, value: Int): Int`).
 - **Complex Private Logic**: Add KDoc with `@param` / `@return` if the private method contains non-trivial reflection, mathematical calculations, or IPC handling (e.g., `private fun isSignatureBypassActiveForInstall(): Boolean`).
+- **Test-Visible `internal` Helpers**: Any `internal` function or property exposed for unit testing (e.g., `resolveStatusBarTouchMethod`, `decideDensityAction`, `shouldBypassSignature`) MUST carry full KDoc documenting its parameters, return values, and testing contract.
 
 ---
 

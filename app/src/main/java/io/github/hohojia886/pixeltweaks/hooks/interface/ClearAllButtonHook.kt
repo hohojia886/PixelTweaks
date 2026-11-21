@@ -18,6 +18,7 @@ import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
+import io.github.hohojia886.pixeltweaks.utils.findMethod
 import io.github.hohojia886.pixeltweaks.utils.hookAfter
 import io.github.libxposed.api.XposedModule
 import java.lang.ref.WeakReference
@@ -264,19 +265,6 @@ object ClearAllButtonHook {
         val button = clearAllButtonRef?.get() ?: return
         val visibility = systemVisibility ?: (button.parent as? View)?.visibility ?: View.VISIBLE
         button.visibility = if (isEnabled && (visibility == View.VISIBLE)) View.VISIBLE else View.GONE
-    }
-
-    /**
-     * Safely locates a declared method within a class hierarchy.
-     * Traverses superclasses returning Accessible method or null on error.
-     */
-    private fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
-        var c: Class<*>? = clazz
-        while (c != null) {
-            try { return c.getDeclaredMethod(name, *parameterTypes).apply { isAccessible = true } }
-            catch (_: NoSuchMethodException) { c = c.superclass }
-        }
-        return null
     }
 
     /**

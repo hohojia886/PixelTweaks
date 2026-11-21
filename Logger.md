@@ -15,6 +15,7 @@ This document defines the official logging rules and standards for the PixelTwea
    - The status tag string is automatically enclosed in brackets `[Status]` in logcat output.
 4. **No Silent Exception Swallowing**:
    - All `runCatching { ... }.onFailure { e -> ... }` and `try { ... } catch (e: Exception) { ... }` blocks MUST log the failure via `Logger.e(TAG, "Error", "Failure message context", e)`. Never leave failure handlers silent.
+   - Exception for expected cross-firmware class probing: when probing optional Android/SystemUI classes across OS builds, log `ClassNotFoundException` via `Logger.d(TAG, "Probe", ...)` rather than swallowing it silently or falsely reporting `Logger.e`.
 5. **Debouncing High-Frequency Events**:
    - High-frequency loops (e.g., 30 FPS drawing, continuous byte polling) MUST NOT print repetitive log messages on every iteration. Use debouncing timers (minimum 2000ms interval).
 
@@ -27,7 +28,8 @@ This document defines the official logging rules and standards for the PixelTwea
 | `Security` | Package Manager, Downgrade, Signature Bypasses | `logSecurity` |
 | `EasyUnlock` | Auto PIN Confirm & PIN Length Learning | `logSecurity` |
 | `Screenshot` | System-wide FLAG_SECURE Bypass | `logSecurity` |
-| `HideVpn` | Status Bar VPN Icon Hiding | `logSecurity` / `logInterface` |
+| `HideVpn` | Status Bar VPN Icon Hiding | `logSecurity` |
+| `Interface` | Shared Status Bar Tint Manager (`StatusBarTintManager`) | `logInterface` |
 | `ClearAll` | Recents Overview "Clear All" Button | `logInterface` |
 | `Traffic` | Network Traffic Speed Indicator | `logInterface` |
 | `Battery` | Status Bar Text Battery & Sysfs Battery Info | `logInterface` |
@@ -46,11 +48,13 @@ This document defines the official logging rules and standards for the PixelTwea
 When calling `Logger.x(TAG, "Status", "Message")`, use one of the following standardized status keywords:
 
 - `[Init]` / `[Started]` — Module, hook, or receiver initialization.
+- `[Probe]` — Expected cross-firmware class/method probing (typically logged at `Logger.d`).
 - `[Sync]` — Preference loading or IPC broadcast synchronization.
 - `[Active]` / `[Running]` / `[Applied]` — Dynamic feature activation or hook interception.
 - `[Success]` — Successful operation completion or bypass execution.
 - `[Blocked]` — Unauthorized IPC attempt or disallowed write key blocked.
-- `[Error]` / `[SectionA]` / `[SectionB]` — Exception or failure context.
+- `[Error]` / `[SectionA]` / `[SectionB]` / `[SectionC]` — Exception or failure context.
+- Subsystem-specific brackets (e.g., `[ComposeModifier]`, `[IconContainer]`, `[Controller]`, `[VersionProbe]`) are permitted for fine-grained diagnostics within a hook.
 
 ---
 

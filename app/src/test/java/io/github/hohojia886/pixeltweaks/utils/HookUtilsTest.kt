@@ -77,4 +77,37 @@ class HookUtilsTest {
         assertFalse(isQsDataFixSupported("AP1A.240305.019.A1", "AP1A"))
         assertFalse(isQsDataFixSupported("BUILD_DISPLAY", "BUILD_ID"))
     }
+
+    @Suppress("unused")
+    private open class ReflectionBase {
+        private val baseField: String = "base"
+        private fun baseMethod(input: Int): Int = input * 2
+    }
+
+    @Suppress("unused")
+    private class ReflectionChild : ReflectionBase() {
+        private val childField: Int = 42
+    }
+
+    @Test
+    fun testFindFieldTraversesSuperclassHierarchy() {
+        val instance = ReflectionChild()
+        val childField = findField(ReflectionChild::class.java, "childField")
+        val baseField = findField(ReflectionChild::class.java, "baseField")
+        val missingField = findField(ReflectionChild::class.java, "doesNotExist")
+
+        assertEquals(42, childField?.get(instance))
+        assertEquals("base", baseField?.get(instance))
+        assertEquals(null, missingField)
+    }
+
+    @Test
+    fun testFindMethodTraversesSuperclassHierarchy() {
+        val instance = ReflectionChild()
+        val baseMethod = findMethod(ReflectionChild::class.java, "baseMethod", Int::class.javaPrimitiveType!!)
+        val missingMethod = findMethod(ReflectionChild::class.java, "missingMethod")
+
+        assertEquals(14, baseMethod?.invoke(instance, 7))
+        assertEquals(null, missingMethod)
+    }
 }

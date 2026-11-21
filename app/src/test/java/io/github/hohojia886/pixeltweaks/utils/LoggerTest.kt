@@ -30,6 +30,7 @@ class LoggerTest {
         assertTrue(Logger.isSubEnabled("Screenshot"))
         assertTrue(Logger.isSubEnabled("HideVpn"))
 
+        assertTrue(Logger.isSubEnabled("Interface"))
         assertTrue(Logger.isSubEnabled("ClearAll"))
         assertTrue(Logger.isSubEnabled("Traffic"))
         assertTrue(Logger.isSubEnabled("Battery"))
@@ -48,6 +49,7 @@ class LoggerTest {
         assertFalse(Logger.isSubEnabled("HideVpn"))
 
         Logger.logInterface = false
+        assertFalse(Logger.isSubEnabled("Interface"))
         assertFalse(Logger.isSubEnabled("ClearAll"))
         assertFalse(Logger.isSubEnabled("Traffic"))
         assertFalse(Logger.isSubEnabled("Battery"))

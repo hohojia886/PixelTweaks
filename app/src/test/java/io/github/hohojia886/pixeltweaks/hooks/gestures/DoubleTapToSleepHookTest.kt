@@ -91,4 +91,32 @@ class DoubleTapToSleepHookTest {
         assertFalse(lockscreenField.get(instance) as Boolean)
     }
 
+    @Suppress("unused")
+    private open class FakeStatusBarWithBoth {
+        fun onInterceptTouchEvent(ev: android.view.MotionEvent): Boolean = false
+        fun onTouchEvent(ev: android.view.MotionEvent): Boolean = false
+    }
+
+    @Suppress("unused")
+    private class FakeStatusBarDispatchOnly {
+        fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean = false
+    }
+
+    @Suppress("unused")
+    private interface FakeAbstractStatusBar {
+        fun onTouchEvent(ev: android.view.MotionEvent): Boolean
+    }
+
+    @Test
+    fun testResolveStatusBarTouchMethodPrioritizesOnTouchEventAndSkipsAbstract() {
+        val preferred = DoubleTapToSleepHook.resolveStatusBarTouchMethod(FakeStatusBarWithBoth::class.java)
+        kotlin.test.assertEquals("onTouchEvent", preferred?.name)
+
+        val fallback = DoubleTapToSleepHook.resolveStatusBarTouchMethod(FakeStatusBarDispatchOnly::class.java)
+        kotlin.test.assertEquals("dispatchTouchEvent", fallback?.name)
+
+        val abstractOnly = DoubleTapToSleepHook.resolveStatusBarTouchMethod(FakeAbstractStatusBar::class.java)
+        kotlin.test.assertNull(abstractOnly)
+    }
+
 }

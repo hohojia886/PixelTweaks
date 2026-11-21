@@ -11,6 +11,7 @@ import io.github.hohojia886.pixeltweaks.utils.IpcDispatcher
 import io.github.hohojia886.pixeltweaks.utils.IpcManager
 import io.github.hohojia886.pixeltweaks.utils.Logger
 import io.github.hohojia886.pixeltweaks.utils.PreferenceKeys
+import io.github.hohojia886.pixeltweaks.utils.findField
 import io.github.hohojia886.pixeltweaks.utils.isQsDataFixSupported
 import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Field
@@ -191,17 +192,4 @@ object QuickSettingsHook {
     }
 
     private var wifiManagerFieldCached: Field? = null
-
-    /**
-     * Retrieves declared field from class hierarchy via reflection.
-     * Traverses superclasses returning Accessible field instance.
-     */
-    private fun findField(clazz: Class<*>, name: String): Field? {
-        var curr: Class<*>? = clazz
-        while (curr != null) {
-            try { return curr.getDeclaredField(name).apply { isAccessible = true } }
-            catch (_: NoSuchFieldException) { curr = curr.superclass }
-        }
-        return null
-    }
 }

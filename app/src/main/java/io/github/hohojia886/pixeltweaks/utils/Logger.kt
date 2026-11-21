@@ -156,8 +156,10 @@ object Logger {
     }
 
     /**
-     * Logs debug message.
-     * Checks master and category toggles before logging.
+     * Logs a debug message if master and category toggles are enabled.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param msg Log message payload.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun d(tag: String, msg: String) {
@@ -167,8 +169,11 @@ object Logger {
     }
 
     /**
-     * Logs debug message with status if master and sub-toggle are enabled.
-     * Appends status prefix to message payload.
+     * Logs a debug message with a bracketed status prefix if master and sub-toggle are enabled.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param status Status keyword enclosed in square brackets (e.g. `"Probe"`, `"Sync"`).
+     * @param msg Log message payload.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun d(tag: String, status: String, msg: String) {
@@ -178,8 +183,10 @@ object Logger {
     }
 
     /**
-     * Logs info message.
-     * Checks master and category toggles before logging.
+     * Logs an info message if master and category toggles are enabled.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param msg Log message payload.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun i(tag: String, msg: String) {
@@ -189,8 +196,11 @@ object Logger {
     }
 
     /**
-     * Logs info message with status if master and sub-toggle are enabled.
-     * Appends status prefix to message payload.
+     * Logs an info message with a bracketed status prefix if master and sub-toggle are enabled.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param status Status keyword enclosed in square brackets (e.g. `"Init"`, `"Applied"`).
+     * @param msg Log message payload.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun i(tag: String, status: String, msg: String) {
@@ -200,8 +210,12 @@ object Logger {
     }
 
     /**
-     * Logs error message with optional throwable.
-     * Critical hook failures are always logged regardless of toggles.
+     * Logs an error message with an optional throwable.
+     * Critical `"Hook"` failures are always logged regardless of master/sub toggles.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param msg Error description payload.
+     * @param tr Optional [Throwable] stacktrace to attach.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun e(tag: String, msg: String, tr: Throwable? = null) {
@@ -211,8 +225,13 @@ object Logger {
     }
 
     /**
-     * Logs error message with status and optional throwable.
-     * Critical hook failures are always logged regardless of toggles.
+     * Logs an error message with a bracketed status prefix and optional throwable.
+     * Critical `"Hook"` failures are always logged regardless of master/sub toggles.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param status Status keyword enclosed in square brackets (e.g. `"Error"`, `"Blocked"`).
+     * @param msg Error description payload.
+     * @param tr Optional [Throwable] stacktrace to attach.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun e(tag: String, status: String, msg: String, tr: Throwable? = null) {
@@ -222,8 +241,10 @@ object Logger {
     }
 
     /**
-     * Logs warning message.
-     * Checks master and category toggles before logging.
+     * Logs a warning message if master and category toggles are enabled.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param msg Warning message payload.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun w(tag: String, msg: String) {
@@ -233,8 +254,11 @@ object Logger {
     }
 
     /**
-     * Logs warning message with status if master and sub-toggle are enabled.
-     * Appends status prefix to message payload.
+     * Logs a warning message with a bracketed status prefix if master and sub-toggle are enabled.
+     *
+     * @param tag Category tag appended to the `PXTK_` prefix.
+     * @param status Status keyword enclosed in square brackets (e.g. `"Blocked"`).
+     * @param msg Warning message payload.
      */
     @Suppress("NOTHING_TO_INLINE")
     inline fun w(tag: String, status: String, msg: String) {
@@ -244,13 +268,16 @@ object Logger {
     }
 
     /**
-     * Maps functional tags to their respective toggle states.
-     * Evaluates tag against security, interface, gestures, and QS flags.
+     * Maps functional tags to their respective category toggle states.
+     * Evaluates [tag] against security, interface, gestures, and quick settings flags.
+     *
+     * @param tag Category tag string passed to [Logger] calls.
+     * @return True if logging is enabled for the category associated with [tag].
      */
     fun isSubEnabled(tag: String): Boolean {
         return when (tag) {
             "Security", "EasyUnlock", "Screenshot", "HideVpn" -> logSecurity
-            "ClearAll", "Traffic", "Battery", "EnergyRing" -> logInterface
+            "Interface", "ClearAll", "Traffic", "Battery", "EnergyRing" -> logInterface
             "DT2S" -> logGestures
             "QuickSettings" -> logQuickSettings
             else -> true

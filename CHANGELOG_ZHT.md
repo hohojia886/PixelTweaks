@@ -1,3 +1,9 @@
+### v1.3.3
+- 🔋 **Android 17 CP3A 斷網電池圖示修復與零閃爍切換**：導入抗 R8 混淆的 `ComposeRecompositionBridge`（結合 `MutableState` 讀取與 `RecomposeScope` 雙重觸發 Compose 重組），搭配同幀原子切換機制，徹底解決 CP3A 斷網重開機時原廠電池圖示殘留並消除開關切換閃爍。
+- 🎨 **狀態列雙擊熄屏（Android 17 修復）**：於 `DoubleTapToSleepHook` 新增 `PhoneStatusBarView#onTouchEvent` 攔截路徑，修復 Android 17（`CP3A.261005.005`）狀態列雙擊熄屏失效問題，改用系統 `ViewConfiguration.scaledDoubleTapSlop` 動態計算雙擊公差，並將舊版 `KeyguardAbsKeyInputViewController` 調整為靜默探測。
+- 🛡️ **Android 17 CP3A 相容性修正與 Logcat 零錯誤清理**：修正 `HideVpnIconHook` 建構子執行順序與安全反射查找（`removeAllIconsForSlot` / `mIgnoredSlots`），並將 `PackageManagerHook` 中跨版本預期不存在的 `PermissionManagerServiceImpl` 改以 `[Probe]` Debug 探測，消除開機日誌錯誤。
+- 🏗️ **核心架構模組化重構與規範稽核**：將 `BatteryPercentHook` 拆分為 `BatteryStateController`、`StockBatterySuppressor`、`BatteryPercentViewInjector` 與共用 `ComposeRecompositionBridge`；將 `SettingsScreen` 拆分為 `SettingsCommonComponents`、`BatterySettingsSection` 與 `OthersSection`；抽離 `EnergyRingView`、`TabletModeDpiController` 及共用反射工具（`HookUtils.findField` / `findMethod`）；同步稽核全專案 `.kt` 檔案以符合 `Logger.md` / `Comments.md` 規範，單元測試擴充至 92+ 項。
+
 ### v1.3.2
 - 📦 **作用域簽章繞過與應用降級修復**：透過 ThreadLocal 深度追蹤機制（`withInstallVerification`）將簽章繞過嚴格限制於安裝驗證階段，杜絕系統全域洩漏；並攔截 `PackageManagerServiceUtils#compareSignatures` 與隱藏的 `SigningDetails` 能力判定方法（如 `checkCapability`、`signaturesMatchExactly` 等），支援 Debug 與 Release 簽章間無縫覆蓋切換與降級安裝。
 - 📱 **平板模式與系統服務生命週期修復**：修正現代 Android 版本上的 `AMS.systemReady` 反射簽章查找問題，並引入狀態感知解析（`decideDensityAction`），確保平板模式精確作用於 `DEFAULT_DISPLAY` 且不會在廣播同步時意外重置自訂顯示大小。

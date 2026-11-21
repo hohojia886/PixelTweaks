@@ -5,6 +5,8 @@ package io.github.hohojia886.pixeltweaks.utils
 import io.github.libxposed.api.XposedInterface
 import io.github.libxposed.api.XposedModule
 import java.lang.reflect.Executable
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 
 /**
  * DSL extensions and helper functions for modern LSPosed API 100+.
@@ -99,4 +101,43 @@ fun isQsDataFixSupported(
 ): Boolean {
     val targetTags = listOf("CP2A.260605", "CP2A.260705", "CP2A.260805")
     return targetTags.any { display.contains(it) || id.contains(it) }
+}
+
+/**
+ * Reflectively locates a declared field by traversing the class hierarchy.
+ *
+ * @param clazz Starting class to inspect.
+ * @param name Exact declared field name.
+ * @return Accessible [Field] instance if found, or null otherwise.
+ */
+fun findField(clazz: Class<*>, name: String): Field? {
+    var current: Class<*>? = clazz
+    while (current != null) {
+        try {
+            return current.getDeclaredField(name).apply { isAccessible = true }
+        } catch (_: NoSuchFieldException) {
+            current = current.superclass
+        }
+    }
+    return null
+}
+
+/**
+ * Reflectively locates a declared method by traversing the class hierarchy.
+ *
+ * @param clazz Starting class to inspect.
+ * @param name Exact declared method name.
+ * @param parameterTypes Optional ordered parameter types for overload resolution.
+ * @return Accessible [Method] instance if found, or null otherwise.
+ */
+fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
+    var current: Class<*>? = clazz
+    while (current != null) {
+        try {
+            return current.getDeclaredMethod(name, *parameterTypes).apply { isAccessible = true }
+        } catch (_: NoSuchMethodException) {
+            current = current.superclass
+        }
+    }
+    return null
 }
