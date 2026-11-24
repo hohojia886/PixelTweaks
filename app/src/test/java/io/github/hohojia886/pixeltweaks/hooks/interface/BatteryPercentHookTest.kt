@@ -48,6 +48,7 @@ class BatteryPercentHookTest {
         BatteryPercentHook.isAndroid17CP3A = false
         BatteryPercentHook.viewInjector.pendingPercentVisibilitySync.set(false)
         BatteryPercentHook.viewInjector.trackedPercentTextViews.clear()
+        BatteryPercentHook.suppressor.clearShadeHeaderTracking()
     }
 
     @Test
@@ -150,5 +151,53 @@ class BatteryPercentHookTest {
 
         BatteryPercentHook.viewInjector.flushPendingVisibility()
         assertTrue(tv.visibility == View.GONE, "TextView should become GONE atomically on Compose frame flush")
+    }
+
+    @Test
+    fun testShadeHeaderBatteryBypassPreservesQsAndSuppressesStatusBar() {
+        val suppressor = BatteryPercentHook.suppressor
+        val qsBatteryViewModel = Any()
+        val statusBarBatteryViewModel = Any()
+
+        // Before entering Shade Header scope, neither ViewModel is bypassed
+        assertFalse(suppressor.shouldBypassForShadeHeader(statusBarBatteryViewModel))
+        assertFalse(suppressor.shouldBypassForShadeHeader(qsBatteryViewModel))
+
+        // Inside BatteryWithEstimate / ShadeHeader.BatteryInfo scope: bypasses and records QS ViewModel
+        val bypassedInScope = suppressor.withShadeHeaderScope {
+            assertTrue(suppressor.shouldBypassForShadeHeader(null))
+            suppressor.shouldBypassForShadeHeader(qsBatteryViewModel)
+        }
+        assertTrue(bypassedInScope, "QS Shade Header composition should bypass stock battery suppression")
+
+        // After exiting scope: standalone Compose recomposition of QS ViewModel stays bypassed,
+        // while Home/Keyguard status bar ViewModel remains suppressed
+        assertTrue(
+            suppressor.shouldBypassForShadeHeader(qsBatteryViewModel),
+            "Standalone recomposition of recorded QS BatteryViewModel must remain bypassed",
+        )
+        assertFalse(
+            suppressor.shouldBypassForShadeHeader(statusBarBatteryViewModel),
+            "Status bar BatteryViewModel must still be suppressed",
+        )
+        assertFalse(
+            suppressor.shouldBypassForShadeHeader(null),
+            "Nested composable outside Shade Header scope must not bypass",
+        )
+    }
+
+    @Test
+    fun testShadeHeaderMethodNameMatchersHandleMangling() {
+        val suppressor = BatteryPercentHook.suppressor
+
+        assertTrue(suppressor.isBatteryWithEstimateMethodName("BatteryWithEstimate"))
+        assertTrue(suppressor.isBatteryWithEstimateMethodName("BatteryWithEstimate-FU0evQE"))
+        assertTrue(suppressor.isBatteryWithEstimateMethodName("BatteryWithEstimate\$default"))
+        assertFalse(suppressor.isBatteryWithEstimateMethodName("UnifiedBattery"))
+
+        assertTrue(suppressor.isShadeHeaderBatteryInfoMethodName("BatteryInfo"))
+        assertTrue(suppressor.isShadeHeaderBatteryInfoMethodName("BatteryInfo-FHprtrg"))
+        assertTrue(suppressor.isShadeHeaderBatteryInfoMethodName("BatteryInfo\$default"))
+        assertFalse(suppressor.isShadeHeaderBatteryInfoMethodName("CollapsedShadeHeader"))
     }
 }

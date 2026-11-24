@@ -1,3 +1,7 @@
+### v1.3.4
+- 🔋 **修復下拉 Quick Settings 狀態列電池消失問題（支援 CP3A 與 CP2A）**：解決啟用「狀態欄右側電量百分比」後下拉 Quick Tiles 時右上角電池資訊消失的問題。透過掛載 `BatteryWithEstimateKt` 與 `ShadeHeaderKt.BatteryInfo` 建立 Shade Header 作用域與 `BatteryViewModel` 實例追蹤（並同步於 CP2A `UnifiedBatteryViewBinder` 路徑加入 Shade Header 祖先視圖排除），確保下拉通知欄時完整保留原廠電池圖示與剩餘時間預估，且不受後續 Compose 單獨重組影響，同時維持桌面與鎖定畫面之純文字電量百分比顯示。
+- 🧪 **單元測試**：於 `BatteryPercentHookTest` 補齊 QS Shade Header 放行邏輯與 Kotlin 名稱混淆比對測試（共 94 項測試全數通過）。
+
 ### v1.3.3
 - 🔋 **Android 17 CP3A 斷網電池圖示修復與零閃爍切換**：導入抗 R8 混淆的 `ComposeRecompositionBridge`（結合 `MutableState` 讀取與 `RecomposeScope` 雙重觸發 Compose 重組），搭配同幀原子切換機制，徹底解決 CP3A 斷網重開機時原廠電池圖示殘留並消除開關切換閃爍。
 - 🎨 **狀態列雙擊熄屏（Android 17 修復）**：於 `DoubleTapToSleepHook` 新增 `PhoneStatusBarView#onTouchEvent` 攔截路徑，修復 Android 17（`CP3A.261005.005`）狀態列雙擊熄屏失效問題，改用系統 `ViewConfiguration.scaledDoubleTapSlop` 動態計算雙擊公差，並將舊版 `KeyguardAbsKeyInputViewController` 調整為靜默探測。

@@ -1,3 +1,7 @@
+### v1.3.4
+- 🔋 **Quick Settings Shade Header Battery Preservation (CP3A & CP2A)**: Fixed an issue where pulling down the Quick Settings panel caused the top-right battery indicator to disappear when Status Bar Battery Percent was enabled. Added Shade Header scope and `BatteryViewModel` instance tracking across `BatteryWithEstimateKt` and `ShadeHeaderKt.BatteryInfo` (plus `MotionLayout` / Shade Header ancestor checks for CP2A `UnifiedBatteryViewBinder`), preserving the native QS battery icon and remaining time estimate across standalone Compose recompositions while keeping home/keyguard status bar replacement active.
+- 🧪 **Unit Tests**: Expanded `BatteryPercentHookTest` with QS Shade Header bypass and Kotlin value-class name mangling verification (94 tests passed).
+
 ### v1.3.3
 - 🔋 **Android 17 CP3A Offline Battery Fix & Zero-Flicker Toggle**: Introduced an R8-resilient `ComposeRecompositionBridge` (combining `MutableState` snapshot reads and `RecomposeScope` invalidation) with atomic same-frame visibility swapping, permanently resolving the CP3A offline reboot stock battery icon overlap and eliminating toggle flicker.
 - 🎨 **Status Bar Double Tap To Sleep (Android 17)**: Restored status bar DT2S on Android 17 (`CP3A.261005.005`) by hooking `PhoneStatusBarView#onTouchEvent`, adopting `ViewConfiguration.scaledDoubleTapSlop` for adaptive double-tap tolerance, and converting legacy `KeyguardAbsKeyInputViewController` lookups to non-error probes.

@@ -22,7 +22,8 @@ import java.util.WeakHashMap
  *
  * Supports both Android 17 CP3A unified Compose status bar (`UnifiedBatteryKt` cancellation with reactive
  * recomposition via [ComposeRecompositionBridge]) and legacy View-based architectures (`ModernStatusBarView`,
- * `SingleBindableStatusBarIconView`, `UnifiedBatteryViewBinder`, and `StatusIconContainer`).
+ * `SingleBindableStatusBarIconView`, `UnifiedBatteryViewBinder`, and `StatusIconContainer`), while preserving
+ * native Quick Settings Shade Header battery rendering (`BatteryWithEstimateKt` / `ShadeHeaderKt`).
  *
  * @param logTag Logger subsystem tag.
  * @param viewTag View tag identifying the injected custom percentage indicator so it is never hidden.
@@ -47,6 +48,8 @@ internal class StockBatterySuppressor(
     private val trackedComposeBatteryViews = Collections.synchronizedList(mutableListOf<WeakReference<View>>())
     private val trackedModernBatteryViews = Collections.synchronizedList(mutableListOf<WeakReference<View>>())
     private val originalPaddingEndMap = Collections.synchronizedMap(WeakHashMap<ViewGroup, Int>())
+    private val shadeHeaderCompositionDepth = ThreadLocal.withInitial { 0 }
+    private val shadeHeaderBatteryViewModels = Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap<Any, Boolean>()))
 
     /**
      * Installs all stock battery suppression hooks across ViewModel, View, Compose, and StatusIconContainer layers.
@@ -55,12 +58,117 @@ internal class StockBatterySuppressor(
      * @param classLoader SystemUI ClassLoader.
      */
     fun installHooks(module: XposedModule, classLoader: ClassLoader) {
+        applyShadeHeaderBatteryBypassHooks(module, classLoader)
         applyBatteryViewModelHooks(module, classLoader)
         applyModernStatusBarViewBatteryHooks(module, classLoader)
         applySingleBindableIconViewBatteryHooks(module, classLoader)
         applyAndroid17ComposeBatteryHooks(module, classLoader)
         applyComposeUnifiedBatteryModifierHooks(module, classLoader)
         applyStatusIconContainerHooks(module, classLoader)
+    }
+
+    /**
+     * Executes [block] inside a Quick Settings Shade Header composition scope so stock battery rendering
+     * is preserved when the notification shade / Quick Tiles panel is pulled down.
+     *
+     * @param block Composable or hook invocation executed within the Shade Header scope.
+     * @return Result returned by [block].
+     */
+    internal inline fun <T> withShadeHeaderScope(block: () -> T): T {
+        val prev = shadeHeaderCompositionDepth.get() ?: 0
+        shadeHeaderCompositionDepth.set(prev + 1)
+        return try {
+            block()
+        } finally {
+            if (prev <= 0) {
+                shadeHeaderCompositionDepth.remove()
+            } else {
+                shadeHeaderCompositionDepth.set(prev)
+            }
+        }
+    }
+
+    /**
+     * Determines whether stock battery suppression should be bypassed for a Quick Settings Shade Header call.
+     *
+     * Records [batteryViewModel] whenever invoked inside an active Shade Header composition scope so
+     * subsequent standalone Compose recompositions of `UnifiedBattery` (which bypass `BatteryWithEstimate`)
+     * continue to be recognized as belonging to Quick Settings rather than the home/keyguard status bar.
+     *
+     * @param batteryViewModel Optional `BatteryViewModel` instance associated with the current call, or null.
+     * @return True if the call belongs to the Quick Settings Shade Header and should not be suppressed.
+     */
+    internal fun shouldBypassForShadeHeader(batteryViewModel: Any?): Boolean {
+        val inScope = (shadeHeaderCompositionDepth.get() ?: 0) > 0
+        if (inScope && batteryViewModel != null) {
+            shadeHeaderBatteryViewModels.add(batteryViewModel)
+        }
+        return inScope || (batteryViewModel != null && shadeHeaderBatteryViewModels.contains(batteryViewModel))
+    }
+
+    /**
+     * Clears tracked Quick Settings Shade Header depth and ViewModel instances.
+     * Exposed for deterministic unit test isolation.
+     */
+    internal fun clearShadeHeaderTracking() {
+        shadeHeaderCompositionDepth.remove()
+        shadeHeaderBatteryViewModels.clear()
+    }
+
+    /**
+     * Checks whether a method name matches `BatteryWithEstimateKt.BatteryWithEstimate` across Kotlin
+     * value-class name mangling suffixes (e.g. `BatteryWithEstimate-FU0evQE`).
+     *
+     * @param methodName Declared method name to test.
+     * @return True if [methodName] represents a `BatteryWithEstimate` composable entry point.
+     */
+    internal fun isBatteryWithEstimateMethodName(methodName: String): Boolean {
+        return methodName == "BatteryWithEstimate" ||
+            methodName.startsWith("BatteryWithEstimate-") ||
+            methodName.startsWith("BatteryWithEstimate\$")
+    }
+
+    /**
+     * Checks whether a method name matches `ShadeHeaderKt.BatteryInfo` across Kotlin value-class
+     * name mangling suffixes (e.g. `BatteryInfo-FHprtrg`).
+     *
+     * @param methodName Declared method name to test.
+     * @return True if [methodName] represents a ShadeHeader `BatteryInfo` composable entry point.
+     */
+    internal fun isShadeHeaderBatteryInfoMethodName(methodName: String): Boolean {
+        return methodName == "BatteryInfo" ||
+            methodName.startsWith("BatteryInfo-") ||
+            methodName.startsWith("BatteryInfo\$")
+    }
+
+    /**
+     * Checks whether [view] resides inside a View-based Quick Settings Shade Header (`MotionLayout` /
+     * `split_shade_status_bar` / `combined_qs_header`) so CP2A ViewBinder hooks do not hide the QS battery.
+     *
+     * @param view Candidate `ComposeView` bound by `UnifiedBatteryViewBinder`.
+     * @return True if any ancestor belongs to the Quick Settings Shade Header hierarchy.
+     */
+    internal fun isInsideShadeHeaderView(view: View): Boolean {
+        var current: Any? = view.parent
+        while (current is View) {
+            val className = current.javaClass.name
+            if (className.contains("MotionLayout") || className.contains("ShadeHeader")) {
+                return true
+            }
+            val entryName = runCatching {
+                if (current.id != View.NO_ID) current.resources.getResourceEntryName(current.id) else null
+            }.getOrNull()
+            if (entryName != null && (
+                    entryName.contains("split_shade_status_bar", ignoreCase = true) ||
+                        entryName.contains("shade_header", ignoreCase = true) ||
+                        entryName.contains("combined_qs_header", ignoreCase = true)
+                    )
+            ) {
+                return true
+            }
+            current = current.parent
+        }
+        return false
     }
 
     /**
@@ -266,6 +374,9 @@ internal class StockBatterySuppressor(
                     val isBool = method.returnType == Boolean::class.javaPrimitiveType || method.returnType == java.lang.Boolean.TYPE
                     if ((mName == "getVisible" || mName == "isVisible" || mName == "isBatteryVisible" || mName == "isBatteryIconVisible") && isBool) {
                         module.hook(method).intercept { chain ->
+                            if (shouldBypassForShadeHeader(chain.thisObject)) {
+                                return@intercept chain.proceed()
+                            }
                             composeBridge.observe(emptyList())
                             if (isEnabledProvider()) {
                                 return@intercept false
@@ -274,6 +385,9 @@ internal class StockBatterySuppressor(
                         }
                     } else if (mName == "getIcon" || mName == "getBatteryIcon") {
                         module.hook(method).intercept { chain ->
+                            if (shouldBypassForShadeHeader(chain.thisObject)) {
+                                return@intercept chain.proceed()
+                            }
                             composeBridge.observe(emptyList())
                             if (isEnabledProvider()) {
                                 return@intercept null
@@ -352,7 +466,50 @@ internal class StockBatterySuppressor(
     }
 
     /**
+     * Marks Quick Settings Shade Header battery compositions (`BatteryWithEstimateKt` for both CP2A
+     * `ShadeHeaderController` and CP3A Flexiglass `ShadeHeaderKt`, plus `ShadeHeaderKt.BatteryInfo`)
+     * so stock QS battery icons and time estimates remain visible when the shade is pulled down.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
+     */
+    private fun applyShadeHeaderBatteryBypassHooks(module: XposedModule, classLoader: ClassLoader) {
+        val targets = listOf(
+            "com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimateKt" to ::isBatteryWithEstimateMethodName,
+            "com.android.systemui.shade.ui.composable.ShadeHeaderKt" to ::isShadeHeaderBatteryInfoMethodName,
+        )
+
+        targets.forEach { (className, matcher) ->
+            runCatching {
+                val clazz = classLoader.loadClass(className)
+                var hookedCount = 0
+                clazz.declaredMethods.filter { matcher(it.name) }.forEach { method ->
+                    module.hook(method).intercept { chain ->
+                        withShadeHeaderScope {
+                            chain.proceed()
+                        }
+                    }
+                    hookedCount++
+                }
+                if (hookedCount > 0) {
+                    Logger.i(logTag, "ShadeHeader", "Hooked $hookedCount QS Shade Header bypass method(s) in $className")
+                }
+            }.onFailure { e ->
+                if (e is ClassNotFoundException) {
+                    Logger.d(logTag, "Probe", "Shade Header composable class not present on this build: $className")
+                } else {
+                    Logger.e(logTag, "ShadeHeader", "Failed to hook QS Shade Header bypass in $className", e)
+                }
+            }
+        }
+    }
+
+    /**
      * Intercepts `UnifiedBatteryKt` composables to subscribe Compose recomposition and cancel rendering when enabled.
+     * Automatically allows Quick Settings Shade Header compositions to pass through untouched.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
      */
     private fun applyComposeUnifiedBatteryModifierHooks(module: XposedModule, classLoader: ClassLoader) {
         runCatching {
@@ -370,7 +527,17 @@ internal class StockBatterySuppressor(
             unifiedBatteryKtClass.declaredMethods.filter { method ->
                 method.name in targetNames || targetNames.any { method.name == "$it\$default" }
             }.forEach { method ->
+                val isUnifiedBatteryEntry = method.name == "UnifiedBattery" || method.name == "UnifiedBattery\$default"
                 module.hook(method).intercept { chain ->
+                    val candidateVm = if (isUnifiedBatteryEntry) chain.args.getOrNull(0) else null
+                    if (shouldBypassForShadeHeader(candidateVm)) {
+                        // Keep Shade Header scope active for nested BatteryLayout/BatteryBody/BatteryCap calls
+                        // even when Compose restarts UnifiedBattery directly without re-entering BatteryWithEstimate.
+                        return@intercept withShadeHeaderScope {
+                            chain.proceed()
+                        }
+                    }
+
                     // Subscribe the enclosing RecomposeScope before branching so both enable and disable
                     // transitions reliably trigger Compose recomposition even without WiFi/VPN activity.
                     composeBridge.observe(chain.args)
@@ -392,7 +559,11 @@ internal class StockBatterySuppressor(
     }
 
     /**
-     * Hooks `UnifiedBatteryViewBinder` on non-CP3A builds to capture and track generated Compose battery views.
+     * Hooks `UnifiedBatteryViewBinder` on non-CP3A builds to capture and track generated Compose battery views,
+     * skipping any view hosted inside a Quick Settings Shade Header container.
+     *
+     * @param module Active LSPosed [XposedModule] instance.
+     * @param classLoader SystemUI ClassLoader.
      */
     private fun applyAndroid17ComposeBatteryHooks(module: XposedModule, classLoader: ClassLoader) {
         if (isCp3aProvider()) return
@@ -407,9 +578,15 @@ internal class StockBatterySuppressor(
                         val viewField = findField(instance.javaClass, '$' + "view")
                         val composeView = viewField?.get(instance) as? View
                         if (composeView != null) {
+                            if (isInsideShadeHeaderView(composeView)) {
+                                Logger.d(logTag, "ShadeHeader", "Skipping QS Shade Header ComposeView in UnifiedBatteryViewBinder")
+                                return@runCatching
+                            }
                             markAsStockBatteryView(composeView)
                             trackComposeBatteryView(composeView)
                         }
+                    }.onFailure { e ->
+                        Logger.e(logTag, "Android17Compose", "Failed processing UnifiedBatteryViewBinder invokeSuspend", e)
                     }
                 }
             }
